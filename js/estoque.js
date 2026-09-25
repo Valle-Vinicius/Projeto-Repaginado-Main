@@ -201,7 +201,7 @@ function criarLinhaProduto(produto) {
   avatar.textContent = produto.nome.charAt(0).toUpperCase();
   texto.className = 'estoque-produto-texto';
   nome.className = 'estoque-produto-nome';
-  nome.textContent = produto.nome;
+  nome.textContent = produto.nome;       
   codigo.className = 'estoque-produto-sku';
   codigo.textContent = produto.codigo || 'Sem código';
   texto.append(nome, codigo);
