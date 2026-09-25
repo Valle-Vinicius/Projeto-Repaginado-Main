@@ -1,0 +1,438 @@
+/* ==========================================================================
+   1. Estrutura Geral e Layout
+   ========================================================================== */
+
+.reports-page {
+  overflow-x: hidden;
+}
+
+.reports-page .dashboard-main {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.reports-content {
+  padding-bottom: 22px;
+  min-width: 0;
+}
+
+.reports-content .intro-row {
+  margin-bottom: 16px;
+}
+
+.reports-content h1 {
+  margin: 0 0 5px;
+  font-size: 25px;
+  color: #1f2d46;
+}
+
+/* ==========================================================================
+   2. Filtros
+   ========================================================================== */
+
+.reports-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.reports-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.reports-filters label > span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c8799;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reports-filters select {
+  height: 38px;
+  border: 1px solid #dce3ee;
+  border-radius: 9px;
+  background: #fff;
+  color: #253149;
+  padding: 0 11px;
+  font: inherit;
+  outline: none;
+}
+
+.reports-filters select:focus {
+  border-color: #2e5bd6;
+  box-shadow: 0 0 0 3px rgba(46, 91, 214, 0.1);
+}
+
+/* ==========================================================================
+   3. Cards de Métricas
+   ========================================================================== */
+
+.reports-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.reports-metrics article {
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  padding: 13px 16px;
+  min-height: 78px;
+}
+
+.reports-metrics span,
+.reports-metrics small {
+  display: block;
+  color: #778398;
+  font-size: 11px;
+}
+
+.reports-metrics strong {
+  display: block;
+  color: #1f2d46;
+  font-size: 25px;
+  line-height: 1.1;
+  margin: 7px 0 3px;
+}
+
+/* ==========================================================================
+   4. Painéis e Grid dos Relatórios
+   ========================================================================== */
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.reports-grid-bottom {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.report-panel {
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.report-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 11px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.report-panel h2 {
+  margin: 3px 0 0;
+  color: #24334c;
+  font-size: 15px;
+}
+
+.report-panel .panel-count {
+  font-size: 11px;
+  color: #78859b;
+  background: #f3f5f9;
+  border-radius: 999px;
+  padding: 5px 9px;
+}
+
+/* ==========================================================================
+   5. Gráfico de SVG
+   ========================================================================== */
+
+.report-legend {
+  display: flex;
+  gap: 14px;
+  color: #7c8799;
+  font-size: 11px;
+}
+
+.report-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.entry-dot,
+.exit-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.entry-dot {
+  background: #2e5bd6;
+}
+
+.exit-dot {
+  background: #52bfae;
+}
+
+.report-chart-wrap {
+  height: 220px;
+  position: relative;
+  padding: 10px 16px 14px;
+}
+
+.report-chart-wrap svg {
+  width: 100%;
+  height: 190px;
+  display: block;
+  overflow: visible;
+}
+
+.report-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.report-line.entry-line {
+  stroke: #2e5bd6;
+}
+
+.report-line.exit-line {
+  stroke: #52bfae;
+}
+
+.report-area {
+  stroke: none;
+  opacity: 0.12;
+}
+
+.report-area.entry-area {
+  fill: #2e5bd6;
+}
+
+.report-area.exit-area {
+  fill: #52bfae;
+}
+
+.report-chart-labels {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  color: #8a95a8;
+  font-size: 10px;
+}
+
+.report-chart-empty {
+  position: absolute;
+  inset: 75px 0 auto;
+  text-align: center;
+  color: #8a95a8;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   6. Listas e Barras de Progresso
+   ========================================================================== */
+
+.report-category-list,
+.report-product-list {
+  padding: 14px 18px;
+  max-height: 225px;
+  overflow: auto;
+}
+
+.report-category-row,
+.report-product-row {
+  margin-bottom: 12px;
+}
+
+.report-category-row:last-child,
+.report-product-row:last-child {
+  margin-bottom: 0;
+}
+
+.report-category-head,
+.report-product-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #43516a;
+  font-size: 12px;
+}
+
+.report-category-head strong,
+.report-product-head > strong {
+  color: #24334c;
+}
+
+.report-product-head span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.report-product-head span strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #33415a;
+  font-size: 12px;
+}
+
+.report-product-head small {
+  color: #8a95a8;
+  font-size: 10px;
+}
+
+.report-track {
+  height: 6px;
+  background: #eef1f6;
+  border-radius: 99px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.report-track i {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  background: #2e5bd6;
+  border-radius: 99px;
+}
+
+.report-product-panel .report-track i {
+  background: #52bfae;
+}
+
+.report-empty {
+  text-align: center;
+  color: #8a95a8;
+  font-size: 12px;
+  padding: 24px 16px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   7. Tabela de Histórico
+   ========================================================================== */
+
+.report-table-wrap {
+  max-height: 225px;
+  overflow: auto;
+}
+
+.report-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+.report-table-wrap th {
+  background: #f8f9fc;
+  color: #7a8599;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  padding: 10px 18px;
+  white-space: nowrap;
+}
+
+.report-table-wrap td {
+  border-top: 1px solid #edf0f5;
+  padding: 10px 18px;
+  color: #46546c;
+  font-size: 12px;
+}
+
+.report-table-wrap td small {
+  display: block;
+  color: #8a95a8;
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.report-type {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.report-type.entrada {
+  background: #e9f8ef;
+  color: #19864b;
+}
+
+.report-type.saida {
+  background: #fff0f0;
+  color: #c53b45;
+}
+
+/* ==========================================================================
+   8. Navegação e Ícones
+   ========================================================================== */
+
+.reports-page .nav-link svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.reports-page .nav-link > span {
+  display: block;
+}
+
+/* ==========================================================================
+   9. Responsividade (Media Queries)
+   ========================================================================== */
+
+@media (max-width: 1100px) {
+  .reports-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reports-grid,
+  .reports-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .reports-filters,
+  .reports-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-content {
+    padding: 14px;
+  }
+
+  .report-legend {
+    display: none;
+  }
+}
