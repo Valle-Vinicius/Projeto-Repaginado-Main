@@ -1,263 +1,396 @@
-// repositories/estoqueRepository.js
-// somente consultas ao banco.
-// regras de negocio ficam no estoqueService.
+const { executarQuery, executarTransacao } = require('../config/database');
 
-const db = require("../config/database");
+async function buscarCategorias() {
+  return executarQuery(`
+    SELECT id, nome
+    FROM categorias
+    WHERE ativo = TRUE
+    ORDER BY nome ASC
+  `);
+}
 
-// -------------------------------------------
-// LISTAR ESTOQUE
-// -------------------------------------------
-// Soma a quantidade de todos os lotes de cada produto.
-async function listarEstoque(filtros = {}) {
-  let sql = `
-        SELECT
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.faixa_etaria,
-            p.tamanho,
-            p.especial,
-            c.nome AS categoria,
-            COALESCE(SUM(l.quantidade), 0) AS quantidade_estoque
-        FROM produtos p
-        LEFT JOIN categorias c
-            ON c.id = p.categoria_id
-        LEFT JOIN lotes l
-            ON l.produto_id = p.id
-        WHERE p.ativo = TRUE
-    `;
+async function buscarLocalizacoes() {
+  return executarQuery(`
+    SELECT id, nome, descricao
+    FROM localizacoes
+    WHERE ativo = TRUE
+    ORDER BY nome ASC
+  `);
+}
 
-  const valores = [];
+async function buscarProdutos({ busca = '', categoriaId = null } = {}) {
+  const parametros = [];
+  const filtros = ['p.ativo = TRUE'];
 
-  if (filtros.codigo) {
-    sql += ` AND p.codigo_interno LIKE ?`;
-    valores.push(`%${filtros.codigo}%`);
+  if (busca) {
+    filtros.push('(p.nome LIKE ? OR p.codigo LIKE ? OR COALESCE(p.descricao, \'\') LIKE ?)');
+    const termo = `%${busca}%`;
+    parametros.push(termo, termo, termo);
   }
 
-  if (filtros.nome) {
-    sql += ` AND p.nome LIKE ?`;
-    valores.push(`%${filtros.nome}%`);
+  if (categoriaId) {
+    filtros.push('p.categoria_id = ?');
+    parametros.push(categoriaId);
   }
 
-  if (filtros.categoria_id) {
-    sql += ` AND p.categoria_id = ?`;
-    valores.push(filtros.categoria_id);
+  return executarQuery(`
+    SELECT
+      p.id,
+      p.codigo,
+      p.nome,
+      p.descricao,
+      p.categoria_id AS categoriaId,
+      COALESCE(c.nome, 'Sem categoria') AS categoria,
+      p.estoque_minimo AS estoqueMinimo,
+      p.unidade,
+      p.possui_validade AS possuiValidade,
+      COALESCE(SUM(CASE WHEN l.ativo = TRUE THEN l.quantidade_atual ELSE 0 END), 0) AS estoque,
+      MAX(ult.ultimaMovimentacao) AS ultimaMovimentacao,
+      CASE
+        WHEN COALESCE(SUM(CASE WHEN l.ativo = TRUE THEN l.quantidade_atual ELSE 0 END), 0) = 0 THEN 'SEM_ESTOQUE'
+        WHEN COALESCE(SUM(CASE WHEN l.ativo = TRUE THEN l.quantidade_atual ELSE 0 END), 0) < p.estoque_minimo THEN 'BAIXO'
+        ELSE 'NORMAL'
+      END AS status
+    FROM produtos p
+    LEFT JOIN categorias c ON c.id = p.categoria_id
+    LEFT JOIN lotes l ON l.produto_id = p.id
+    LEFT JOIN (
+      SELECT produto_id, MAX(criado_em) AS ultimaMovimentacao
+      FROM movimentacoes
+      WHERE status = 'CONFIRMADA'
+      GROUP BY produto_id
+    ) ult ON ult.produto_id = p.id
+    WHERE ${filtros.join(' AND ')}
+      GROUP BY p.id, p.codigo, p.nome, p.descricao, p.categoria_id, c.nome, p.estoque_minimo, p.unidade, p.possui_validade
+
+    ORDER BY p.nome ASC
+  `, parametros);
+}
+
+async function buscarResumo() {
+  const [resumo] = await executarQuery(`
+    SELECT
+      COUNT(*) AS totalProdutos,
+      COALESCE(SUM(estoque), 0) AS estoqueTotal,
+      COALESCE(SUM(CASE WHEN estoque > 0 AND estoque < estoqueMinimo THEN 1 ELSE 0 END), 0) AS estoqueBaixo,
+      COALESCE(SUM(CASE WHEN estoque = 0 THEN 1 ELSE 0 END), 0) AS semEstoque
+    FROM (
+      SELECT
+        p.id,
+        p.estoque_minimo AS estoqueMinimo,
+        COALESCE(SUM(CASE WHEN l.ativo = TRUE THEN l.quantidade_atual ELSE 0 END), 0) AS estoque
+      FROM produtos p
+      LEFT JOIN lotes l ON l.produto_id = p.id
+      WHERE p.ativo = TRUE
+      GROUP BY p.id, p.estoque_minimo
+    ) posicao
+  `);
+
+  const [movimentacoes] = await executarQuery(`
+    SELECT COUNT(*) AS movimentacoesHoje
+    FROM movimentacoes
+    WHERE status = 'CONFIRMADA'
+      AND DATE(criado_em) = CURDATE()
+  `);
+
+  return {
+    ...resumo,
+    ...movimentacoes
+  };
+}
+
+async function buscarMovimentacoes(limite = 20) {
+  return executarQuery(`
+    SELECT
+      m.id,
+      m.criado_em AS data,
+      p.id AS produtoId,
+      p.nome AS produto,
+      m.tipo,
+      m.quantidade,
+      COALESCE(u.nome, 'Usuário removido') AS responsavel,
+      m.observacao
+    FROM movimentacoes m
+    INNER JOIN produtos p ON p.id = m.produto_id
+    LEFT JOIN usuarios u ON u.id = m.usuario_id
+    WHERE m.status = 'CONFIRMADA'
+    ORDER BY m.criado_em DESC, m.id DESC
+    LIMIT ?
+  `, [limite]);
+}
+
+async function buscarLotesDoProduto(conexao, produtoId) {
+  const [lotes] = await conexao.execute(`
+    SELECT id, produto_id AS produtoId, numero_lote AS numeroLote, quantidade_atual AS quantidadeAtual
+    FROM lotes
+    WHERE produto_id = ?
+      AND ativo = TRUE
+      AND quantidade_atual > 0
+    ORDER BY criado_em ASC, id ASC
+    FOR UPDATE
+  `, [produtoId]);
+
+  return lotes;
+}
+
+async function buscarProdutoAtivo(conexao, produtoId) {
+  const [produtos] = await conexao.execute(`
+    SELECT id, nome, estoque_minimo AS estoqueMinimo, possui_validade AS possuiValidade
+    FROM produtos
+    WHERE id = ?
+      AND ativo = TRUE
+    LIMIT 1
+  `, [produtoId]);
+
+  return produtos[0] || null;
+}
+
+async function buscarLoteDoProduto(conexao, produtoId, loteId) {
+  const [lotes] = await conexao.execute(`
+    SELECT id, produto_id AS produtoId, numero_lote AS numeroLote, quantidade_atual AS quantidadeAtual
+    FROM lotes
+    WHERE id = ?
+      AND produto_id = ?
+      AND ativo = TRUE
+    LIMIT 1
+    FOR UPDATE
+  `, [loteId, produtoId]);
+
+  return lotes[0] || null;
+}
+
+async function criarLote(conexao, { produtoId, numeroLote, fornecedor = null, documento = null, dataValidade = null, localizacaoId = null, quantidade }) {
+  const [resultado] = await conexao.execute(`
+    INSERT INTO lotes (
+      produto_id,
+      numero_lote,
+      fornecedor,
+      documento,
+      quantidade_atual,
+      data_validade,
+      localizacao_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [produtoId, numeroLote, fornecedor, documento, quantidade, dataValidade, localizacaoId]);
+
+  return resultado.insertId;
+}
+
+async function atualizarQuantidadeLote(conexao, loteId, quantidade) {
+  await conexao.execute(`
+    UPDATE lotes
+    SET quantidade_atual = ?,
+        ativo = CASE WHEN ? = 0 THEN FALSE ELSE ativo END
+    WHERE id = ?
+  `, [quantidade, quantidade, loteId]);
+}
+
+async function registrarMovimentacao(conexao, { produtoId, loteId, usuarioId, tipo, quantidade, destinatario, destino, documento, observacao }) {
+  const [resultado] = await conexao.execute(`
+    INSERT INTO movimentacoes (
+      produto_id,
+      lote_id,
+      usuario_id,
+      destinatario,
+      destino,
+      documento,
+      tipo,
+      quantidade,
+      status,
+      observacao
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMADA', ?)
+  `, [produtoId, loteId, usuarioId || null, destinatario || null, destino || null, documento || null, tipo, quantidade, observacao || null]);
+
+  return resultado.insertId;
+}
+
+async function buscarRecebimentos({ busca = '', limite = 100 } = {}) {
+  const parametros = [];
+  const filtros = ["m.tipo = 'ENTRADA'", "m.status = 'CONFIRMADA'"];
+  const termo = String(busca || '').trim();
+
+  if (termo) {
+    filtros.push('(p.nome LIKE ? OR p.codigo LIKE ? OR l.numero_lote LIKE ? OR l.fornecedor LIKE ? OR l.documento LIKE ?)');
+    const parametroBusca = `%${termo}%`;
+    parametros.push(parametroBusca, parametroBusca, parametroBusca, parametroBusca, parametroBusca);
   }
 
-  sql += `
-        GROUP BY
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.faixa_etaria,
-            p.tamanho,
-            p.especial,
-            c.nome
-        ORDER BY p.nome ASC
-    `;
+  parametros.push(Math.min(Math.max(Number(limite) || 100, 1), 500));
 
-  const [linhas] = await db.query(sql, valores);
-
-  return linhas;
+  return executarQuery(`
+    SELECT
+      m.id,
+      m.criado_em AS criadoEm,
+      p.id AS produtoId,
+      p.nome AS produto,
+      p.codigo,
+      l.numero_lote AS numeroLote,
+      l.fornecedor,
+      l.documento,
+      l.data_validade AS dataValidade,
+      l.quantidade_atual AS saldoLote,
+      loc.nome AS localizacao,
+      m.quantidade,
+      u.nome AS responsavel,
+      m.observacao
+    FROM movimentacoes m
+    INNER JOIN produtos p ON p.id = m.produto_id
+    LEFT JOIN lotes l ON l.id = m.lote_id
+    LEFT JOIN localizacoes loc ON loc.id = l.localizacao_id
+    LEFT JOIN usuarios u ON u.id = m.usuario_id
+    WHERE ${filtros.join(' AND ')}
+    ORDER BY m.criado_em DESC
+    LIMIT ?
+  `, parametros);
 }
 
-// -------------------------------------------
-// BUSCAR ESTOQUE DE UM PRODUTO
-// -------------------------------------------
-async function buscarEstoquePorProduto(produtoId) {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.especial,
-            COALESCE(SUM(l.quantidade), 0) AS quantidade_estoque
-        FROM produtos p
-        LEFT JOIN lotes l
-            ON l.produto_id = p.id
-        WHERE p.id = ?
-          AND p.ativo = TRUE
-        GROUP BY
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.especial
-        `,
-    [produtoId],
-  );
+async function registrarEntrada({ produtoId, usuarioId, quantidade, loteId, numeroLote, fornecedor, documento, dataValidade, localizacaoId, observacao }) {
+  return executarTransacao(async (conexao) => {
+    const produto = await buscarProdutoAtivo(conexao, produtoId);
+    if (!produto) {
+      const erro = new Error('Produto ativo não encontrado.');
+      erro.statusCode = 404;
+      throw erro;
+    }
 
-  return linhas[0] || null;
+    if (produto.possuiValidade && !dataValidade) {
+      const erro = new Error('Informe a validade do lote para este produto.');
+      erro.statusCode = 400;
+      throw erro;
+    }
+
+    if (dataValidade && dataValidade < new Date().toISOString().slice(0, 10)) {
+      const erro = new Error('A validade do lote não pode ser anterior à data de entrada.');
+      erro.statusCode = 400;
+      throw erro;
+    }
+
+    let lote;
+    if (loteId) {
+      lote = await buscarLoteDoProduto(conexao, produtoId, loteId);
+      if (!lote) {
+        const erro = new Error('Lote não encontrado para este produto.');
+        erro.statusCode = 404;
+        throw erro;
+      }
+      await atualizarQuantidadeLote(conexao, lote.id, Number(lote.quantidadeAtual) + quantidade);
+    } else {
+      const numeroLoteNormalizado = String(numeroLote || '').trim();
+      if (!numeroLoteNormalizado) {
+        const erro = new Error('O número do lote é obrigatório para registrar uma entrada.');
+        erro.statusCode = 400;
+        throw erro;
+      }
+      const novoLoteId = await criarLote(conexao, {
+        produtoId,
+        numeroLote: numeroLoteNormalizado,
+        fornecedor,
+        documento,
+        dataValidade: produto.possuiValidade ? dataValidade : null,
+        localizacaoId: localizacaoId || null,
+        quantidade
+      });
+      lote = { id: novoLoteId };
+    }
+
+    const movimentacaoId = await registrarMovimentacao(conexao, {
+      produtoId,
+      loteId: lote.id,
+      usuarioId,
+      tipo: 'ENTRADA',
+      quantidade,
+      observacao
+    });
+
+    return { movimentacaoId, produtoId, loteId: lote.id };
+  });
 }
 
-// -------------------------------------------
-// LISTAR LOTES DE UM PRODUTO
-// -------------------------------------------
-async function listarLotesPorProduto(produtoId) {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            l.id,
-            l.produto_id,
-            l.localizacao_id,
-            l.quantidade,
-            l.data_entrada,
-            l.data_validade,
-            loc.corredor,
-            loc.prateleira,
-            loc.nivel,
-            loc.descricao AS localizacao_descricao
-        FROM lotes l
-        LEFT JOIN localizacoes loc
-            ON loc.id = l.localizacao_id
-        WHERE l.produto_id = ?
-        ORDER BY l.data_entrada ASC, l.id ASC
-        `,
-    [produtoId],
-  );
-
-  return linhas;
+async function buscarExpedicoes({ busca = '', limite = 100 } = {}) {
+  const parametros = [];
+  const filtros = ["m.tipo = 'SAIDA'", "m.status = 'CONFIRMADA'"];
+  const termo = String(busca || '').trim();
+  if (termo) {
+    filtros.push('(p.nome LIKE ? OR p.codigo LIKE ? OR m.destinatario LIKE ? OR m.destino LIKE ? OR m.documento LIKE ?)');
+    const buscaSql = `%${termo}%`;
+    parametros.push(buscaSql, buscaSql, buscaSql, buscaSql, buscaSql);
+  }
+  parametros.push(Math.min(Math.max(Number(limite) || 100, 1), 500));
+  return executarQuery(`
+    SELECT m.id, m.criado_em AS criadoEm, p.id AS produtoId, p.nome AS produto,
+           p.codigo, l.numero_lote AS numeroLote, m.quantidade,
+           m.destinatario, m.destino, m.documento, u.nome AS responsavel,
+           m.observacao
+    FROM movimentacoes m
+    INNER JOIN produtos p ON p.id = m.produto_id
+    LEFT JOIN lotes l ON l.id = m.lote_id
+    LEFT JOIN usuarios u ON u.id = m.usuario_id
+    WHERE ${filtros.join(' AND ')}
+    ORDER BY m.criado_em DESC
+    LIMIT ?
+  `, parametros);
 }
 
-// -------------------------------------------
-// LOTES PRÓXIMOS DO VENCIMENTO
-// -------------------------------------------
-async function listarProximosDoVencimento(dias = 30) {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            l.id AS lote_id,
-            p.id AS produto_id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            l.quantidade,
-            l.data_entrada,
-            l.data_validade,
-            DATEDIFF(l.data_validade, CURDATE()) AS dias_para_vencer
-        FROM lotes l
-        INNER JOIN produtos p
-            ON p.id = l.produto_id
-        WHERE p.ativo = TRUE
-          AND l.quantidade > 0
-          AND l.data_validade IS NOT NULL
-          AND l.data_validade BETWEEN CURDATE()
-              AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
-        ORDER BY l.data_validade ASC
-        `,
-    [dias],
-  );
+async function registrarSaida({ produtoId, usuarioId, quantidade, loteId = null, destinatario, destino, documento, observacao }) {
+  return executarTransacao(async (conexao) => {
+    const produto = await buscarProdutoAtivo(conexao, produtoId);
+    if (!produto) {
+      const erro = new Error('Produto ativo não encontrado.');
+      erro.statusCode = 404;
+      throw erro;
+    }
 
-  return linhas;
-}
+    const lotes = loteId
+      ? [await buscarLoteDoProduto(conexao, produtoId, loteId)]
+      : await buscarLotesDoProduto(conexao, produtoId);
 
-// -------------------------------------------
-// LOTES VENCIDOS
-// -------------------------------------------
-async function listarVencidos() {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            l.id AS lote_id,
-            p.id AS produto_id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            l.quantidade,
-            l.data_entrada,
-            l.data_validade
-        FROM lotes l
-        INNER JOIN produtos p
-            ON p.id = l.produto_id
-        WHERE p.ativo = TRUE
-          AND l.quantidade > 0
-          AND l.data_validade IS NOT NULL
-          AND l.data_validade < CURDATE()
-        ORDER BY l.data_validade ASC
-        `,
-  );
+    if (!lotes.length || !lotes[0]) {
+      const erro = new Error('Não há estoque disponível para este produto.');
+      erro.statusCode = 422;
+      throw erro;
+    }
 
-  return linhas;
-}
+    const estoqueDisponivel = lotes.reduce((total, lote) => total + Number(lote.quantidadeAtual), 0);
+    if (estoqueDisponivel < quantidade) {
+      const erro = new Error(`Estoque insuficiente. Disponível: ${estoqueDisponivel}.`);
+      erro.statusCode = 422;
+      throw erro;
+    }
 
-// -------------------------------------------
-// FIFO
-// -------------------------------------------
-// Retorna os lotes mais antigos primeiro.
-async function listarFIFO(produtoId) {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            l.id AS lote_id,
-            l.produto_id,
-            l.quantidade,
-            l.data_entrada,
-            l.data_validade,
-            loc.corredor,
-            loc.prateleira,
-            loc.nivel
-        FROM lotes l
-        LEFT JOIN localizacoes loc
-            ON loc.id = l.localizacao_id
-        WHERE l.produto_id = ?
-          AND l.quantidade > 0
-        ORDER BY l.data_entrada ASC, l.id ASC
-        `,
-    [produtoId],
-  );
+    let restante = quantidade;
+    const movimentacoes = [];
 
-  return linhas;
-}
+    for (const lote of lotes) {
+      if (restante <= 0) break;
+      const quantidadeDoLote = Math.min(Number(lote.quantidadeAtual), restante);
+      const saldoNovo = Number(lote.quantidadeAtual) - quantidadeDoLote;
+      await atualizarQuantidadeLote(conexao, lote.id, saldoNovo);
+      const movimentacaoId = await registrarMovimentacao(conexao, {
+        produtoId,
+        loteId: lote.id,
+        usuarioId,
+        tipo: 'SAIDA',
+        quantidade: quantidadeDoLote,
+        destinatario,
+        destino,
+        documento,
+        observacao
+      });
+      movimentacoes.push({ movimentacaoId, loteId: lote.id, quantidade: quantidadeDoLote });
+      restante -= quantidadeDoLote;
+    }
 
-// -------------------------------------------
-// PRODUTOS ESPECIAIS
-// -------------------------------------------
-async function listarProdutosEspeciais() {
-  const [linhas] = await db.query(
-    `
-        SELECT
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.faixa_etaria,
-            p.tamanho,
-            p.especial,
-            c.nome AS categoria,
-            COALESCE(SUM(l.quantidade), 0) AS quantidade_estoque
-        FROM produtos p
-        LEFT JOIN categorias c
-            ON c.id = p.categoria_id
-        LEFT JOIN lotes l
-            ON l.produto_id = p.id
-        WHERE p.ativo = TRUE
-          AND p.especial = TRUE
-        GROUP BY
-            p.id,
-            p.codigo_interno,
-            p.nome,
-            p.marca,
-            p.faixa_etaria,
-            p.tamanho,
-            p.especial,
-            c.nome
-        ORDER BY p.nome ASC
-        `,
-  );
-
-  return linhas;
+    return { produtoId, quantidade, movimentacoes, regra: loteId ? 'LOTE_INFORMADO' : 'FIFO' };
+  });
 }
 
 module.exports = {
-  listarEstoque,
-  buscarEstoquePorProduto,
-  listarLotesPorProduto,
-  listarProximosDoVencimento,
-  listarVencidos,
-  listarFIFO,
-  listarProdutosEspeciais,
+  buscarCategorias,
+  buscarLocalizacoes,
+  buscarProdutos,
+  buscarResumo,
+  buscarMovimentacoes,
+  buscarRecebimentos,
+  buscarExpedicoes,
+  registrarEntrada,
+  registrarSaida
 };
