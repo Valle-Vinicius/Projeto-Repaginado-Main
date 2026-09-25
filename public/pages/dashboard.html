@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babycare - Dashboard</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+
+            <div>
+                <div class="brand-name">Babycare</div>
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-section-label">
+            Principal
+        </div>
+
+
+        <ul class="sidebar-nav">
+
+            <!-- PAINEL -->
+            <li>
+                <a href="../index.html" class="nav-link active">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"
+                        />
+                    </svg>
+
+                    Painel
+                </a>
+            </li>
+
+
+            <!-- PRODUTOS -->
+            <li>
+                <a href="cadastroProduto.html" class="nav-link">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                        />
+                    </svg>
+
+                    Produtos
+                </a>
+            </li>
+
+
+            <!-- ESTOQUE -->
+            <li>
+                <a href="estoque.html" class="nav-link">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25M21 7.5v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+                        />
+                    </svg>
+
+                    Estoque
+                </a>
+            </li>
+
+
+            <!-- FORNECEDORES -->
+            <li>
+                <a href="fornecedores.html" class="nav-link">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"
+                        />
+                    </svg>
+
+                    Fornecedores
+                </a>
+            </li>
+
+
+            <!-- VENDAS -->
+            <li>
+                <a href="vendas.html" class="nav-link">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.98-4.716 2.545-7.221a.75.75 0 00-.728-.917H5.106M7.5 14.25L5.106 5.653M7.5 14.25L4.5 9m3.75 15.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm11.25 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                        />
+                    </svg>
+
+                    Vendas
+                </a>
+            </li>
+
+
+            <!-- RELATÓRIOS -->
+            <li>
+                <a href="analiseDeLucro.html" class="nav-link">
+
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                        />
+                    </svg>
+
+                    Relatórios
+                </a>
+            </li>
+
+        </ul>
+
+
+        <!-- USUÁRIO -->
+        <div class="sidebar-footer">
+
+            <div class="user-mini">
+
+                <div class="user-avatar" id="avatarUsuarioSidebar">
+                    BC
+                </div>
+
+                <div>
+                    <div class="user-mini-name" id="nomeUsuarioSidebar">
+                        Seu nome
+                    </div>
+
+                    <div class="user-mini-role" id="areaUsuarioSidebar">
+                        Perfil Babycare
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <div class="main">
+
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div class="topbar-greeting">
+
+                <h1 id="saudacao">
+                    Visão geral
+                </h1>
+
+                <p>
+                    Acompanhe o estoque e os principais indicadores da Babycare.
+                </p>
+
+            </div>
+
+
+            <div class="topbar-actions">
+
+                <a href="cadastroProduto.html" class="btn-primary">
+                    <span>
+                        + Novo produto
+                    </span>
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <!-- CONTENT -->
+        <main class="content">
+
+
+            <!-- KPIs PRINCIPAIS -->
+            <section class="kpi-grid" aria-label="Indicadores principais">
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Produtos cadastrados
+                        </div>
+
+                        <div class="kpi-value" id="kpiProdutos">
+                            128
+                        </div>
+
+                        <div class="kpi-trend up">
+                            +8 este mês
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon blue">
+                        P
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Itens em estoque
+                        </div>
+
+                        <div class="kpi-value" id="kpiEstoque">
+                            1.846
+                        </div>
+
+                        <div class="kpi-trend up">
+                            +12,4% no período
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon green">
+                        E
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Estoque baixo
+                        </div>
+
+                        <div class="kpi-value" id="kpiBaixo">
+                            14
+                        </div>
+
+                        <div class="kpi-trend down">
+                            Requer atenção
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon red">
+                        !
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Valor em estoque
+                        </div>
+
+                        <div class="kpi-value" id="kpiValor">
+                            R$ 48,7 mil
+                        </div>
+
+                        <div class="kpi-trend neutral">
+                            Preço de custo
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon amber">
+                        R$
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- KPIs ADICIONAIS -->
+            <section class="kpi-grid dashboard-extra-kpis"
+                     aria-label="Indicadores adicionais">
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Vendas no mês
+                        </div>
+
+                        <div class="kpi-value">
+                            R$ 32,4 mil
+                        </div>
+
+                        <div class="kpi-trend up">
+                            +9,8% vs. mês anterior
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon blue">
+                        V
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Pedidos pendentes
+                        </div>
+
+                        <div class="kpi-value">
+                            23
+                        </div>
+
+                        <div class="kpi-trend neutral">
+                            Em processamento
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon amber">
+                        P
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Margem média
+                        </div>
+
+                        <div class="kpi-value">
+                            31,6%
+                        </div>
+
+                        <div class="kpi-trend up">
+                            +2,1 p.p.
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon green">
+                        M
+                    </div>
+
+                </article>
+
+
+                <article class="kpi-card">
+
+                    <div>
+
+                        <div class="kpi-label">
+                            Produtos sem venda
+                        </div>
+
+                        <div class="kpi-value">
+                            9
+                        </div>
+
+                        <div class="kpi-trend down">
+                            Há mais de 30 dias
+                        </div>
+
+                    </div>
+
+                    <div class="kpi-icon red">
+                        S
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- DASHBOARD GRID -->
+            <div class="dashboard-grid">
+
+
+                <!-- ESTOQUE BAIXO -->
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            Produtos com estoque baixo
+                        </h2>
+
+                        <a class="panel-link" href="estoque.html">
+                            Ver estoque
+                        </a>
+
+                    </div>
+
+
+                    <table class="data-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Quantidade</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="tabelaEstoqueBaixo">
+
+                            <tr>
+
+                                <td>
+                                    Fralda Babycare Confort
+                                </td>
+
+                                <td>
+                                    Fraldas
+                                </td>
+
+                                <td>
+                                    8 un.
+                                </td>
+
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    Mamadeira 250ml
+                                </td>
+
+                                <td>
+                                    Alimentação
+                                </td>
+
+                                <td>
+                                    16 un.
+                                </td>
+
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    Body Infantil P
+                                </td>
+
+                                <td>
+                                    Roupas
+                                </td>
+
+                                <td>
+                                    21 un.
+                                </td>
+
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    Lenço Umedecido
+                                </td>
+
+                                <td>
+                                    Higiene
+                                </td>
+
+                                <td>
+                                    27 un.
+                                </td>
+
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+                                    Kit Chupeta 2 un.
+                                </td>
+
+                                <td>
+                                    Acessórios
+                                </td>
+
+                                <td>
+                                    31 un.
+                                </td>
+
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </section>
+
+
+                <!-- ÚLTIMAS MOVIMENTAÇÕES -->
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            Últimas movimentações
+                        </h2>
+
+                        <a class="panel-link" href="estoque.html">
+                            Ver todas
+                        </a>
+
+                    </div>
+
+
+                    <ul class="activity-list" id="listaMovimentacoes">
+
+
+                        <li>
+
+                            <div class="activity-icon">
+                                +
+                            </div>
+
+                            <div>
+
+                                <div class="activity-title">
+                                    12 unidades adicionadas
+                                </div>
+
+                                <div class="activity-meta">
+                                    Fralda Babycare Confort · há 15 min
+                                </div>
+
+                            </div>
+
+                        </li>
+
+
+                        <li>
+
+                            <div class="activity-icon">
+                                +
+                            </div>
+
+                            <div>
+
+                                <div class="activity-title">
+                                    30 unidades recebidas
+                                </div>
+
+                                <div class="activity-meta">
+                                    Lenço Umedecido · há 42 min
+                                </div>
+
+                            </div>
+
+                        </li>
+
+
+                        <li>
+
+                            <div class="activity-icon">
+                                −
+                            </div>
+
+                            <div>
+
+                                <div class="activity-title">
+                                    8 unidades vendidas
+                                </div>
+
+                                <div class="activity-meta">
+                                    Mamadeira 250ml · há 1 h
+                                </div>
+
+                            </div>
+
+                        </li>
+
+
+                        <li>
+
+                            <div class="activity-icon">
+                                +
+                            </div>
+
+                            <div>
+
+                                <div class="activity-title">
+                                    18 unidades adicionadas
+                                </div>
+
+                                <div class="activity-meta">
+                                    Body Infantil P · há 2 h
+                                </div>
+
+                            </div>
+
+                        </li>
+
+
+                    </ul>
+
+                </section>
+
+            </div>
+
+
+            <!-- AÇÕES RÁPIDAS -->
+            <section class="panel dashboard-quick-actions">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>
+                            Ações rápidas
+                        </h2>
+
+                        <p class="dashboard-helper">
+                            Porque aparentemente até o estoque precisa de atalhos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+
+                    <a href="cadastroProduto.html"
+                       class="quick-action primary-action">
+
+                        <strong>
+                            + Adicionar novo produto
+                        </strong>
+
+                        <span>
+                            Cadastre um item e atualize o estoque.
+                        </span>
+
+                    </a>
+
+
+                    <a href="estoque.html"
+                       class="quick-action">
+
+                        <strong>
+                            Consultar estoque
+                        </strong>
+
+                        <span>
+                            Veja quantidades e produtos em falta.
+                        </span>
+
+                    </a>
+
+
+                    <a href="vendas.html"
+                       class="quick-action">
+
+                        <strong>
+                            Registrar venda
+                        </strong>
+
+                        <span>
+                            Acompanhe as saídas do estoque.
+                        </span>
+
+                    </a>
+
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</div>
+
+<!-- ONBOARDING / BOAS-VINDAS -->
+<div class="dashboard-onboarding" id="dashboardOnboarding" hidden>
+    <div class="onboarding-backdrop" aria-hidden="true"></div>
+
+    <section class="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+        <button class="onboarding-close" id="onboardingClose" type="button" aria-label="Fechar introdução" hidden>
+            &times;
+        </button>
+
+        <div class="onboarding-mark" aria-hidden="true">B</div>
+
+        <div class="onboarding-progress" aria-hidden="true">
+            <span class="is-active" id="progressStepOne"></span>
+            <span id="progressStepTwo"></span>
+            <span id="progressStepThree"></span>
+        </div>
+
+        <div class="onboarding-copy">
+            <p class="onboarding-eyebrow">PRIMEIRO ACESSO</p>
+            <h2 id="onboardingTitle">Vamos deixar a Babycare com a sua cara.</h2>
+            <p>Conte um pouco sobre você para personalizarmos sua experiência no sistema.</p>
+        </div>
+
+        <form id="onboardingForm" class="onboarding-form" novalidate>
+            <div class="onboarding-step is-visible" data-step="1">
+                <label class="onboarding-field">
+                    <span>Como podemos te chamar?</span>
+                    <input id="onboardingNome" name="nome" type="text" placeholder="Digite seu nome" autocomplete="name" required maxlength="100">
+                </label>
+                <p class="onboarding-hint">Esse nome será usado nas saudações do dashboard.</p>
+            </div>
+
+            <div class="onboarding-step" data-step="2" hidden>
+                <label class="onboarding-field">
+                    <span>Em qual área você atua?</span>
+                    <select id="onboardingArea" name="area" required>
+                        <option value="" selected disabled>Selecione uma área</option>
+                        <option value="Recebimento">Recebimento</option>
+                        <option value="Armazenagem e estoque">Armazenagem e estoque</option>
+                        <option value="Expedição">Expedição</option>
+                        <option value="Compras e fornecedores">Compras e fornecedores</option>
+                        <option value="Gestão e administração">Gestão e administração</option>
+                        <option value="Outro">Outra área</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="onboarding-step" data-step="3" hidden>
+                <label class="onboarding-field">
+                    <span>O que você quer acompanhar primeiro?</span>
+                    <select id="onboardingObjetivo" name="objetivo" required>
+                        <option value="" selected disabled>Escolha uma prioridade</option>
+                        <option value="Controle de estoque">Controle de estoque</option>
+                        <option value="Entradas e recebimentos">Entradas e recebimentos</option>
+                        <option value="Saídas e expedições">Saídas e expedições</option>
+                        <option value="Indicadores e relatórios">Indicadores e relatórios</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="onboarding-error" id="onboardingError" role="alert" hidden></div>
+
+            <div class="onboarding-actions">
+                <button class="onboarding-back" id="onboardingBack" type="button" hidden>Voltar</button>
+                <button class="onboarding-next" id="onboardingNext" type="submit">
+                    <span id="onboardingButtonText">Continuar</span>
+                    <span class="onboarding-spinner" id="onboardingSpinner" hidden aria-hidden="true"></span>
+                </button>
+            </div>
+        </form>
+
+        <p class="onboarding-footnote">Você poderá alterar essas informações depois.</p>
+    </section>
+</div>
+
+<script src="../js/dashboard.js"></script>
+
+</body>
+</html>

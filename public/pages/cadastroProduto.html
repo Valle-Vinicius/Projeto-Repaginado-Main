@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Babycare - Cadastrar Produto</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+
+            <div>
+                <div class="brand-name">Babycare</div>
+            </div>
+
+        </div>
+
+
+        <div class="sidebar-section-label">
+            Principal
+        </div>
+
+
+        <ul class="sidebar-nav">
+
+            <!-- PAINEL -->
+            <li>
+                <a href="dashboard.html" class="nav-link">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"
+                        />
+                    </svg>
+
+                    Painel
+
+                </a>
+            </li>
+
+
+            <!-- PRODUTOS -->
+            <li>
+                <a href="cadastroProduto.html" class="nav-link active">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621.504-1.125 1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                        />
+                    </svg>
+
+                    Produtos
+
+                </a>
+            </li>
+
+
+            <!-- ESTOQUE -->
+            <li>
+                <a href="estoque.html" class="nav-link">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25M21 7.5v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+                        />
+                    </svg>
+
+                    Estoque
+
+                </a>
+            </li>
+
+
+            <!-- FORNECEDORES -->
+            <li>
+                <a href="fornecedores.html" class="nav-link">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"
+                        />
+                    </svg>
+
+                    Fornecedores
+
+                </a>
+            </li>
+
+
+            <!-- VENDAS -->
+            <li>
+                <a href="vendas.html" class="nav-link">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 1.98-4.716 2.545-7.221a.75.75 0 00-.728-.917H5.106M7.5 14.25L5.106 5.653M7.5 14.25L4.5 9m3.75 15.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm11.25 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                        />
+                    </svg>
+
+                    Vendas
+
+                </a>
+            </li>
+
+
+            <!-- RELATÓRIOS -->
+            <li>
+                <a href="analiseDeLucro.html" class="nav-link">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                        />
+                    </svg>
+
+                    Relatórios
+
+                </a>
+            </li>
+
+        </ul>
+
+
+        <!-- =====================================================
+             USUÁRIO
+        ====================================================== -->
+
+        <div class="sidebar-footer">
+
+            <div class="user-mini">
+
+                <div class="user-avatar">
+                    MS
+                </div>
+
+                <div>
+                    <div class="user-mini-name">
+                        Maria Silva
+                    </div>
+
+                    <div class="user-mini-role">
+                        Operadora de Estoque
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+
+    <div class="main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="topbar-greeting">
+
+                <h1>
+                    Cadastrar Produto
+                </h1>
+
+                <p>
+                    Preencha os dados do item para adicioná-lo ao catálogo de estoque.
+                </p>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+             CONTENT
+        ====================================================== -->
+
+        <main class="content">
+
+
+            <div
+                class="card form-animate"
+                style="max-width: 780px;"
+            >
+
+
+                <!-- ERRO GERAL -->
+
+                <div
+                    id="formError"
+                    class="form-error"
+                    hidden
+                ></div>
+
+
+                <!-- =================================================
+                     FORMULÁRIO
+                ================================================== -->
+
+                <form
+                    id="produtoForm"
+                    novalidate
+                >
+
+
+                    <div class="produto-form-grid">
+
+
+                        <!-- CÓDIGO INTERNO -->
+
+                        <div class="field-group">
+
+                            <label for="codigo">
+                                Código interno
+                                <span class="required">*</span>
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="codigoWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="codigo"
+                                    name="codigo"
+                                    autocomplete="off"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="codigoError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- NOME -->
+
+                        <div class="field-group">
+
+                            <label for="nome">
+                                Nome do produto
+                                <span class="required">*</span>
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="nomeWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="nome"
+                                    name="nome"
+                                    autocomplete="off"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="nomeError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- MARCA -->
+
+                        <div class="field-group">
+
+                            <label for="marca">
+                                Marca
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="marcaWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="marca"
+                                    name="marca"
+                                    autocomplete="off"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="marcaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- CATEGORIA -->
+
+                        <div class="field-group">
+
+                            <label for="categoria">
+                                Categoria
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="categoriaWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="categoria"
+                                    name="categoria"
+                                    autocomplete="off"
+                                    placeholder="Ex: Fralda, Mamadeira, Roupa"
+                                >
+
+                            </div>
+
+                            <span class="field-hint">
+                                Digite livremente — não há categorias fixas no sistema.
+                            </span>
+
+                            <span
+                                class="field-error"
+                                id="categoriaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- FAIXA ETÁRIA -->
+
+                        <div class="field-group">
+
+                            <label for="faixaEtaria">
+                                Faixa etária
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="faixaEtariaWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="faixaEtaria"
+                                    name="faixaEtaria"
+                                    autocomplete="off"
+                                    placeholder="Ex: 0-3 meses, RN"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="faixaEtariaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- TAMANHO -->
+
+                        <div class="field-group">
+
+                            <label for="tamanho">
+                                Tamanho
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="tamanhoWrapper"
+                            >
+
+                                <input
+                                    type="text"
+                                    id="tamanho"
+                                    name="tamanho"
+                                    autocomplete="off"
+                                    placeholder="Ex: P, M, G, 250ml"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="tamanhoError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- QUANTIDADE -->
+
+                        <div class="field-group">
+
+                            <label for="quantidade">
+                                Quantidade em estoque
+                                <span class="required">*</span>
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="quantidadeWrapper"
+                            >
+
+                                <input
+                                    type="number"
+                                    id="quantidade"
+                                    name="quantidade"
+                                    min="0"
+                                    step="1"
+                                    inputmode="numeric"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="quantidadeError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- PREÇO DE CUSTO -->
+
+                        <div class="field-group">
+
+                            <label for="precoCusto">
+                                Preço de custo (R$)
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="precoCustoWrapper"
+                            >
+
+                                <input
+                                    type="number"
+                                    id="precoCusto"
+                                    name="precoCusto"
+                                    min="0"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="precoCustoError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- PREÇO DE VENDA -->
+
+                        <div class="field-group">
+
+                            <label for="precoVenda">
+                                Preço de venda (R$)
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="precoVendaWrapper"
+                            >
+
+                                <input
+                                    type="number"
+                                    id="precoVenda"
+                                    name="precoVenda"
+                                    min="0"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="precoVendaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- DATA DE ENTRADA -->
+
+                        <div class="field-group">
+
+                            <label for="dataEntrada">
+                                Data de entrada
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="dataEntradaWrapper"
+                            >
+
+                                <input
+                                    type="date"
+                                    id="dataEntrada"
+                                    name="dataEntrada"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="dataEntradaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- DATA DE SAÍDA -->
+
+                        <div class="field-group">
+
+                            <label for="dataSaida">
+                                Data de saída
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="dataSaidaWrapper"
+                            >
+
+                                <input
+                                    type="date"
+                                    id="dataSaida"
+                                    name="dataSaida"
+                                >
+
+                            </div>
+
+                            <span class="field-hint">
+                                Preencha apenas se o item já tiver previsão ou data de saída definida.
+                            </span>
+
+                            <span
+                                class="field-error"
+                                id="dataSaidaError"
+                            ></span>
+
+                        </div>
+
+
+                        <!-- VALIDADE -->
+
+                        <div class="field-group">
+
+                            <label for="validade">
+                                Validade
+                            </label>
+
+                            <div
+                                class="input-wrapper"
+                                id="validadeWrapper"
+                            >
+
+                                <input
+                                    type="date"
+                                    id="validade"
+                                    name="validade"
+                                >
+
+                            </div>
+
+                            <span
+                                class="field-error"
+                                id="validadeError"
+                            ></span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         OBSERVAÇÕES
+                    ================================================== -->
+
+                    <div class="field-group">
+
+                        <label for="observacoes">
+                            Observações adicionais
+                        </label>
+
+                        <div
+                            class="input-wrapper"
+                            id="observacoesWrapper"
+                            style="align-items: flex-start;"
+                        >
+
+                            <textarea
+                                id="observacoes"
+                                name="observacoes"
+                                rows="3"
+                                style="
+                                    flex: 1;
+                                    border: none;
+                                    outline: none;
+                                    padding: 12px 8px 12px 4px;
+                                    font-size: 14px;
+                                    background: transparent;
+                                    color: var(--color-text);
+                                    font-family: inherit;
+                                    resize: vertical;
+                                "
+                            ></textarea>
+
+                        </div>
+
+                        <span
+                            class="field-error"
+                            id="observacoesError"
+                        ></span>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         BOTÃO
+                    ================================================== -->
+
+                    <button
+                        type="submit"
+                        class="btn-submit"
+                        id="submitBtn"
+                        disabled
+                        style="width: auto; padding: 12px 24px;"
+                    >
+
+                        <span id="submitText">
+                            Cadastrar Produto
+                        </span>
+
+                        <span
+                            id="submitSpinner"
+                            class="spinner"
+                            hidden
+                        ></span>
+
+                    </button>
+
+
+                </form>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+============================================================== -->
+
+<script src="../js/produto.js"></script>
+
+</body>
+</html>
