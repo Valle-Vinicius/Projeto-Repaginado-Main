@@ -1,145 +1,143 @@
-// services/produtoService.js
 const produtoRepository = require('../repositories/produtoRepository');
+const { validarProdutoPayload } = require('../validators/produtoValidator');
 
-class ErroValidacao extends Error {
-    constructor(mensagem, campos = {}) {
-        super(mensagem);
-        this.name = 'ErroValidacao';
-        this.campos = campos; // { nomeCampo: 'mensagem específica' }
-    }
+const PERFIS_PRODUTO = Object.freeze([
+  'OPERADOR_ESTOQUE',
+  'GERENTE',
+  'ADMINISTRADOR'
+]);
+
+const STATUS_ESTOQUE_PERMITIDOS = new Set(['NORMAL', 'BAIXO', 'SEM_ESTOQUE']);
+
+function erroComStatus(mensagem, statusCode = 400, code = 'VALIDATION_ERROR', fields = {}) {
+  const erro = new Error(mensagem);
+  erro.statusCode = statusCode;
+  erro.code = code;
+  erro.fields = fields;
+  return erro;
 }
 
-function validarProduto(dados, { exigirCodigo = true } = {}) {
-    const erros = {};
+function validarBusca(busca) {
+  if (busca == null || busca === '') return '';
+  if (typeof busca !== 'string') {
+    throw erroComStatus('O parâmetro busca deve ser um texto.', 400, 'BUSCA_TIPO_INVALIDO');
+  }
 
-    if (exigirCodigo && (!dados.codigo || !dados.codigo.trim())) {
-        erros.codigo = 'Código interno é obrigatório';
-    }
+  const texto = busca.trim();
+  if (texto.length > 100) {
+    throw erroComStatus('O parâmetro busca ultrapassa o limite permitido.', 400, 'BUSCA_MUITO_LONGA');
+  }
 
-    if (!dados.nome || dados.nome.trim().length < 2) {
-        erros.nome = 'Nome do produto é obrigatório e precisa ter ao menos 2 caracteres';
-    }
-
-    if (dados.quantidade === undefined || dados.quantidade === null || dados.quantidade === '') {
-        erros.quantidade = 'Quantidade em estoque é obrigatória';
-    } else if (isNaN(dados.quantidade) || Number(dados.quantidade) < 0) {
-        erros.quantidade = 'Quantidade precisa ser um número maior ou igual a zero';
-    }
-
-    if (dados.precoCusto !== undefined && dados.precoCusto !== null && dados.precoCusto !== '') {
-        if (isNaN(dados.precoCusto) || Number(dados.precoCusto) < 0) {
-            erros.precoCusto = 'Preço de custo inválido';
-        }
-    }
-
-    if (dados.precoVenda !== undefined && dados.precoVenda !== null && dados.precoVenda !== '') {
-        if (isNaN(dados.precoVenda) || Number(dados.precoVenda) < 0) {
-            erros.precoVenda = 'Preço de venda inválido';
-        }
-    }
-
-    if (dados.precoCusto && dados.precoVenda && Number(dados.precoVenda) < Number(dados.precoCusto)) {
-        erros.precoVenda = 'Preço de venda não pode ser menor que o preço de custo';
-    }
-
-    if (dados.dataEntrada && dados.dataSaida) {
-        if (new Date(dados.dataSaida) < new Date(dados.dataEntrada)) {
-            erros.dataSaida = 'Data de saída não pode ser anterior à data de entrada';
-        }
-    }
-
-    if (dados.validade) {
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        if (new Date(dados.validade) < hoje) {
-            erros.validade = 'Data de validade não pode estar no passado';
-        }
-    }
-
-    if (Object.keys(erros).length > 0) {
-        throw new ErroValidacao('Existem campos inválidos no formulário', erros);
-    }
+  return texto;
 }
 
-async function cadastrarProduto(dados) {
-    validarProduto(dados, { exigirCodigo: true });
+function validarCategoriaFiltro(categoriaId) {
+  if (categoriaId == null || categoriaId === '') return null;
+  if (typeof categoriaId !== 'string' && typeof categoriaId !== 'number') {
+    throw erroComStatus('O parâmetro categoriaId deve ser numérico.', 400, 'CATEGORIA_TIPO_INVALIDO');
+  }
 
-    const existente = await produtoRepository.buscarPorCodigo(dados.codigo.trim());
-    if (existente) {
-        throw new ErroValidacao('Já existe um produto com esse código interno', {
-            codigo: 'Código já cadastrado'
-        });
-    }
+  const numero = Number(categoriaId);
+  if (!Number.isInteger(numero) || numero < 1) {
+    throw erroComStatus('O parâmetro categoriaId é inválido.', 400, 'CATEGORIA_INVALIDA');
+  }
 
-    const id = await produtoRepository.criar({
-        codigo: dados.codigo.trim(),
-        nome: dados.nome.trim(),
-        marca: dados.marca?.trim(),
-        categoria: dados.categoria?.trim(),
-        faixaEtaria: dados.faixaEtaria?.trim(),
-        tamanho: dados.tamanho?.trim(),
-        quantidade: Number(dados.quantidade),
-        precoCusto: dados.precoCusto ? Number(dados.precoCusto) : null,
-        precoVenda: dados.precoVenda ? Number(dados.precoVenda) : null,
-        dataEntrada: dados.dataEntrada || null,
-        dataSaida: dados.dataSaida || null,
-        validade: dados.validade || null,
-        observacoes: dados.observacoes?.trim()
-    });
-
-    return produtoRepository.buscarPorId(id);
+  return numero;
 }
 
-async function atualizarProduto(id, dados) {
-    const produtoExistente = await produtoRepository.buscarPorId(id);
-    if (!produtoExistente) {
-        throw new ErroValidacao('Produto não encontrado', {});
-    }
+function normalizarProduto(produto) {
+  const estoque = Number(produto.estoque ?? 0);
+  const estoqueMinimo = Number(produto.estoqueMinimo ?? 0);
+  if (!Number.isFinite(estoque) || estoque < 0 || !Number.isFinite(estoqueMinimo) || estoqueMinimo < 0) {
+    throw erroComStatus('O banco retornou um estoque inválido.', 500, 'DADO_PRODUTO_INVALIDO');
+  }
 
-    validarProduto(dados, { exigirCodigo: false });
-
-    await produtoRepository.atualizar(id, {
-        nome: dados.nome.trim(),
-        marca: dados.marca?.trim(),
-        categoria: dados.categoria?.trim(),
-        faixaEtaria: dados.faixaEtaria?.trim(),
-        tamanho: dados.tamanho?.trim(),
-        quantidade: Number(dados.quantidade),
-        precoCusto: dados.precoCusto ? Number(dados.precoCusto) : null,
-        precoVenda: dados.precoVenda ? Number(dados.precoVenda) : null,
-        dataEntrada: dados.dataEntrada || null,
-        dataSaida: dados.dataSaida || null,
-        validade: dados.validade || null,
-        observacoes: dados.observacoes?.trim()
-    });
-
-    return produtoRepository.buscarPorId(id);
+  return {
+    id: Number(produto.id),
+    sku: String(produto.sku || ''),
+    nome: String(produto.nome || ''),
+    descricao: produto.descricao == null ? null : String(produto.descricao),
+    categoriaId: produto.categoriaId == null ? null : Number(produto.categoriaId),
+    categoria: String(produto.categoria || 'Sem categoria'),
+    unidade: String(produto.unidade || 'UN'),
+    possuiValidade: Boolean(produto.possuiValidade),
+    estoque,
+    estoqueMinimo,
+    status: String(produto.status || 'SEM_ESTOQUE'),
+    statusProduto: String(produto.statusProduto || 'ATIVO'),
+    criadoEm: produto.criadoEm || null,
+    atualizadoEm: produto.atualizadoEm || null,
+    ultimaMovimentacao: produto.ultimaMovimentacao || null
+  };
 }
 
-async function listarProdutos() {
-    return produtoRepository.listarTodos();
+function validarFiltros(filtros = {}) {
+  const camposPermitidos = new Set(['busca', 'categoriaId', 'statusEstoque']);
+  const desconhecidos = Object.keys(filtros).filter((campo) => !camposPermitidos.has(campo));
+  if (desconhecidos.length > 0) {
+    throw erroComStatus(
+      `Parâmetro não permitido: ${desconhecidos[0]}.`,
+      400,
+      'PARAMETRO_NAO_PERMITIDO'
+    );
+  }
+
+  const statusEstoque = filtros.statusEstoque || '';
+  if (statusEstoque && !STATUS_ESTOQUE_PERMITIDOS.has(statusEstoque)) {
+    throw erroComStatus('O filtro de estoque é inválido.', 400, 'STATUS_ESTOQUE_INVALIDO');
+  }
+
+  return {
+    busca: validarBusca(filtros.busca),
+    categoriaId: validarCategoriaFiltro(filtros.categoriaId),
+    statusEstoque
+  };
 }
 
-async function buscarProduto(id) {
-    const produto = await produtoRepository.buscarPorId(id);
-    if (!produto) {
-        throw new ErroValidacao('Produto não encontrado', {});
-    }
-    return produto;
+async function listarProdutos(filtros = {}) {
+  const filtrosValidados = validarFiltros(filtros);
+  const produtos = await produtoRepository.buscarProdutos(filtrosValidados);
+  const normalizados = produtos.map(normalizarProduto);
+
+  if (!filtrosValidados.statusEstoque) return normalizados;
+  return normalizados.filter((produto) => produto.status === filtrosValidados.statusEstoque);
 }
 
-async function removerProduto(id) {
-    const removido = await produtoRepository.remover(id);
-    if (!removido) {
-        throw new ErroValidacao('Produto não encontrado', {});
-    }
+async function listarCategorias() {
+  const categorias = await produtoRepository.buscarCategorias();
+  return categorias.map((categoria) => ({
+    id: Number(categoria.id),
+    nome: String(categoria.nome)
+  }));
+}
+
+async function criarProduto(payload) {
+  const produtoValidado = validarProdutoPayload(payload);
+  const categoria = await produtoRepository.buscarCategoriaAtiva(produtoValidado.categoriaId);
+
+  if (!categoria) {
+    throw erroComStatus(
+      'A categoria selecionada não existe ou está inativa.',
+      404,
+      'CATEGORIA_NAO_ENCONTRADA',
+      { categoriaId: 'Selecione uma categoria ativa.' }
+    );
+  }
+
+  const id = await produtoRepository.criarProduto(produtoValidado);
+  const produto = await produtoRepository.buscarProdutoPorId(id);
+
+  if (!produto) {
+    throw erroComStatus('O produto foi criado, mas não pôde ser recuperado.', 500, 'PRODUTO_NAO_RECUPERADO');
+  }
+
+  return normalizarProduto(produto);
 }
 
 module.exports = {
-    ErroValidacao,
-    cadastrarProduto,
-    atualizarProduto,
-    listarProdutos,
-    buscarProduto,
-    removerProduto
+  listarProdutos,
+  listarCategorias,
+  criarProduto,
+  validarFiltros,
+  PERFIS_PRODUTO
 };

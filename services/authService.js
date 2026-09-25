@@ -1,203 +1,276 @@
-// services/authService.js
-// regra de negocio de autenticacao: validacao, hash, token, e agora tambem o google
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const userRepository = require('../repositories/userRepository');
+const auditoriaRepository = require('../repositories/auditoriaRepository');
 
-const usuarioRepository = require('../repositories/usuarioRepository');
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
+const MAX_TENTATIVAS = 5;
+const MINUTOS_BLOQUEIO = 15;
+const EMAIL_MAXIMO = 255;
+const SENHA_MAXIMA_BYTES = 72;
+const SENHA_MINIMA_CADASTRO = 8;
 
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo-troca-isso-depois';
-const JWT_EXPIRA_EM = '8h';
-const SALT_ROUNDS = 10;
+// Hash fixo usado somente para manter o custo de comparação quando o e-mail não existe.
+const HASH_SENHA_DUMMY = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
-// -------------------------------------------
-// VALIDAÇÕES
-// -------------------------------------------
-function validarEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+function criarErro(codigo, mensagem, statusCode = 400, campo = null) {
+  const erro = new Error(mensagem);
+  erro.codigo = codigo;
+  erro.statusCode = statusCode;
+  erro.campo = campo;
+  return erro;
 }
 
-function validarDadosCadastro({ nome, email, senha }) {
-    const erros = [];
+function validarObjeto(payload) {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw criarErro('PAYLOAD_INVALIDO', 'O corpo da requisição deve ser um objeto JSON.');
+  }
 
-    if (!nome || nome.trim().length < 3) {
-        erros.push('Nome precisa ter pelo menos 3 caracteres');
-    }
-    if (!email || !validarEmail(email)) {
-        erros.push('Email invalido');
-    }
-    if (!senha || senha.length < 8) {
-        erros.push('Senha precisa ter no minimo 8 caracteres');
-    }
-
-    return erros;
+  return payload;
 }
 
-// -------------------------------------------
-// GERA O TOKEN (usado tanto no login normal quanto no google)
-// -------------------------------------------
-function gerarToken(usuario) {
-    return jwt.sign(
-        { id: usuario.id, email: usuario.email, perfil: usuario.perfil },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRA_EM }
+function rejeitarCamposDesconhecidos(payload, camposPermitidos) {
+  const camposDesconhecidos = Object.keys(payload)
+    .filter((campo) => !camposPermitidos.includes(campo));
+
+  if (camposDesconhecidos.length > 0) {
+    throw criarErro(
+      'CAMPOS_INVALIDOS',
+      'A requisição contém campos não permitidos.',
+      400,
+      camposDesconhecidos[0]
     );
+  }
 }
 
-// -------------------------------------------
-// CADASTRO NORMAL (email e senha)
-// -------------------------------------------
-async function cadastrar({ nome, email, senha, perfil }) {
-    const erros = validarDadosCadastro({ nome, email, senha });
-    if (erros.length > 0) {
-        const erro = new Error(erros.join(', '));
-        erro.tipo = 'validacao';
-        throw erro;
+function normalizarEmail(valor) {
+  if (valor === undefined || valor === null) {
+    throw criarErro('EMAIL_OBRIGATORIO', 'O e-mail é obrigatório.', 400, 'email');
+  }
+
+  if (typeof valor !== 'string') {
+    throw criarErro('EMAIL_TIPO_INVALIDO', 'O e-mail deve ser informado como texto.', 400, 'email');
+  }
+
+  const email = valor.normalize('NFKC').trim().toLowerCase();
+
+  if (!email) {
+    throw criarErro('EMAIL_OBRIGATORIO', 'O e-mail é obrigatório.', 400, 'email');
+  }
+
+  if (email.length > EMAIL_MAXIMO) {
+    throw criarErro('EMAIL_MUITO_LONGO', 'O e-mail ultrapassa o limite permitido.', 400, 'email');
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/u.test(email)) {
+    throw criarErro('EMAIL_FORMATO_INVALIDO', 'Informe um e-mail válido.', 400, 'email');
+  }
+
+  return email;
+}
+
+function validarSenha(valor, { regraDeCadastro = false } = {}) {
+  if (valor === undefined || valor === null) {
+    throw criarErro('SENHA_OBRIGATORIA', 'A senha é obrigatória.', 400, 'senha');
+  }
+
+  if (typeof valor !== 'string') {
+    throw criarErro('SENHA_TIPO_INVALIDO', 'A senha deve ser informada como texto.', 400, 'senha');
+  }
+
+  if (valor.length === 0 || valor.trim().length === 0) {
+    throw criarErro('SENHA_OBRIGATORIA', 'A senha é obrigatória.', 400, 'senha');
+  }
+
+  // O bcrypt considera somente os primeiros 72 bytes. O limite evita truncamento silencioso.
+  if (Buffer.byteLength(valor, 'utf8') > SENHA_MAXIMA_BYTES) {
+    throw criarErro('SENHA_MUITO_LONGA', 'A senha ultrapassa o limite permitido.', 400, 'senha');
+  }
+
+  if (regraDeCadastro && Array.from(valor).length < SENHA_MINIMA_CADASTRO) {
+    throw criarErro(
+      'SENHA_MUITO_CURTA',
+      `A senha deve ter pelo menos ${SENHA_MINIMA_CADASTRO} caracteres.`,
+      400,
+      'senha'
+    );
+  }
+
+  // A senha não é aparada nem normalizada; espaços podem fazer parte da senha existente.
+  return valor;
+}
+
+function normalizarNome(valor) {
+  if (valor === undefined || valor === null) {
+    throw criarErro('NOME_OBRIGATORIO', 'O nome é obrigatório.', 400, 'nome');
+  }
+
+  if (typeof valor !== 'string') {
+    throw criarErro('NOME_TIPO_INVALIDO', 'O nome deve ser informado como texto.', 400, 'nome');
+  }
+
+  const nome = valor.normalize('NFKC').trim().replace(/\s+/gu, ' ');
+
+  if (!nome) {
+    throw criarErro('NOME_OBRIGATORIO', 'O nome é obrigatório.', 400, 'nome');
+  }
+
+  if (Array.from(nome).length < 3) {
+    throw criarErro('NOME_MUITO_CURTO', 'O nome deve ter pelo menos 3 caracteres.', 400, 'nome');
+  }
+
+  if (nome.length > 120) {
+    throw criarErro('NOME_MUITO_LONGO', 'O nome ultrapassa o limite permitido.', 400, 'nome');
+  }
+
+  return nome;
+}
+
+function validarLoginPayload(payload) {
+  const dados = validarObjeto(payload);
+  rejeitarCamposDesconhecidos(dados, ['email', 'senha']);
+
+  return {
+    email: normalizarEmail(dados.email),
+    senha: validarSenha(dados.senha)
+  };
+}
+
+function validarCadastroPayload(payload) {
+  const dados = validarObjeto(payload);
+  rejeitarCamposDesconhecidos(dados, ['nome', 'email', 'senha']);
+
+  return {
+    nome: normalizarNome(dados.nome),
+    email: normalizarEmail(dados.email),
+    senha: validarSenha(dados.senha, { regraDeCadastro: true })
+  };
+}
+
+function usuarioPublico(usuario) {
+  return {
+    id: usuario.id,
+    nome: usuario.nome,
+    email: usuario.email,
+    perfil: usuario.perfil,
+    departamento: usuario.departamento || null,
+    ativo: Boolean(usuario.ativo)
+  };
+}
+
+async function registrarAuditoria(dados) {
+  try {
+    await auditoriaRepository.registrar(dados);
+  } catch (erro) {
+    // Falha de auditoria não deve registrar senha nem impedir uma resposta coerente ao usuário.
+    console.error('[Auth][Auditoria]', {
+      mensagem: erro.message,
+      codigo: erro.code
+    });
+  }
+}
+
+function obterJwtSecret() {
+  if (!process.env.JWT_SECRET) {
+    throw criarErro(
+      'CONFIGURACAO_JWT_AUSENTE',
+      'A autenticação não está configurada no servidor.',
+      503
+    );
+  }
+
+  return process.env.JWT_SECRET;
+}
+
+function erroDeCredenciais() {
+  return criarErro('CREDENCIAIS_INVALIDAS', 'E-mail ou senha inválidos.', 401);
+}
+
+async function cadastrar(payload) {
+  const dados = validarCadastroPayload(payload);
+  const usuarioExistente = await userRepository.buscarPorEmail(dados.email);
+
+  if (usuarioExistente) {
+    throw criarErro('EMAIL_EM_USO', 'Este e-mail já está cadastrado.', 409, 'email');
+  }
+
+  const senhaHash = await bcrypt.hash(dados.senha, 12);
+  const usuario = await userRepository.inserir({
+    nome: dados.nome,
+    email: dados.email,
+    senhaHash,
+    perfilId: 1,
+    departamentoId: null
+  });
+
+  await registrarAuditoria({
+    usuarioId: usuario.id,
+    acao: 'USUARIO_CRIADO',
+    entidade: 'USUARIO',
+    entidadeId: usuario.id,
+    detalhes: { origem: 'cadastro' }
+  });
+
+  return usuarioPublico(usuario);
+}
+
+async function login(payload, informacoes = {}) {
+  const dados = validarLoginPayload(payload);
+  const usuario = await userRepository.buscarPorEmail(dados.email);
+  const senhaHash = usuario?.senha_hash || HASH_SENHA_DUMMY;
+  const senhaCorreta = await bcrypt.compare(dados.senha, senhaHash);
+  const bloqueadoAte = usuario?.bloqueado_ate ? new Date(usuario.bloqueado_ate) : null;
+  const contaBloqueada = Boolean(bloqueadoAte && bloqueadoAte > new Date());
+
+  const perfilAtivo = Boolean(usuario?.perfilAtivo);
+
+  if (!usuario || !senhaCorreta || !usuario.ativo || !perfilAtivo || contaBloqueada) {
+    if (usuario && usuario.ativo && perfilAtivo && !contaBloqueada && !senhaCorreta) {
+      await userRepository.registrarFalhaLogin(
+        usuario.id,
+        MAX_TENTATIVAS,
+        MINUTOS_BLOQUEIO
+      );
     }
 
-    const usuarioExistente = await usuarioRepository.buscarPorEmail(email.trim().toLowerCase());
-    if (usuarioExistente) {
-        const erro = new Error('Ja existe um usuario cadastrado com esse email');
-        erro.tipo = 'conflito';
-        throw erro;
-    }
-
-    const senhaHash = await bcrypt.hash(senha, SALT_ROUNDS);
-
-    const novoId = await usuarioRepository.criar({
-        nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        senhaHash,
-        perfil
+    await registrarAuditoria({
+      usuarioId: usuario?.id || null,
+      acao: 'LOGIN_FALHOU',
+      resultado: 'FALHA',
+      detalhes: {
+        motivo: 'credenciais_invalidas'
+      },
+      ...informacoes
     });
 
-    return { id: novoId, nome, email, perfil: perfil || 'operador' };
-}
+    // Usuário inexistente, senha incorreta, conta inativa e conta bloqueada têm a mesma resposta.
+    throw erroDeCredenciais();
+  }
 
-// -------------------------------------------
-// LOGIN NORMAL (email e senha)
-// -------------------------------------------
-async function login({ email, senha }) {
-    if (!email || !senha) {
-        const erro = new Error('Email e senha sao obrigatorios');
-        erro.tipo = 'validacao';
-        throw erro;
-    }
+  const jwtSecret = obterJwtSecret();
 
-    const usuario = await usuarioRepository.buscarPorEmail(email.trim().toLowerCase());
+  await userRepository.limparFalhasLogin(usuario.id);
 
-    if (!usuario) {
-        const erro = new Error('Email ou senha invalidos');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
+  const token = jwt.sign(
+    { id: usuario.id, perfil: usuario.perfil },
+    jwtSecret,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
 
-    // se o usuario so tem conta pelo google, ele nao tem senha cadastrada
-    if (!usuario.senha_hash) {
-        const erro = new Error('Essa conta usa login com Google. Entra pelo botao do Google.');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
+  await registrarAuditoria({
+    usuarioId: usuario.id,
+    acao: 'LOGIN_REALIZADO',
+    detalhes: informacoes
+  });
 
-    if (!usuario.ativo) {
-        const erro = new Error('Usuario desativado, fala com o administrador');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
-
-    const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
-    if (!senhaCorreta) {
-        const erro = new Error('Email ou senha invalidos');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
-
-    return {
-        token: gerarToken(usuario),
-        usuario: {
-            id: usuario.id,
-            nome: usuario.nome,
-            email: usuario.email,
-            perfil: usuario.perfil
-        }
-    };
-}
-
-// -------------------------------------------
-// LOGIN / CADASTRO VIA GOOGLE
-// chamado depois que a gente ja trocou o "code" pelas infos do usuario
-// (isso acontece no controller, aqui so recebe os dados prontos)
-// -------------------------------------------
-async function loginComGoogle({ googleId, email, nome }) {
-    if (!email || !googleId) {
-        const erro = new Error('Nao foi possivel obter os dados da conta Google');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
-
-    const emailNormalizado = email.trim().toLowerCase();
-
-    // 1. ja logou com google antes? acha direto pelo google_id
-    let usuario = await usuarioRepository.buscarPorGoogleId(googleId);
-
-    // 2. primeira vez com google, mas ja tem conta com esse email
-    //    (cadastrada com senha antes)? vincula o google na conta existente
-    if (!usuario) {
-        usuario = await usuarioRepository.buscarPorEmail(emailNormalizado);
-
-        if (usuario) {
-            await usuarioRepository.vincularGoogleId(usuario.id, googleId);
-        }
-    }
-
-    // 3. nao existe de jeito nenhum? cria uma conta nova
-    if (!usuario) {
-        const novoId = await usuarioRepository.criarComGoogle({
-            nome,
-            email: emailNormalizado,
-            googleId
-        });
-
-        usuario = {
-            id: novoId,
-            nome,
-            email: emailNormalizado,
-            perfil: 'operador',
-            ativo: true
-        };
-    }
-
-    if (!usuario.ativo) {
-        const erro = new Error('Usuario desativado, fala com o administrador');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
-
-    return {
-        token: gerarToken(usuario),
-        usuario: {
-            id: usuario.id,
-            nome: usuario.nome,
-            email: usuario.email,
-            perfil: usuario.perfil
-        }
-    };
-}
-
-function verificarToken(token) {
-    try {
-        return jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-        const erro = new Error('Token invalido ou expirado');
-        erro.tipo = 'autenticacao';
-        throw erro;
-    }
+  return {
+    token,
+    usuario: usuarioPublico(usuario)
+  };
 }
 
 module.exports = {
-    cadastrar,
-    login,
-    loginComGoogle,
-    verificarToken
+  cadastrar,
+  login,
+  usuarioPublico
 };
