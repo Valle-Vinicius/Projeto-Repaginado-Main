@@ -1,0 +1,489 @@
+:root {
+    --exp-blue: var(--baby-blue, #4f7bea);
+    --exp-ink: var(--ink, #17233f);
+    --exp-muted: var(--muted, #8b96aa);
+    --exp-line: var(--line, #e6eaf1)
+}
+
+.dashboard-main {
+    min-height: 100vh;
+    overflow: visible
+}
+
+.expedicoes-content {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+    padding: 32px clamp(24px, 4vw, 58px) 64px
+}
+
+.expedicoes-heading-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 22px
+}
+
+.expedicoes-heading-row h2 {
+    margin: 8px 0;
+    color: var(--exp-ink);
+    font: 600 clamp(24px, 2.3vw, 32px)/1.15 Poppins, Arial, sans-serif;
+    letter-spacing: -1px
+}
+
+.expedicoes-heading-row p:last-child {
+    margin: 0;
+    color: var(--exp-muted);
+    font-size: 12px
+}
+
+.expedicao-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--exp-line);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    transition: .16s
+}
+
+.expedicao-button:hover {
+    transform: translateY(-1px)
+}
+
+.expedicao-button.primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--exp-blue), #3d68d9);
+    border-color: var(--exp-blue);
+    box-shadow: 0 8px 17px #4f7bea2e
+}
+
+.expedicao-button.secondary {
+    color: var(--exp-ink);
+    background: #fff;
+    box-shadow: var(--shadow)
+}
+
+.expedicoes-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px
+}
+
+.expedicao-metric {
+    min-height: 100px;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid var(--exp-line);
+    border-radius: 11px;
+    box-shadow: var(--shadow)
+}
+
+.expedicao-metric span,
+.expedicao-metric small {
+    display: block;
+    color: var(--exp-muted);
+    font-size: 10px
+}
+
+.expedicao-metric strong {
+    display: block;
+    margin: 9px 0 3px;
+    color: var(--exp-ink);
+    font: 600 24px/1 Poppins, Arial, sans-serif
+}
+
+.expedicoes-panel {
+    margin-top: 18px;
+    padding: 20px
+}
+
+.expedicoes-toolbar {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 180px;
+    gap: 11px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--exp-line)
+}
+
+.expedicoes-search {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    gap: 8px;
+    padding: 0 12px;
+    background: #fbfcfe;
+    border: 1px solid var(--exp-line);
+    border-radius: 8px
+}
+
+.expedicoes-search svg {
+    width: 17px;
+    height: 17px;
+    color: var(--exp-muted)
+}
+
+.expedicoes-search input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--exp-ink);
+    font-size: 11px
+}
+
+.expedicoes-toolbar select {
+    height: 40px;
+    padding: 0 10px;
+    color: var(--exp-ink);
+    background: #fbfcfe;
+    border: 1px solid var(--exp-line);
+    border-radius: 8px;
+    font-size: 10px
+}
+
+.expedicoes-table-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 20px 0 14px
+}
+
+.expedicoes-table-heading h3 {
+    margin: 0;
+    color: var(--exp-ink);
+    font: 600 16px Poppins, Arial, sans-serif
+}
+
+.expedicoes-table-wrap {
+    overflow-x: auto
+}
+
+.expedicoes-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse
+}
+
+.expedicoes-table th {
+    padding: 0 11px 11px;
+    color: #aab2c1;
+    font-size: 8px;
+    letter-spacing: .1em;
+    text-align: left;
+    white-space: nowrap
+}
+
+.expedicoes-table td {
+    padding: 13px 11px;
+    color: #46536c;
+    border-top: 1px solid #eef0f4;
+    font-size: 11px;
+    vertical-align: middle
+}
+
+.expedicoes-table td:first-child,
+.expedicoes-table td:nth-child(2) {
+    color: var(--exp-ink);
+    font-weight: 600
+}
+
+.expedicao-produto small {
+    display: block;
+    margin-top: 3px;
+    color: #acb5c4;
+    font: 400 9px "DM Sans", sans-serif
+}
+
+.expedicao-quantidade {
+    color: #c05b67 !important;
+    font-weight: 800
+}
+
+.expedicoes-empty {
+    padding: 42px 15px 28px;
+    color: var(--exp-muted);
+    font-size: 11px;
+    text-align: center
+}
+
+.modal-backdrop {
+    position: fixed;
+    z-index: 40;
+    inset: 0;
+    display: grid;
+    overflow-y: auto;
+    place-items: center;
+    padding: 24px;
+    background: #17233f6b
+}
+
+.modal-backdrop[hidden] {
+    display: none
+}
+
+body.modal-open {
+    overflow: hidden
+}
+
+.shipment-modal {
+    position: relative;
+    width: min(100%, 600px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #e1e6f0;
+    border-radius: 13px;
+    box-shadow: 0 22px 60px #17233f3b
+}
+
+.modal-close {
+    position: absolute;
+    top: 17px;
+    right: 17px;
+    display: grid;
+    width: 31px;
+    height: 31px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #8d97aa;
+    background: #f5f7fb;
+    font-size: 20px
+}
+
+.shipment-modal h2 {
+    margin: 0 40px 7px 0;
+    color: var(--exp-ink);
+    font: 600 21px Poppins, Arial, sans-serif
+}
+
+.modal-description {
+    margin: 0 30px 17px 0;
+    color: var(--exp-muted);
+    font-size: 11px;
+    line-height: 1.5
+}
+
+.modal-field {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    color: #6b768b;
+    font-size: 10px;
+    font-weight: 700
+}
+
+.modal-field>span {
+    color: #d8626a
+}
+
+.modal-field small {
+    color: #9ca5b5;
+    font-size: 9px;
+    font-weight: 400
+}
+
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 11px;
+    color: var(--exp-ink);
+    background: #fbfcfe;
+    border: 1px solid var(--exp-line);
+    border-radius: 8px;
+    outline: 0;
+    font-size: 11px
+}
+
+.modal-field input,
+.modal-field select {
+    height: 40px
+}
+
+.modal-field textarea {
+    min-height: 70px;
+    padding-top: 10px;
+    resize: vertical
+}
+
+.shipment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 14px
+}
+
+.available-stock {
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    color: #2b7b65;
+    background: #effaf5;
+    border: 1px solid #d7f0e6;
+    border-radius: 7px;
+    font-size: 10px
+}
+
+.shipment-error {
+    margin: 13px 0 0;
+    padding: 10px;
+    color: #a34d59;
+    background: #fff0f1;
+    border: 1px solid #f2dfe2;
+    border-radius: 7px;
+    font-size: 10px
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 18px
+}
+
+.result-count {
+    color: var(--exp-muted);
+    font-size: 10px
+}
+
+@media(min-width:1200px) and (min-height:800px) {
+
+    html,
+    body {
+        height: 100%;
+        overflow: hidden
+    }
+
+    .dashboard-main {
+        height: 100vh;
+        min-height: 0;
+        overflow: hidden
+    }
+
+    .expedicoes-content {
+        height: calc(100vh - 88px);
+        padding: 24px 42px 28px;
+        overflow-y: auto;
+        scrollbar-width: thin
+    }
+
+    .expedicoes-heading-row {
+        margin-bottom: 14px
+    }
+
+    .expedicoes-heading-row h2 {
+        margin: 5px 0;
+        font-size: 27px
+    }
+
+    .expedicao-button {
+        min-height: 36px
+    }
+
+    .expedicao-metric {
+        min-height: 78px;
+        padding: 13px 16px
+    }
+
+    .expedicao-metric strong {
+        margin: 6px 0 2px;
+        font-size: 21px
+    }
+
+    .expedicoes-panel {
+        margin-top: 13px;
+        padding: 16px 18px 12px
+    }
+
+    .expedicoes-toolbar {
+        padding-bottom: 12px
+    }
+
+    .expedicoes-toolbar select,
+    .expedicoes-search {
+        height: 35px
+    }
+
+    .expedicoes-table-heading {
+        padding: 13px 0 10px
+    }
+
+    .expedicoes-table td {
+        padding-top: 8px;
+        padding-bottom: 8px
+    }
+
+    .expedicoes-table-wrap {
+        max-height: 430px;
+        overflow-y: auto
+    }
+
+    .shipment-modal {
+        max-height: calc(100vh - 70px);
+        padding: 23px 26px
+    }
+
+    .modal-description {
+        margin-bottom: 12px
+    }
+
+    .modal-field {
+        gap: 4px;
+        margin-top: 8px
+    }
+
+    .modal-field input,
+    .modal-field select {
+        height: 36px
+    }
+
+    .modal-field textarea {
+        min-height: 58px
+    }
+
+    .modal-actions {
+        margin-top: 14px
+    }
+}
+
+@media(max-width:700px) {
+    .expedicoes-content {
+        padding: 27px 15px 52px
+    }
+
+    .expedicoes-heading-row {
+        align-items: flex-start;
+        flex-direction: column
+    }
+
+    .expedicoes-heading-row .expedicao-button {
+        width: 100%
+    }
+
+    .expedicoes-metrics {
+        grid-template-columns: 1fr
+    }
+
+    .expedicoes-panel {
+        padding: 17px 15px
+    }
+
+    .expedicoes-toolbar {
+        grid-template-columns: 1fr
+    }
+
+    .shipment-grid {
+        grid-template-columns: 1fr
+    }
+
+    .shipment-modal {
+        padding: 24px 19px
+    }
+}
