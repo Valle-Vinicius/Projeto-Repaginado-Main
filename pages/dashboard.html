@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dashboard operacional da Babycare" />
+  <title>Dashboard | Babycare</title>
+  <link rel="stylesheet" href="../styles/dashboard.css" />
+</head>
+<body data-dashboard-state="loading">
+  <div id="pageLoader" class="page-loader" aria-live="polite">
+    <div class="loader-mark" aria-hidden="true"></div>
+    <span>Carregando painel...</span>
+  </div>
+
+  <div class="dashboard-curtain dashboard-curtain-left" aria-hidden="true"></div>
+  <div class="dashboard-curtain dashboard-curtain-right" aria-hidden="true"></div>
+
+  <div class="dashboard-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar-top">
+        <a class="brand" href="./dashboard.html" aria-label="Babycare - Dashboard">
+          <img src="../images/babycare-logo.png" alt="Babycare" />
+        </a>
+        <button id="closeSidebarButton" class="icon-button sidebar-close" type="button" aria-label="Fechar menu">×</button>
+      </div>
+
+      <label class="sidebar-search" for="sidebarSearch">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+        <input id="sidebarSearch" type="search" placeholder="Pesquisar..." autocomplete="off" />
+        <span class="shortcut">Ctrl K</span>
+      </label>
+
+      <p class="nav-heading">MENU PRINCIPAL</p>
+      <nav class="main-nav">
+        <a class="nav-link active" href="./dashboard.html" aria-current="page">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" href="./produtos.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"></path><path d="M4 7.5 12 12l8-4.5M12 12v9"></path></svg>
+          <span>Produtos</span>
+        </a>
+        <a class="nav-link" href="./estoque.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="2"></circle></svg>
+          <span>Estoque</span>
+        </a>
+        <a class="nav-link" href="./recebimentos.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 4v14M6 18l-3-3m3 3 3-3M18 20V6m0 0-3 3m3-3 3 3"></path></svg>
+          <span>Recebimentos</span>
+        </a>
+        <a class="nav-link" href="./expedicoes.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h13M13 6l6 6-6 6"></path></svg>
+          <span>Expedições</span>
+        </a>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Relatórios">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 19V9M12 19V5M19 19v-7"></path></svg>
+          <span>Relatórios</span>
+        </button>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Auditoria">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l2.5 2.5"></path></svg>
+          <span>Auditoria</span>
+        </button>
+      </nav>
+
+      <p class="nav-heading nav-heading-secondary">SISTEMA</p>
+      <nav class="secondary-nav">
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Configurações">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"></path><circle cx="12" cy="12" r="3.5"></circle></svg>
+          <span>Configurações</span>
+        </button>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Ajuda e suporte">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.8c-1.1.8-1.6 1.2-1.6 2.5M12 16.5h.01"></path></svg>
+          <span>Ajuda e suporte</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div id="sidebarAvatar" class="avatar" aria-hidden="true">U</div>
+        <div class="user-copy">
+          <strong id="sidebarUserName">Usuário Babycare</strong>
+          <span id="sidebarUserRole">Perfil de acesso</span>
+        </div>
+        <button id="logoutButton" class="logout-button" type="button" aria-label="Sair da conta">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"></path></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <div>
+            <p class="breadcrumb">Babycare <span>/</span> <strong>Dashboard</strong></p>
+            <h1>Dashboard</h1>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="topbar-search" for="topbarSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" />
+          </label>
+          <button id="notificationButton" class="notification-button" type="button" aria-label="Ver notificações">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg>
+            <span id="notificationCount" class="notification-count" hidden>0</span>
+          </button>
+          <div class="topbar-divider" aria-hidden="true"></div>
+          <div class="topbar-user">
+            <div id="topbarAvatar" class="avatar avatar-small" aria-hidden="true">U</div>
+            <div class="user-copy topbar-user-copy">
+              <strong id="topbarUserName">Usuário Babycare</strong>
+              <span id="topbarUserRole">Perfil de acesso</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <section class="intro-row">
+          <div>
+            <p class="section-kicker">CENTRO DE CONTROLE</p>
+            <h2>Olá, <span id="welcomeName">usuário</span>.</h2>
+            <p id="currentDate">Acompanhe a operação da Babycare em um só lugar.</p>
+          </div>
+          <div class="intro-actions">
+            <label class="period-control" for="periodSelect">
+              <span>Período</span>
+              <select id="periodSelect">
+                <option value="hoje">Hoje</option>
+                <option value="7d">Últimos 7 dias</option>
+                <option value="30d" selected>Últimos 30 dias</option>
+                <option value="mes">Este mês</option>
+              </select>
+            </label>
+            <button id="refreshButton" class="refresh-button" type="button" aria-label="Atualizar dashboard">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-4L4 9m0-4v4h4M4 13a8 8 0 0 0 14.8 4L20 15m0 4v-4h-4"></path></svg>
+              <span>Atualizar</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="metric-grid" aria-label="Indicadores principais">
+          <article class="metric-card" data-metric="totalProdutos">
+            <div class="metric-icon blue">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"></path><path d="M4 7.5 12 12l8-4.5M12 12v9"></path></svg>
+            </div>
+            <div class="metric-copy">
+              <span class="metric-label">PRODUTOS ATIVOS</span>
+              <strong id="metricProducts" class="metric-value">—</strong>
+              <small>itens no catálogo</small>
+            </div>
+          </article>
+          <article class="metric-card" data-metric="estoqueTotal">
+            <div class="metric-icon violet">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="2"></circle></svg>
+            </div>
+            <div class="metric-copy">
+              <span class="metric-label">ESTOQUE ATUAL</span>
+              <strong id="metricStock" class="metric-value">—</strong>
+              <small>unidades registradas</small>
+            </div>
+          </article>
+          <article class="metric-card" data-metric="estoqueBaixo">
+            <div class="metric-icon orange">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 2.8 19h18.4z"></path><path d="M12 9v4M12 16h.01"></path></svg>
+            </div>
+            <div class="metric-copy">
+              <span class="metric-label">ESTOQUE BAIXO</span>
+              <strong id="metricLowStock" class="metric-value">—</strong>
+              <small>produtos abaixo do mínimo</small>
+            </div>
+          </article>
+          <article class="metric-card" data-metric="movimentacoesPeriodo">
+            <div class="metric-icon green">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </div>
+            <div class="metric-copy">
+              <span class="metric-label">MOVIMENTAÇÕES</span>
+              <strong id="metricMovements" class="metric-value">—</strong>
+              <small id="movementPeriodLabel">no período selecionado</small>
+            </div>
+          </article>
+        </section>
+
+        <section class="dashboard-grid dashboard-grid-primary">
+          <article class="panel movement-panel">
+            <div class="panel-header">
+              <div>
+                <span class="section-kicker">MOVIMENTAÇÃO</span>
+                <h3>Entradas e saídas</h3>
+              </div>
+              <div class="chart-legend" aria-label="Legenda do gráfico">
+                <span><i class="legend-dot entry"></i>Entradas</span>
+                <span><i class="legend-dot exit"></i>Saídas</span>
+              </div>
+            </div>
+            <div id="movementChart" class="chart-container" data-chart-state="loading">
+              <div class="chart-loading" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="chart-y-axis" aria-hidden="true"><span id="axisTop">—</span><span id="axisMiddle">—</span><span id="axisBottom">0</span></div>
+              <div class="chart-visual">
+                <div class="chart-grid-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+                <svg id="movementChartSvg" class="line-chart" viewBox="0 0 720 230" role="img" aria-label="Gráfico de movimentações">
+                  <defs>
+                    <linearGradient id="entryFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3c7be8" stop-opacity="0.2"></stop><stop offset="100%" stop-color="#3c7be8" stop-opacity="0"></stop></linearGradient>
+                    <linearGradient id="exitFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#52bfae" stop-opacity="0.16"></stop><stop offset="100%" stop-color="#52bfae" stop-opacity="0"></stop></linearGradient>
+                  </defs>
+                  <path id="entryArea" class="chart-area-fill entry-area" d="M0 230 L720 230 Z"></path>
+                  <path id="exitArea" class="chart-area-fill exit-area" d="M0 230 L720 230 Z"></path>
+                  <path id="entryLine" class="chart-line entry-line" d="M0 230 L720 230"></path>
+                  <path id="exitLine" class="chart-line exit-line" d="M0 230 L720 230"></path>
+                </svg>
+                <div id="chartLabels" class="chart-labels" aria-hidden="true"></div>
+                <p id="chartEmpty" class="chart-empty">Ainda não há movimentações neste período.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel alerts-panel">
+            <div class="panel-header">
+              <div>
+                <span class="section-kicker">ATENÇÃO</span>
+                <h3>Alertas importantes</h3>
+              </div>
+              <span id="alertCountLabel" class="panel-count">—</span>
+            </div>
+            <div id="alertList" class="alert-list" aria-live="polite">
+              <div class="panel-skeleton"><span></span><span></span><span></span></div>
+            </div>
+            <button id="alertsButton" class="text-button" type="button">Ver todos os alertas <span aria-hidden="true">→</span></button>
+          </article>
+        </section>
+
+        <section class="dashboard-grid dashboard-grid-secondary">
+          <article class="panel category-panel">
+            <div class="panel-header">
+              <div>
+                <span class="section-kicker">INVENTÁRIO</span>
+                <h3>Produtos por categoria</h3>
+              </div>
+              <span id="categoryTotal" class="panel-count">—</span>
+            </div>
+            <div id="categoryList" class="category-list" aria-live="polite">
+              <div class="panel-skeleton"><span></span><span></span><span></span><span></span></div>
+            </div>
+            <p id="categoryEmpty" class="inline-empty" hidden>Ainda não existem categorias com produtos cadastrados.</p>
+          </article>
+
+          <article class="panel activity-panel">
+            <div class="panel-header">
+              <div>
+                <span class="section-kicker">HISTÓRICO</span>
+                <h3>Atividades recentes</h3>
+              </div>
+              <button id="historyButton" class="text-button compact-button" type="button">Ver histórico <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="activity-table-wrap">
+              <table class="activity-table">
+                <thead>
+                  <tr><th>ATIVIDADE</th><th>RESPONSÁVEL</th><th>DATA</th><th>STATUS</th></tr>
+                </thead>
+                <tbody id="activityBody">
+                  <tr><td colspan="4" class="table-empty">Carregando atividades...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="dashboardToast" class="toast" role="status" aria-live="polite"></div>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>

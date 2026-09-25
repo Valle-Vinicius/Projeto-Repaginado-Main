@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cadastro de produto Babycare" />
+  <title>Cadastrar produto | Babycare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles/app.css" />
+  <link rel="stylesheet" href="../styles/dashboard.css?v=20260826-dashboard-scroll-fix" />
+  <link rel="stylesheet" href="../styles/formulario-produto.css" />
+</head>
+<body>
+  <div id="pageLoader" class="page-loader" aria-live="polite" aria-label="Carregando página">
+    <div class="page-loader-content">
+      <span class="page-loader-mark" aria-hidden="true"></span>
+      <span class="page-loader-label">Preparando cadastro...</span>
+      <span class="page-loader-bar" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar-top">
+        <a class="brand" href="./dashboard.html" aria-label="Babycare - Dashboard">
+          <img src="../images/babycare-logo.png" alt="Babycare" />
+        </a>
+        <button id="closeSidebarButton" class="icon-button sidebar-close" type="button" aria-label="Fechar menu">×</button>
+      </div>
+
+      <label class="sidebar-search" for="sidebarSearch">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+        <input id="sidebarSearch" type="search" placeholder="Pesquisar..." autocomplete="off" />
+        <span class="shortcut">Ctrl K</span>
+      </label>
+
+      <p class="nav-heading">MENU PRINCIPAL</p>
+      <nav class="main-nav">
+        <a class="nav-link" href="./dashboard.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link active" href="./produtos.html" aria-current="page">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"></path><path d="M4 7.5 12 12l8-4.5M12 12v9"></path></svg>
+          <span>Produtos</span>
+        </a>
+        <a class="nav-link" href="./estoque.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="2"></circle></svg>
+          <span>Estoque</span>
+        </a>
+        <a class="nav-link" href="./recebimentos.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 4v14M6 18l-3-3m3 3 3-3M18 20V6m0 0-3 3m3-3 3 3"></path></svg>
+          <span>Recebimentos</span>
+        </a>
+        <a class="nav-link" href="./expedicoes.html">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h13M13 6l6 6-6 6"></path></svg>
+          <span>Expedições</span>
+        </a>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Relatórios">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 19V9M12 19V5M19 19v-7"></path></svg>
+          <span>Relatórios</span>
+        </button>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Auditoria">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l2.5 2.5"></path></svg>
+          <span>Auditoria</span>
+        </button>
+      </nav>
+
+      <p class="nav-heading nav-heading-secondary">SISTEMA</p>
+      <nav class="secondary-nav">
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Configurações">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"></path><circle cx="12" cy="12" r="3.5"></circle></svg>
+          <span>Configurações</span>
+        </button>
+        <button class="nav-link nav-link-button" type="button" data-coming-soon="Ajuda e suporte">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.8c-1.1.8-1.6 1.2-1.6 2.5M12 16.5h.01"></path></svg>
+          <span>Ajuda e suporte</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div id="sidebarAvatar" class="avatar" aria-hidden="true">U</div>
+        <div class="user-copy">
+          <strong id="sidebarUserName">Usuário Babycare</strong>
+          <span id="sidebarUserRole">Perfil de acesso</span>
+        </div>
+        <button id="logoutButton" class="logout-button" type="button" aria-label="Sair da conta">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"></path></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <div>
+            <p class="breadcrumb">Babycare <span>/</span> <a href="./produtos.html">Produtos</a> <span>/</span> <strong>Cadastrar produto</strong></p>
+            <h1>Cadastrar produto</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="topbar-search" for="topbarSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" />
+          </label>
+          <button id="notificationButton" class="notification-button" type="button" aria-label="Ver notificações">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg>
+            <span id="notificationCount" class="notification-count" hidden>0</span>
+          </button>
+          <div class="topbar-divider" aria-hidden="true"></div>
+          <div class="topbar-user">
+            <div class="avatar avatar-small" id="topbarAvatar">U</div>
+            <div class="user-copy topbar-user-copy">
+              <strong id="topbarUserName">Usuário Babycare</strong>
+              <span id="topbarUserRole">Perfil de acesso</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-content product-form-content">
+        <section class="form-heading">
+          <div>
+            <p class="eyebrow">NOVO ITEM</p>
+            <h2>Cadastre um produto.</h2>
+            <p>Informe os dados necessários para manter o catálogo organizado.</p>
+          </div>
+          <a class="secondary-action" href="./produtos.html">← Voltar para produtos</a>
+        </section>
+
+        <form id="productForm" class="product-form" novalidate>
+          <section class="form-card">
+            <div class="form-card-heading"><span class="form-step">01</span><div><h3>Informações gerais</h3><p>Identifique o produto no catálogo.</p></div></div>
+            <div class="form-grid two-columns">
+              <div class="field full-width"><label for="nome">Nome do produto <span>*</span></label><input id="nome" name="nome" type="text" maxlength="150" placeholder="Ex.: Fralda Babycare XG" required /><small class="field-error" data-error-for="nome"></small></div>
+              <div class="field"><label for="sku">SKU <span>*</span></label><input id="sku" name="sku" type="text" maxlength="50" placeholder="Ex.: BC-FRALDA-XG-001" required /><small>Use um código único para o produto.</small><small class="field-error" data-error-for="sku"></small></div>
+              <div class="field"><label for="categoria">Categoria <span>*</span></label><select id="categoria" name="categoria" required><option value="">Carregando categorias...</option></select><small class="field-error" data-error-for="categoria"></small></div>
+              <div class="field full-width"><label for="descricao">Descrição</label><textarea id="descricao" name="descricao" maxlength="2000" rows="4" placeholder="Descreva o produto, suas características ou observações."></textarea><small class="field-counter"><span id="descriptionCount">0</span>/2000</small></div>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="form-card-heading"><span class="form-step">02</span><div><h3>Informações de estoque</h3><p>Configure o limite de acompanhamento.</p></div></div>
+            <div class="form-grid two-columns">
+              <div class="field"><label for="estoqueMinimo">Estoque mínimo <span>*</span></label><input id="estoqueMinimo" name="estoqueMinimo" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex.: 50" required /><small>O alerta aparece quando o estoque ficar abaixo deste valor.</small><small class="field-error" data-error-for="estoqueMinimo"></small></div>
+              <div class="field"><label for="unidade">Unidade de medida <span>*</span></label><select id="unidade" name="unidade" required><option value="">Selecione uma unidade</option><option value="UN">Unidade (UN)</option><option value="CX">Caixa (CX)</option><option value="PCT">Pacote (PCT)</option><option value="KG">Quilo (KG)</option></select><small class="field-error" data-error-for="unidade"></small></div>
+            </div>
+            <div class="form-note"><span aria-hidden="true">i</span><p>O cadastro começa com estoque zero. Entradas devem ser registradas no módulo de recebimentos para manter o histórico.</p></div>
+          </section>
+
+          <section class="form-card">
+            <div class="form-card-heading"><span class="form-step">03</span><div><h3>Informações de validade</h3><p>Defina se o produto precisa de acompanhamento de vencimento.</p></div></div>
+            <div class="validity-choice"><span class="field-label">Possui validade? <span>*</span></span><label class="radio-option"><input type="radio" name="possuiValidade" value="sim" checked /><span>Sim</span></label><label class="radio-option"><input type="radio" name="possuiValidade" value="nao" /><span>Não</span></label></div>
+            <div id="validityField" class="field validity-field"><label for="dataValidade">Data de validade <span>*</span></label><input id="dataValidade" name="dataValidade" type="date" data-date-min="today" required /><small class="field-error" data-error-for="dataValidade"></small></div>
+          </section>
+
+          <div class="form-actions"><a class="secondary-action" href="./produtos.html">Cancelar</a><button class="primary-action" type="submit"><span class="button-text">Cadastrar produto</span><span class="button-loading">Salvando...</span></button></div>
+          <p id="productFormMessage" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/formulario-produto.js"></script>
+</body>
+</html>

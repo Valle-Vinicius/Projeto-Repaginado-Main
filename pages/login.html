@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Acesso à plataforma de gestão Babycare" />
+  <title>Login | Babycare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles/login.css" />
+</head>
+<body>
+  <main class="login-screen">
+    <section class="login-area" aria-label="Área de login Babycare">
+      <div class="login-content">
+        <a class="brand" href="./login.html" aria-label="Ir para o início da Babycare">
+          <img class="brand-logo" src="../images/babycare-logo.png" alt="Babycare" />
+        </a>
+
+        <div class="welcome-copy">
+          <p class="eyebrow">Área restrita</p>
+          <h1>Bem-vindo à Babycare</h1>
+          <p>Acesse sua plataforma de gestão e acompanhe a operação do seu estoque com mais clareza.</p>
+        </div>
+
+        <form id="loginForm" class="login-form" novalidate>
+          <div class="form-field">
+            <label for="email">E-mail</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="seuemail@babycare.com"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="senha">Senha</label>
+            <div class="password-wrapper">
+              <input
+                id="senha"
+                name="senha"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Digite sua senha"
+                required
+              />
+              <button id="togglePassword" class="password-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false">
+                <span class="password-icon" aria-hidden="true">◉</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-option" for="lembrar">
+              <input id="lembrar" name="lembrar" type="checkbox" />
+              <span>Lembrar de mim</span>
+            </label>
+            <a id="forgotPassword" href="#">Esqueceu sua senha?</a>
+          </div>
+
+          <button id="loginButton" class="primary-button" type="submit">
+            <span class="button-text">ENTRAR</span>
+            <span class="button-loading" aria-hidden="true">ENTRANDO...</span>
+          </button>
+
+          <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+
+        <p class="access-request">
+          Ainda não possui uma conta?
+          <a id="requestAccess" href="#">Solicite acesso</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/login.js"></script>
+</body>
+</html>
