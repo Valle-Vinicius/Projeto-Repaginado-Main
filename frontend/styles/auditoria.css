@@ -1,0 +1,307 @@
+.auditoria-page {
+  overflow-x: hidden;
+}
+.auditoria-content {
+  padding-bottom: 24px;
+  min-width: 0;
+}
+.auditoria-content .intro-row {
+  margin-bottom: 18px;
+}
+.audit-filters {
+  display: grid;
+  grid-template-columns: 180px 180px 240px minmax(260px, 1fr);
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.audit-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.audit-filters label > span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7c8799;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.audit-filters select,
+.audit-search > div {
+  height: 40px;
+  border: 1px solid #dce3ee;
+  border-radius: 9px;
+  background: #fff;
+  color: #253149;
+  padding: 0 12px;
+  font: inherit;
+  outline: none;
+}
+.audit-filters select:focus,
+.audit-search input:focus {
+  border-color: #2e5bd6;
+  box-shadow: 0 0 0 3px rgba(46, 91, 214, 0.1);
+}
+.audit-search > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+}
+.audit-search svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: #8792a6;
+  stroke-width: 1.8;
+}
+.audit-search input {
+  border: 0;
+  outline: 0;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  font: inherit;
+  color: #253149;
+}
+.audit-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.audit-metrics article {
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  padding: 15px 18px;
+  min-height: 92px;
+}
+.audit-metrics span,
+.audit-metrics small {
+  display: block;
+  color: #778398;
+  font-size: 12px;
+}
+.audit-metrics strong {
+  display: block;
+  color: #1f2d46;
+  font-size: 27px;
+  line-height: 1.15;
+  margin: 8px 0 4px;
+}
+.audit-panel {
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  border-radius: 14px;
+  overflow: hidden;
+  max-width: 100%;
+}
+.audit-panel .panel-header {
+  padding: 17px 20px 14px;
+  border-bottom: 1px solid #edf0f5;
+}
+.audit-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 440px);
+  min-height: 300px;
+}
+.audit-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+}
+.audit-table-wrap th {
+  background: #f8f9fc;
+  color: #7a8599;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  padding: 12px 20px;
+  white-space: nowrap;
+}
+.audit-table-wrap td {
+  border-top: 1px solid #edf0f5;
+  padding: 13px 20px;
+  color: #33415a;
+  font-size: 13px;
+  vertical-align: middle;
+}
+.audit-table-wrap tbody tr:hover {
+  background: #fbfcff;
+}
+.audit-table-wrap td:nth-child(1) {
+  white-space: nowrap;
+  color: #6c7890;
+}
+.audit-table-wrap td:nth-child(2) {
+  font-weight: 600;
+  color: #24334c;
+}
+.audit-table-wrap td:nth-child(3) {
+  font-weight: 600;
+  color: #2e5bd6;
+}
+.audit-table-wrap td:nth-child(4) {
+  color: #67758c;
+}
+.audit-table-wrap td:last-child {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #758197;
+}
+.audit-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.audit-status.sucesso {
+  background: #e9f8ef;
+  color: #19864b;
+}
+.audit-status.falha {
+  background: #fff0f0;
+  color: #c53b45;
+}
+.audit-empty {
+  text-align: center;
+  color: #8792a6;
+  padding: 40px 20px;
+  margin: 0;
+}
+.audit-panel .panel-count {
+  font-size: 12px;
+  color: #78859b;
+  background: #f3f5f9;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+.auditoria-page .nav-link svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+.auditoria-page .nav-link > span {
+  display: block;
+}
+.auditoria-page .sidebar .nav-heading-secondary {
+  margin-top: 24px !important;
+  margin-bottom: 8px !important;
+}
+.auditoria-page .sidebar .secondary-nav {
+  margin-top: 0 !important;
+}
+.auditoria-page .sidebar {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.auditoria-page .dashboard-main,
+.auditoria-page .dashboard-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+@media (max-width: 1100px) {
+  .audit-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .audit-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .audit-filters {
+    grid-template-columns: 1fr;
+  }
+  .audit-metrics {
+    grid-template-columns: 1fr;
+  }
+  .audit-table-wrap {
+    max-height: none;
+  }
+  .auditoria-content {
+    padding: 16px;
+  }
+}
+
+/* Auditoria em uma única tela: somente a área de logs pode rolar. */
+.auditoria-page,
+.auditoria-page body {
+  overflow: hidden;
+  height: 100vh;
+}
+.auditoria-page .dashboard-shell {
+  height: 100vh;
+  min-height: 0;
+}
+.auditoria-page .dashboard-main {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.auditoria-page .topbar {
+  flex: 0 0 auto;
+}
+.auditoria-page .dashboard-content {
+  height: calc(100vh - 72px);
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+}
+.auditoria-page .intro-row {
+  flex: 0 0 auto;
+}
+.auditoria-page .audit-filters {
+  flex: 0 0 auto;
+}
+.auditoria-page .audit-metrics {
+  flex: 0 0 auto;
+}
+.auditoria-page .audit-panel {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+.auditoria-page .audit-panel .panel-header {
+  flex: 0 0 auto;
+}
+.auditoria-page .audit-table-wrap {
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+.auditoria-page .audit-empty {
+  flex: 0 0 auto;
+}
+@media (max-width: 640px) {
+  .auditoria-page .dashboard-content {
+    height: calc(100vh - 64px);
+    padding: 12px;
+  }
+  .auditoria-page .audit-table-wrap {
+    overflow: auto;
+  }
+}

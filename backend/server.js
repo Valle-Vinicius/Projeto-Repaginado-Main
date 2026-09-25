@@ -9,6 +9,7 @@ const produtoRoutes = require('./routes/produtoRoutes');
 const estoqueRoutes = require('./routes/estoqueRoutes');
 const recebimentoRoutes = require('./routes/recebimentoRoutes');
 const expedicaoRoutes = require('./routes/expedicaoRoutes');
+const auditoriaRoutes = require('./routes/auditoriaRoutes');
 const { verificarToken } = require('./middlewares/authMiddleware');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/produtos', produtoRoutes);
 app.use('/api/estoque', estoqueRoutes);
 app.use('/api/recebimentos', recebimentoRoutes);
 app.use('/api/expedicoes', expedicaoRoutes);
+app.use('/api/auditorias', auditoriaRoutes);
 
 app.get('/api/perfil', verificarToken, (req, res) => {
   res.json({

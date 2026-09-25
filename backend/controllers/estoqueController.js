@@ -1,74 +1,72 @@
-const estoqueService = require('../services/estoqueService');
-const { validarMovimentacao } = require('../validators/estoqueValidator');
+const estoqueService = require("../services/estoqueService");
 
-function responderErro(res, erro, mensagemPadrao) {
-  const status = erro.statusCode || (erro.code === 'ER_DUP_ENTRY' ? 409 : 500);
-  const mensagem = erro.code === 'ER_DUP_ENTRY'
-    ? 'Este lote já está cadastrado para o produto informado.'
-    : (erro.message || mensagemPadrao);
-
-  console.error('[estoque]', erro);
-  return res.status(status).json({ mensagem });
+function responderErro(res, erro) {
+  console.error("[Estoque/Recebimentos/Expedições]", {
+    mensagem: erro.message,
+    codigo: erro.codigo,
+  });
+  return res
+    .status(erro.statusCode || 500)
+    .json({
+      sucesso: false,
+      codigo: erro.codigo || "ERRO_ESTOQUE",
+      mensagem: erro.statusCode
+        ? erro.message
+        : "Não foi possível concluir a operação de estoque.",
+    });
 }
 
-async function obterEstoque(req, res) {
+async function listarEstoque(req, res) {
   try {
-    const resultado = await estoqueService.obterEstoque({
-      busca: req.query.busca,
-      categoriaId: req.query.categoriaId,
-      status: req.query.status,
-      ordenacao: req.query.ordenacao
+    return res.json({
+      sucesso: true,
+      ...(await estoqueService.obterEstoqueCompleto()),
     });
-    return res.json(resultado);
   } catch (erro) {
-    return responderErro(res, erro, 'Não foi possível consultar o estoque.');
+    return responderErro(res, erro);
   }
 }
-
-async function listarRecebimentos(req, res) {
-  try {
-    const resultado = await estoqueService.obterRecebimentos({
-      busca: req.query.busca,
-      limite: req.query.limite
-    });
-    return res.json({ recebimentos: resultado });
-  } catch (erro) {
-    return responderErro(res, erro, 'Não foi possível consultar os recebimentos.');
-  }
-}
-
 async function listarExpedicoes(req, res) {
   try {
-    const resultado = await estoqueService.obterExpedicoes({
-      busca: req.query.busca,
-      limite: req.query.limite
+    return res.json({
+      sucesso: true,
+      expedicoes: await estoqueService.listarExpedicoes(),
     });
-    return res.json({ expedicoes: resultado });
   } catch (erro) {
-    return responderErro(res, erro, 'Não foi possível consultar as expedições.');
+    return responderErro(res, erro);
   }
 }
-
-async function registrarMovimentacao(req, res) {
+async function listarRecebimentos(req, res) {
   try {
-    const movimentacao = validarMovimentacao(req.body);
-    const resultado = await estoqueService.registrarMovimentacao({
-      usuarioId: req.usuario.id,
-      ...movimentacao
-    });
-
-    return res.status(201).json({
-      mensagem: 'Movimentação registrada com sucesso.',
-      ...resultado
+    return res.json({
+      sucesso: true,
+      recebimentos: await estoqueService.listarRecebimentos(),
     });
   } catch (erro) {
-    return responderErro(res, erro, 'Não foi possível registrar a movimentação.');
+    return responderErro(res, erro);
+  }
+}
+async function registrarMovimentacao(req, res) {
+  try {
+    const dados = await estoqueService.registrarMovimentacao(
+      req.body || {},
+      req.usuario,
+    );
+    return res
+      .status(201)
+      .json({
+        sucesso: true,
+        mensagem: "Movimentação registrada e estoque atualizado.",
+        dados,
+      });
+  } catch (erro) {
+    return responderErro(res, erro);
   }
 }
 
 module.exports = {
-  obterEstoque,
-  listarRecebimentos,
+  listarEstoque,
   listarExpedicoes,
-  registrarMovimentacao
+  listarRecebimentos,
+  registrarMovimentacao,
 };
