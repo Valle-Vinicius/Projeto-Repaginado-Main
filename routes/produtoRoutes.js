@@ -1,13 +1,13 @@
 const express = require('express');
+const produtoController = require('../controllers/produtoController');
+const { verificarToken, permitirPerfis } = require('../middlewares/authMiddleware');
+const { PERFIS_PRODUTO } = require('../services/produtoService');
 
 const router = express.Router();
+const autorizarProdutos = permitirPerfis(...PERFIS_PRODUTO);
 
-const produtoController = require('../controllers/produtoController');
-
-router.get('/', produtoController.listar);
-router.post('/', produtoController.cadastrar);
-router.get('/:id', produtoController.buscarPorId);
-router.put('/:id', produtoController.atualizar);
-router.delete('/:id', produtoController.remover);
+router.get('/categorias', verificarToken, autorizarProdutos, produtoController.listarCategorias);
+router.get('/', verificarToken, autorizarProdutos, produtoController.listarProdutos);
+router.post('/', verificarToken, autorizarProdutos, produtoController.criarProduto);
 
 module.exports = router;
