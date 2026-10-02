@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configurações | Babycare</title>
+    <link rel="stylesheet" href="../styles/app.css" />
+    <link rel="stylesheet" href="../styles/dashboard.css" />
+    <link rel="stylesheet" href="../styles/configuracoes.css" />
+  </head>
+  <body>
+    <div class="dashboard-shell">
+      <aside
+        id="sidebar"
+        class="sidebar"
+        aria-label="Navegação principal"
+      ></aside>
+      <main class="dashboard-main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button
+              id="openSidebarButton"
+              class="icon-button menu-button"
+              type="button"
+              aria-label="Abrir menu"
+            >
+              ☰
+            </button>
+            <div>
+              <p class="breadcrumb">
+                Babycare <span>/</span> <strong>Configurações</strong>
+              </p>
+              <h1>Configurações</h1>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div class="topbar-user">
+              <div id="topbarAvatar" class="avatar avatar-small">U</div>
+              <div class="user-copy topbar-user-copy">
+                <strong id="topbarUserName">Usuário Babycare</strong
+                ><span id="topbarUserRole">Perfil de acesso</span>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div class="settings-content">
+          <section class="settings-heading">
+            <p class="section-kicker">PREFERÊNCIAS DA CONTA</p>
+            <h2>Configure seu acesso</h2>
+            <p>Atualize seus dados pessoais e mantenha sua conta segura.</p>
+          </section>
+          <div class="settings-grid">
+            <section class="settings-card">
+              <div class="card-title">
+                <div>
+                  <span class="eyebrow">PERFIL</span>
+                  <h3>Dados pessoais</h3>
+                </div>
+              </div>
+              <form id="perfilForm">
+                <label
+                  >Nome completo<input
+                    id="nome"
+                    required
+                    maxlength="120" /></label
+                ><label
+                  >E-mail<input
+                    id="email"
+                    type="email"
+                    required
+                    maxlength="255"
+                /></label>
+                <p id="perfilMensagem" class="message" hidden></p>
+                <button class="primary-button" type="submit">
+                  Salvar dados
+                </button>
+              </form>
+            </section>
+            <section class="settings-card">
+              <div class="card-title">
+                <div>
+                  <span class="eyebrow">SEGURANÇA</span>
+                  <h3>Alterar senha</h3>
+                </div>
+              </div>
+              <form id="senhaForm">
+                <label
+                  >Senha atual<input
+                    id="senhaAtual"
+                    type="password"
+                    autocomplete="current-password" /></label
+                ><label
+                  >Nova senha<input
+                    id="novaSenha"
+                    type="password"
+                    minlength="6"
+                    autocomplete="new-password" /></label
+                ><label
+                  >Confirmar nova senha<input
+                    id="confirmarSenha"
+                    type="password"
+                    minlength="6"
+                    autocomplete="new-password"
+                /></label>
+                <p id="senhaMensagem" class="message" hidden></p>
+                <button class="primary-button" type="submit">
+                  Atualizar senha
+                </button>
+              </form>
+            </section>
+          </div>
+          <section id="gestaoCard" class="settings-card management-card" hidden>
+            <div>
+              <span class="eyebrow">ADMINISTRAÇÃO</span>
+              <h3>Gerenciamento de usuários</h3>
+              <p>
+                Cadastre, edite e inative usuários conforme o seu nível de
+                acesso.
+              </p>
+            </div>
+            <a class="secondary-button" href="./usuarios.html"
+              >Abrir Usuários</a
+            >
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="../js/sidebar.js?v=1"></script>
+    <script src="../js/configuracoes.js"></script>
+  </body>
+</html>

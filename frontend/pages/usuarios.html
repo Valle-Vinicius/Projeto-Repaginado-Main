@@ -1,22 +1,124 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Usuários | Babycare</title>
-  <link rel="stylesheet" href="../styles/usuarios.css">
-</head>
-<body>
-  <main class="usuarios-page">
-    <header class="page-header">
-      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1>Usuários</h1><p>Gerencie os acessos e os perfis da equipe Babycare.</p></div>
-      <div class="header-actions"><a href="./dashboard.html" class="secondary-button">Voltar ao dashboard</a><button id="novoUsuario" class="primary-button">Novo usuário</button></div>
-    </header>
-    <section class="toolbar"><input id="busca" type="search" placeholder="Pesquisar por nome ou e-mail"><select id="filtroPerfil"><option value="">Todos os perfis</option></select><select id="filtroAtivo"><option value="">Todos os status</option><option value="true">Ativos</option><option value="false">Inativos</option></select><button id="atualizar" class="secondary-button">Atualizar</button></section>
-    <section class="panel"><div class="panel-title"><div><span class="eyebrow">CONTROLE DE ACESSO</span><h2>Usuários cadastrados</h2></div><span id="contador" class="counter">—</span></div><div class="table-wrap"><table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Departamento</th><th>Status</th><th>Último acesso</th><th></th></tr></thead><tbody id="tabela"><tr><td colspan="7" class="empty">Carregando usuários...</td></tr></tbody></table></div></section>
-  </main>
-  <div id="modal" class="modal" hidden><div class="modal-card"><div class="modal-header"><div><span class="eyebrow">CADASTRO</span><h2 id="tituloModal">Novo usuário</h2></div><button id="fechar" class="close-button" type="button">×</button></div><form id="formulario"><input id="usuarioId" type="hidden"><label>Nome completo<input id="nome" name="nome" required maxlength="120"></label><label>E-mail<input id="email" name="email" type="email" required maxlength="255"></label><div class="form-grid"><label>Perfil<select id="perfil" required></select></label><label>Departamento<select id="departamento"><option value="">Sem departamento</option></select></label></div><label>Senha <small id="senhaAjuda">obrigatória no cadastro</small><input id="senha" name="senha" type="password" minlength="6" maxlength="72" autocomplete="new-password"></label><label class="check"><input id="ativo" type="checkbox" checked> Usuário ativo</label><p id="erro" class="form-error" hidden></p><div class="modal-actions"><button id="cancelar" class="secondary-button" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar usuário</button></div></form></div></div>
-  <script src="../js/usuarios.js"></script>
-  <script src="../js/sidebar.js?v=1"></script>
-
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuários | Babycare</title>
+    <link rel="stylesheet" href="../styles/usuarios.css" />
+  </head>
+  <body>
+    <main class="usuarios-page">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">ADMINISTRAÇÃO</p>
+          <h1>Usuários</h1>
+          <p>Gerencie os acessos e os perfis da equipe Babycare.</p>
+        </div>
+        <div class="header-actions">
+          <a href="./dashboard.html" class="secondary-button"
+            >Voltar ao dashboard</a
+          ><button id="novoUsuario" class="primary-button">Novo usuário</button>
+        </div>
+      </header>
+      <section class="toolbar">
+        <input
+          id="busca"
+          type="search"
+          placeholder="Pesquisar por nome ou e-mail"
+        /><select id="filtroPerfil">
+          <option value="">Todos os perfis</option></select
+        ><select id="filtroAtivo">
+          <option value="">Todos os status</option>
+          <option value="true">Ativos</option>
+          <option value="false">Inativos</option></select
+        ><button id="atualizar" class="secondary-button">Atualizar</button>
+      </section>
+      <section class="panel">
+        <div class="panel-title">
+          <div>
+            <span class="eyebrow">CONTROLE DE ACESSO</span>
+            <h2>Usuários cadastrados</h2>
+          </div>
+          <span id="contador" class="counter">—</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuário</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Departamento</th>
+                <th>Status</th>
+                <th>Último acesso</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabela">
+              <tr>
+                <td colspan="7" class="empty">Carregando usuários...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <div id="modal" class="modal" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">CADASTRO</span>
+            <h2 id="tituloModal">Novo usuário</h2>
+          </div>
+          <button id="fechar" class="close-button" type="button">×</button>
+        </div>
+        <form id="formulario">
+          <input id="usuarioId" type="hidden" /><label
+            >Nome completo<input
+              id="nome"
+              name="nome"
+              required
+              maxlength="120" /></label
+          ><label
+            >E-mail<input
+              id="email"
+              name="email"
+              type="email"
+              required
+              maxlength="255"
+          /></label>
+          <div class="form-grid">
+            <label>Perfil<select id="perfil" required></select></label
+            ><label
+              >Departamento<select id="departamento">
+                <option value="">Sem departamento</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Senha <small id="senhaAjuda">obrigatória no cadastro</small
+            ><input
+              id="senha"
+              name="senha"
+              type="password"
+              minlength="6"
+              maxlength="72"
+              autocomplete="new-password" /></label
+          ><label class="check"
+            ><input id="ativo" type="checkbox" checked /> Usuário ativo</label
+          >
+          <p id="erro" class="form-error" hidden></p>
+          <div class="modal-actions">
+            <button id="cancelar" class="secondary-button" type="button">
+              Cancelar</button
+            ><button class="primary-button" type="submit">
+              Salvar usuário
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="../js/usuarios.js"></script>
+    <script src="../js/sidebar.js?v=1"></script>
+  </body>
 </html>
