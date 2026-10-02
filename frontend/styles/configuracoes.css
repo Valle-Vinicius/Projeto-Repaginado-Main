@@ -1,0 +1,133 @@
+.settings-content {
+  padding: 34px 42px;
+  max-width: 1180px;
+}
+.settings-heading h2 {
+  margin: 0;
+  color: #1f2d46;
+  font-size: 25px;
+}
+.settings-heading p:not(.section-kicker) {
+  color: #7f8ba0;
+  font-size: 13px;
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 24px;
+}
+.settings-card {
+  background: #fff;
+  border: 1px solid #e5eaf2;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 4px 14px #24385c08;
+}
+.settings-card[hidden],
+#gestaoCard[hidden] {
+  display: none !important;
+}
+.card-title {
+  margin-bottom: 18px;
+}
+.card-title h3,
+.management-card h3 {
+  margin: 0;
+  color: #263650;
+  font-size: 17px;
+}
+.eyebrow {
+  display: block;
+  color: #2e5bd6;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.settings-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.settings-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #657289;
+  font-size: 11px;
+  font-weight: 700;
+}
+.settings-card input {
+  height: 40px;
+  border: 1px solid #dce3ee;
+  border-radius: 9px;
+  padding: 0 12px;
+  color: #263650;
+  font: inherit;
+  outline: none;
+}
+.settings-card input:focus {
+  border-color: #2e5bd6;
+  box-shadow: 0 0 0 3px #2e5bd61a;
+}
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: max-content;
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 15px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary-button {
+  background: #2e5bd6;
+  color: #fff;
+}
+.secondary-button {
+  background: #eef3ff;
+  color: #2e5bd6;
+}
+.message {
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.message.success {
+  background: #e8f8ef;
+  color: #177d4c;
+}
+.message.error {
+  background: #fff0f0;
+  color: #b43b46;
+}
+.management-card {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.management-card p {
+  color: #7f8ba0;
+  font-size: 12px;
+  margin: 7px 0 0;
+}
+@media (max-width: 800px) {
+  .settings-content {
+    padding: 24px 16px;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .management-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
