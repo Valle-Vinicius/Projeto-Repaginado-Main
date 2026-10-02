@@ -1,0 +1,11 @@
+const express = require('express');
+const { verificarToken, permitirPerfis } = require('../middlewares/authMiddleware');
+const controller = require('../controllers/usuarioController');
+const router = express.Router();
+const permitirGestao = permitirPerfis('GERENTE', 'ADMINISTRADOR');
+router.get('/', verificarToken, permitirGestao, controller.listar);
+router.get('/opcoes', verificarToken, permitirGestao, controller.opcoes);
+router.post('/', verificarToken, permitirGestao, controller.criar);
+router.patch('/:id', verificarToken, permitirGestao, controller.atualizar);
+router.delete('/:id', verificarToken, permitirPerfis('ADMINISTRADOR'), controller.inativar);
+module.exports = router;
