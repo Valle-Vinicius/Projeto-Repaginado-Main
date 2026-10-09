@@ -1,0 +1,500 @@
+================================================================================
+                    SISTEMA BABYCARE - ANÁLISE COMPLETA DO PROJETO
+================================================================================
+
+Documento gerado a partir da análise de todo o código-fonte do repositório
+"Projeto-Repaginado-Main". O objetivo deste arquivo é explicar, de forma
+detalhada e didática, como o projeto está estruturado, como ele funciona e
+qual é a contribuição de cada pessoa da equipe.
+
+
+================================================================================
+1. VISÃO GERAL DO PROJETO
+================================================================================
+
+O **Babycare** é um sistema web de gestão de estoque desenvolvido como
+projeto (SENAI) para uma empresa especializada em produtos infantis
+(fraldas, fórmulas, mamadeiras, termômetros, etc.).
+
+Objetivos do sistema:
+  - Organizar o controle de estoque e a gestão de produtos;
+  - Integrar setores internos (recebimento, expedição, relatórios) com
+    segurança;
+  - Rastrear lotes por validade (FIFO - o que vence primeiro sai primeiro);
+  - Gerar indicadores (dashboard), relatórios e trilha de auditoria;
+  - Controlar acesso por perfis de usuário (Operador, Gerente, Admin).
+
+O projeto é uma aplicação web "monolítica" dividida em duas grandes partes:
+
+  + back-end  -> API REST em Node.js/Express + MySQL (camada de dados);
+  + front-end -> páginas HTML, CSS e JavaScript puro consumindo a API.
+
+Não há framework de front-end (React/Vue/Angular): tudo é HTML + CSS + JS
+"vanilla". O back-end também serve as páginas estáticas do front-end.
+
+
+================================================================================
+2. EQUIPE DO PROJETO
+================================================================================
+
+De acordo com o README.md, a equipe é composta por 4 pessoas:
+
+  - Ana Júlia Ribeiro Ferreira
+  - Anthero Franco
+  - Milena Hoppe Sales
+  - Vinícius Valle Rodrigues
+
+A contribuição de cada pessoa foi levantada por meio do histórico de commits
+do repositório (git log). Os detalhes estão na seção 10 deste documento.
+
+
+================================================================================
+3. TECNOLOGIAS E FERRAMENTAS
+================================================================================
+
+Linguagens e tecnologias:
+  - HTML5, CSS3 e JavaScript puro (front-end);
+  - Node.js + Express 4 (back-end);
+  - MySQL 8+ (banco de dados relacional);
+  - bcryptjs (hash de senhas);
+  - jsonwebtoken (autenticação JWT);
+  - mysql2 (driver MySQL com pool de conexões e transações);
+  - dotenv (variáveis de ambiente);
+  - cors (liberação de requisições entre origens).
+
+Ferramentas:
+  - Trello (organização de tarefas do grupo);
+  - Git + GitHub (versionamento - repositório de Vinícius Valle);
+  - MySQL Workbench (execução dos scripts SQL);
+  - Node.js (`npm` para instalação e execução).
+
+
+================================================================================
+4. ESTRUTURA DE PASTAS (VISÃO GERAL)
+================================================================================
+
+Projeto-Repaginado-Main/
+│
+├── .gitignore                (ignora node_modules, .env, logs)
+├── package.json              (scripts raiz que delegam para o backend)
+├── README.md                 (documentação do grupo - codificação UTF-16)
+├── app.js                    (ARQUIVO LEGADO - não é usado pelo sistema atual)
+├── database.sql              (versão ANTIGA do banco - não é a usada)
+├── docker-compose.yml        (arquivo VAZIO - placeholder)
+│
+├── backend/                  (API REST + banco de dados)
+│   ├── server.js             (ENTRADA principal do servidor)
+│   ├── app.js                (VAZIO - placeholder)
+│   ├── package.json          (dependências do backend)
+│   ├── package-lock.json     (trava de versões)
+│   ├── .env                  (configurações: PORT, DB_*, JWT_*)
+│   ├── database.sql          (SCHEMA COMPLETO + dados de demonstração)
+│   ├── config/               (conexão com MySQL e validação de ambiente)
+│   ├── middlewares/          (autenticação e autorização)
+│   ├── routes/               (definição das rotas da API)
+│   ├── controllers/          (recebem a requisição e respondem)
+│   ├── services/             (regras de negócio)
+│   ├── repositories/         (consultas SQL)
+│   ├── validators/           (validação dos dados recebidos)
+│   └── database/             (script CLI para criar usuários)
+│
+└── frontend/                 (interface do usuário)
+    ├── index.html            (VAZIO - a entrada é /pages/login.html)
+    ├── app.js                (VAZIO - placeholder)
+    ├── images/               (logo e imagem de fundo do login)
+    ├── pages/                (páginas HTML)
+    ├── js/                   (JavaScript de cada página)
+    └── styles/               (CSS de cada página)
+================================================================================
+6. BANCO DE DADOS (backend/database.sql)
+================================================================================
+
+O schema oficial usado pelo sistema é o arquivo backend/database.sql
+(banco de dados chamado "babycare"). Ele foi feito para MySQL 8.0+ e inclui,
+no final, uma CARGA DEMONSTRATIVA (produtos "DEMO-*") para popular a
+dashboard e os relatórios.
+
+TABELAS:
+
+  1) perfis
+       id, nome (OPERADOR_ESTOQUE, GERENTE, ADMINISTRADOR), ativo.
+       É a tabela que o token JWT consulta para autorizar as rotas.
+
+  2) departamentos
+       id, nome, ativo. Ex.: Estoque, Administração, etc.
+
+  3) usuarios
+       nome, email (único), senha_hash (bcrypt - validado com CHECK ' $2%'),
+       perfil_id (FK -> perfis), departamento_id (FK -> departamentos),
+       ativo, tentativas_login (controle de bloqueio), bloqueado_ate
+       (data/hora do bloqueio), ultimo_login_em, criado_em, atualizado_em.
+
+  4) auditorias
+       usuario_id (FK, apaga junto em SET NULL), acao (ex.:
+       RECEBIMENTO_CONFIRMADO, EXPEDICAO_CONFIRMADA, LOGIN_REALIZADO,
+       USUARIO_CRIADO), entidade, entidade_id, resultado (SUCESSO/FALHA),
+       detalhes (JSON), criado_em. Índices em usuario e data.
+
+  5) categorias
+       id, nome (único), ativo, criado_em.
+
+  6) localizacoes
+       id, nome (posição física ex.: "Galpão A - P2"), descricao, ativo.
+
+  7) produtos
+       codigo (único, é o "SKU"), nome, descricao, categoria_id (FK),
+       estoque_minimo (alerta de reposição), unidade (UN, CX, PCT, KG...),
+       possui_validade (flag p/ controle de vencimento), ativo, criado_em,
+       atualizado_em.
+
+  8) lotes
+       produto_id (FK), numero_lote (ex.: "DEMO-2026-F1-01"), fornecedor,
+       documento (nota fiscal), quantidade_atual (o saldo REAL do lote),
+       data_validade (para o controle FIFO/vencimento), localizacao_id (FK),
+       ativo, criado_em.
+
+  9) movimentacoes
+       produto_id (FK), lote_id (FK), usuario_id (FK - quem fez),
+       tipo ('ENTRADA' ou 'SAIDA'), quantidade, status ('CONFIRMADA'),
+       destinatario (saída), destino (saída), documento, observacao,
+       criado_em.
+
+REGRA DE OURO DO ESTOQUE:
+  O saldo de um produto é sempre calculado pela SOMA das quantidades dos
+  LOTES ativos (quantidade_atual). As movimentações guardam o histórico,
+  mas o que vale para o saldo é o lote.
+
+OBSERVAÇÃO IMPORTANTE:
+  Existe um segundo arquivo database.sql na RAIZ do projeto (banco
+  "babycare_estoque") com uma estrutura DIFERENTE e MAIS ANTIGA
+  (usuarios com ENUM de perfil direto na tabela, tabela "auditoria" no
+  singular, lotes com "data_entrada/quantidade"). Esse arquivo da raiz não
+  é o que o backend atual usa - ele é uma versão antiga/residual.
+
+
+================================================================================
+7. FRONT-END (pasta frontend/) - COMO FUNCIONA
+================================================================================
+
+7.1. VISÃO GERAL
+----------------
+O front-end é composto por páginas HTML estáticas servidas pelo Express.
+Cada página carrega 1 a 3 JavaScripts e 1 a 3 CSS. Não há framework de
+componentes. O token e os dados do usuário ficam no navegador
+(localStorage ou sessionStorage).
+
+7.2. PAGE FLOW (FLUXO DE PÁGINAS)
+---------------------------------
+  login.html  ->  Entra com e-mail/senha  ->  salva token e usuário
+       |
+       v
+  dashboard.html = página central (visão geral + indicadores)
+       |
+       +--> produtos.html             (catálogo de produtos)
+       +--> estoque.html              (posição do estoque + entrada/saída)
+       +--> recebimentos.html         (entradas de mercadoria)
+       +--> expedicoes.html           (saídas/expedições)
+       +--> relatorios.html           (relatórios e gráficos)
+       +--> auditoria.html            (histórico de ações)
+       +--> usuarios.html             (gestão de usuários - só gerente/admin)
+       +--> configuracoes.html        (dados pessoais / trocar senha)
+       +--> formulario-produto.html   (cadastro de produto)
+       +--> erro404.html              (página não encontrada)
+7.3. PASTA pages/ (CADA PÁGINA)
+-------------------------------
+  - login.html: tela de acesso com e-mail, senha, "lembrar de mim" e
+    botão de mostrar/ocultar senha.
+  - dashboard.html: "centro de controle" com cartões de métricas, gráfico
+    de entradas x saídas, alertas (estoque baixo, sem estoque, validade),
+    produtos por categoria e atividades recentes.
+  - produtos.html: tabela do catálogo com busca, filtros por categoria,
+    status e situação de estoque, além de cartões de resumo.
+  - estoque.html: lista do saldo por produto, resumo de estoque, tabela de
+    movimentações e um MODAL para registrar entrada ou saída (escolhe
+    produto, quantidade, motivo, lote, validade e localização).
+  - recebimentos.html: resumo de recebimentos do dia e tabela com histórico
+    (produto, lote, fornecedor, validade, localização, responsável) + modal
+    "Novo recebimento".
+  - expedicoes.html: resumo das saídas do dia e tabela com histórico
+    (produto, lote, destinatário, destino, documento) + modal "Nova
+    expedição" (mostra o saldo disponível do produto e avisa se faltar
+    estoque).
+  - relatorios.html: relatório com filtros (período, tipo, categoria,
+    produto), cartões de resumo, gráfico SVG de entradas/saídas, ranking
+    por categoria e por produto, e histórico detalhado.
+  - auditoria.html: histórico de eventos com filtros de período, resultado
+    (sucesso/falha), ação e busca, além de resumo (total, sucessos, falhas,
+    usuários).
+  - usuarios.html: gestão de usuários (lista com busca, filtro de perfil e
+    status; modal de criar/editar). Só GERENTE/ADMINISTRADOR conseguem
+    acessar - caso contrário o script redireciona para a dashboard.
+  - configuracoes.html: perfil do usuário logado (editar nome/e-mail,
+    trocar senha) e, para gerentes/admins, um cartão de acesso à gestão de
+    usuários.
+  - formulario-produto.html: formulário em 3 etapas (identificação,
+    classificação/estoque mínimo/unidade e informações de validade) para
+    cadastrar um novo produto.
+  - erro404.html: página de "não encontrado" com o endereço acessado.
+  - ajustes.html e validade.html: ARQUIVOS VAZIOS (0 bytes) - placeholders
+    de módulos ainda não criados.
+
+7.4. PASTA js/ (LÓGICA DO FRONT-END)
+------------------------------------
+  - ui.js (BASE): define o objeto global window.BabycareUI com utilitários
+    usados por todas as páginas:
+      * esconderCarregamento / mostrarCarregamento (tela de loading);
+      * transicionarPara (troca de página com animação);
+      * mostrarToast (notificações leves);
+      * formatarCPF/CNPJ/Telefone/CEP/Moeda/Número/Data (máscaras);
+      * validarEmailFrontend;
+      * configurarFormatacaoCampos (aplica máscaras automáticas).
+  - sidebar.js: desenha a barra lateral de navegação. Lê o usuário salvo
+    (nome, perfil), mostra o menu conforme o perfil (o item "Usuários" só
+    aparece para GERENTE/ADMINISTRADOR), controla busca do menu e logout.
+  - login.js: envia e-mail/senha para POST /api/auth/login, valida o
+    formulário, salva o token e redireciona para a dashboard.
+  - dashboard.js: busca GET /api/dashboard?periodo=..., renderiza métricas,
+    gráfico, alertas, categorias e atividades; atualiza a cada troca de
+    período e quando a aba volta a ficar visível.
+  - produtos.js: busca categorias e produtos, renderiza a tabela e aplica
+    os filtros localmente; redireciona para login em caso de token inválido.
+  - estoque.js: busca o estoque completo, renderiza resumo/tabelas e o
+    modal de entrada/saída; envia a movimentação para a API.
+  - recebimentos.js: lista recebimentos e envia novos recebimentos (tipo
+    ENTRADA) com produto, lote, fornecedor, documento, validade,
+    localização e observação.
+  - expedicoes.js: lista expedições e envia novas expedições (tipo SAIDA)
+    com destinatário, destino, documento e motivo; alerta se o saldo é
+    insuficiente.
+  - relatorios.js: monta a URL de consulta com os filtros, desenha o gráfico
+    SVG e as listas do relatório.
+  - auditoria.js: consulta os eventos com filtros e monta a tabela e o
+    resumo.
+  - usuarios.js: CRUD de usuários (lista, abre modal, salva criar/editar) e
+    validação de permissão de acesso à página.
+  - configuracoes.js: carrega o perfil via GET /api/perfil, salva dados
+    (PATCH /api/perfil) e troca a senha validando a senha atual.
+  - formulario-produto.js: valida e envia o cadastro de produto (POST
+    /api/produtos), controla o campo de validade conforme a escolha.
+  - usuarios-nav.js: esconde o link de Usuários na sidebar conforme o
+    perfil (funciona para a sidebar nova e a antiga).
+  - erro404.js: pequeno script da página 404 (mostra o endereço acessado).
+
+  OBSERVAÇÃO: frontend/index.html e frontend/app.js são arquivos VAZIOS.
+
+7.5. PASTA styles/ (CSS)
+------------------------
+  - app.css: estilos base/utilitários compartilhados;
+  - dashboard.css: o maior CSS (~28KB) - define o layout do painel
+    (sidebar, topbar, cartões, tabelas, skeletons, toasts, modais, etc.);
+  - login.css, produtos.css, estoque.css, recebimentos.css, expedicoes.css,
+    relatorios.css, auditoria.css, usuarios.css, configuracoes.css,
+    formulario-produto.css, erro404.css: estilos específicos de cada página;
+  - relatorio.css: CSS LEGADO/ANTIGO de relatório (não é usado pela página
+    relatorios.html, que usa relatorios.css);
+  - ARQUIVOS VAZIOS (placeholders): components.css, global.css, layout.css,
+    reset.css e variables.css.
+
+7.6. PASTA images/
+------------------
+  - babycare-logo.png: logo da Babycare (sidebar e páginas);
+  - babycare-login-background.png: imagem de fundo da tela de login.
+================================================================================
+8. SEGURANÇA DO SISTEMA
+================================================================================
+
+  - SENHAS: nunca são armazenadas em texto puro - sempre como hash bcrypt
+    (custo 10 a 12).
+  - AUTENTICAÇÃO: login devolve um JWT assinado (HS256) com validade padrão
+    de 2 horas. Todas as rotas protegidas exigem "Authorization: Bearer".
+  - BLOQUEIO DE CONTA: 5 tentativas de senha errada bloqueiam a conta por
+    15 minutos (tentativas_login e bloqueado_ate na tabela usuarios).
+  - PROTEÇÃO CONTRA TIMING ATTACK: quando o e-mail não existe, o sistema
+    compara a senha com um hash "dummy" para que o tempo de resposta seja
+    similar ao de um e-mail real.
+  - AUTORIZAÇÃO POR PERFIL:
+      * OPERADOR_ESTOQUE: acessa dashboard, produtos, estoque,
+        recebimentos, expedições, relatórios e auditoria;
+      * GERENTE: tudo do operador + gestão de usuários (apenas operadores);
+      * ADMINISTRADOR: tudo + criação de qualquer perfil + inativar
+        usuários e remover links administrativos caso o perfil não permita.
+  - VALIDAÇÃO DE ENTRADA: payloads rejeitam campos desconhecidos, valida
+    tipos/tamanhos e data; SQL usa sempre parâmetros preparados ("?") para
+    evitar injeção SQL.
+  - AUDITORIA: ações importantes (login, recebimento, expedição, criação/
+    edição de usuário, alteração de perfil) são gravadas na tabela
+    auditorias com usuário, ação, resultado e detalhes em JSON. A página de
+    auditoria envia cabeçalhos no-cache para não armazenar dados sensíveis.
+  - ERROS CONTROLADOS: o servidor nunca devolve stack traces ou detalhes do
+    MySQL para o usuário - apenas mensagens amigáveis e códigos.
+
+
+================================================================================
+9. COMO O SISTEMA FUNCIONA (FLUXO DE UMA REQUISIÇÃO)
+================================================================================
+
+Exemplo: um usuário registra uma ENTRADA (recebimento).
+
+   1) O navegador abre http://localhost:3000 -> redireciona para
+      /pages/login.html.
+   2) O usuário faz login (POST /api/auth/login). O backend valida e-mail/
+      senha (bcrypt), gera o JWT e grava "LOGIN_REALIZADO" na auditoria.
+      O front salva token e usuário no localStorage/sessionStorage.
+   3) O usuário abre recebimentos.html e clica em "Novo recebimento".
+      O arquivo recebimentos.js envia:
+         POST /api/recebimentos
+         Authorization: Bearer <token>
+         { tipo: "ENTRADA", produtoId, quantidade, numeroLote,
+           fornecedor, documento, dataValidade, localizacaoId, motivo }
+   4) A rota recebimentoRoutes.js chama os middlewares:
+         verificarToken -> decodifica o JWT;
+         autorizarEstoque -> confere se o perfil pode (operador/gerente/admin);
+      e então chama o controller estoqueController.registrarMovimentacao.
+   5) O controller chama estoqueService.registrarMovimentacao, que valida
+      os dados e delega ao estoqueRepository.registrarEntrada.
+   6) O repository abre uma TRANSAÇÃO:
+         - consulta o produto (com FOR SHARE);
+         - encontra ou cria o lote (numero_lote), somando a quantidade;
+         - insere a movimentação "ENTRADA/CONFIRMADA";
+         - grava a auditoria "RECEBIMENTO_CONFIRMADO";
+         - COMMIT (ou ROLLBACK se algo falhar).
+   7) O controller responde 201 com os dados; o front atualiza a tela e
+      mostra o toast "Recebimento registrado e estoque atualizado."
+
+Para uma SAÍDA (expedição) o mesmo fluxo acontece, mas o repository baixa
+os lotes na ordem de validade (FIFO) e rejeita (422) se o saldo somado for
+menor que a quantidade pedida.
+================================================================================
+10. O QUE CADA PESSOA DA EQUIPE FAZ
+================================================================================
+
+A divisão abaixo foi levantada pelo HISTÓRICO DE COMMITS do repositório
+(git log). É o registro mais fiel de quem contribuiu com o quê.
+
+10.1 VINÍCIUS VALLE RODRIGUES
+     (usuários do Git: "Valle-Vinicius" e "vinicius-do-valle";
+      dono do repositório no GitHub)
+    - Criou a base completa do projeto (arquivos database.js, app.js,
+      server.js, database.sql e o sistema de rotas);
+    - Criou os controllers, repositories, services, routes, middlewares,
+      validators e a pasta database (criarUsuario.js);
+    - Criou o front-end (arquivos JS, CSS e HTML);
+    - Criou a estrutura da sessão de testes;
+    - Reformulou TODOS os arquivos do projeto (grande reorganização);
+    - Integrou a auditoria ao estoque;
+    - Modificou/criou as páginas de relatório;
+    - Removeu arquivos desnecessários;
+    - Definiu as permissões diferenciadas entre os perfis de usuário;
+    - Padronizou a sidebar e corrigiu o bug da área de Administração
+      aparecendo para usuário Operador de Estoque;
+    - É o principal responsável pela arquitetura, pela API e pela
+      integração geral do sistema.
+
+10.2 ANA JÚLIA RIBEIRO FERREIRA
+     (usuária do Git: "AnaRibeiro297")
+10.3 ANTHERO FRANCO
+     - Membro da equipe listado no README.md.
+     - NÃO aparece no histórico de commits analisado, o que indica que atuou
+       em frentes não registradas no código versionado (ex.: levantamento de
+       requisitos, modelagem do banco, testes manuais, documentação,
+       apresentação) ou por fora do repositório. A responsabilidade exata
+       deve ser confirmada com o grupo.
+
+10.4 MILENA HOPPE SALES
+     - Membro da equipe listado no README.md.
+     - Também não aparece no histórico de commits analisado. Provavelmente
+       contribuiu em áreas como pesquisa, design, validação do fluxo de
+       negócio, montagem da apresentação ou testes. A responsabilidade exata
+       deve ser confirmada com o grupo.
+
+OBSERVAÇÃO IMPORTANTE:
+  A presença no Git mostra QUAL código cada pessoa versionou, mas projetos
+  de equipe costumam ter colaboração conjunta (alguém revisa o código de
+  outro, testa junto, ajuda no ajuste). Por isso, as seções sobre Anthero e
+  Milena ficam como sugestão de conferência com o grupo antes da entrega.
+
+
+================================================================================
+11. COMO EXECUTAR O PROJETO
+================================================================================
+
+Pré-requisitos:
+  - Node.js instalado;
+  - MySQL 8.0+ (ou MySQL Workbench para importar o script SQL).
+
+Passos:
+  1) Importar o banco:
+       Abra o MySQL e execute TODO o arquivo backend/database.sql
+       (ele cria o banco "babycare", as tabelas e os dados de demonstração).
+  2) Configurar o ambiente:
+       Crie o arquivo backend/.env com base nas variáveis lidas pelo
+       backend/config/env.js:
+         PORT=3000
+         DB_HOST=localhost
+         DB_PORT=3306
+         DB_USER=<seu-usuario>
+         DB_PASSWORD=<sua-senha>
+         DB_NAME=babycare
+         JWT_SECRET=<uma-chave-secreta-longa>
+         JWT_EXPIRES_IN=2h
+  3) Instalar as dependências do backend:
+       cd backend
+       npm install
+  4) Subir o servidor:
+       Na raiz do projeto: npm run dev
+       (ou: cd backend && npm run dev  -> usa "node --watch server.js")
+  5) Acessar:
+       http://localhost:3000   -> redireciona para a tela de login.
+  6) Criar um usuário:
+       Rode o script assistido:
+         cd backend
+         node database/criarUsuario.js
+      Escolha o perfil (OPERADOR_ESTOQUE, GERENTE ou ADMINISTRADOR),
+      informe nome, e-mail e senha (mínimo 6 caracteres) e o usuário será
+      criado com hash bcrypt + registro de auditoria.
+      (Alternativa antiga: o database.sql da raiz insere o usuário
+       teste@babycare.com com senha "12345678", porém com o schema antigo.)
+
+Scripts do package.json da raiz:
+  - npm run dev   -> starta o backend em modo desenvolvimento (--watch);
+  - npm start     -> starta o backend normalmente;
+  - npm test      -> roda os testes (node --test).
+
+
+================================================================================
+12. PONTOS DE ATENÇÃO / MELHORIAS SUGERIDAS
+================================================================================
+
+  - ARQUIVOS VAZIOS: docker-compose.yml, backend/app.js, frontend/index.html,
+    frontend/app.js, frontend/pages/ajustes.html, frontend/pages/validade.html
+    e os CSS components/global/layout/reset/variables estão vazios. Podem ser
+    preenchidos ou removidos.
+  - VALIDATORS VAZIOS: authValidator.js, expedicaoValidator.js e
+    recebimentoValidator.js não têm código (a validação ocorre nos services).
+  - SERVICES INCORRETOS: localizacaoService.js e movimentacaoService.js
+    dentro de backend/services são, na verdade, controllers não utilizados
+    (importam a si mesmos). Recomenda-se apagá-los para evitar confusão.
+  - SCHEMA DUPLICADO: há dois database.sql (raiz e backend). O backend usa
+    o da pasta backend/. O da raiz é antigo e deve ser removido ou
+    atualizado para não gerar dúvidas.
+  - RELATÓRIO LEGADO: frontend/styles/relatorio.css não é usado (a página
+    atual usa relatorios.css).
+  - O docker-compose.yml está vazio: se o grupo quiser subir o MySQL com
+    Docker, é preciso preenchê-lo.
+  - A documentação README.md está em codificação UTF-16 e cita NOMES de
+    arquivos dos controllers/repositories (ex.: categoriaController,
+    ajusteRepository) que não existem mais na versão atual - o README deve
+    ser revisado para refletir a estrutura real de hoje.
+
+================================================================================
+FIM DO DOCUMENTO
+================================================================================
+Este guia foi elaborado automaticamente a partir da leitura de todos os
+arquivos do projeto (back-end, front-end, banco de dados, documentação e
+histórico Git) e deve ser usado como material de apoio para apresentações,
+entregas e orientação de novos membros da equipe.
+    - Desenvolveu a funcionalidade de RELATÓRIOS (páginas de relatório e
+      relatórios completos);
+    - Desenvolveu o módulo de MOVIMENTAÇÕES;
+    - Desenvolveu o módulo de LOCALIZAÇÃO;
+    - Escreveu/atualizou o README.md (documentação do projeto).

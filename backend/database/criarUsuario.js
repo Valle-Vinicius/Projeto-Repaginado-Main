@@ -1,111 +1,120 @@
-const readline = require('readline');
-const authService = require('../services/authService');
-const { pool } = require('../config/database');
+const readline = require("readline");
+const bcrypt = require("bcryptjs");
+const { pool } = require("../config/database");
 
-function perguntarSenha(mensagem) {
-  if (!process.stdin.isTTY || typeof process.stdin.setRawMode !== 'function') {
-    const leitor = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
+function perguntar(leitor, mensagem) {
+  return new Promise((resolve) =>
+    leitor.question(`${mensagem}: `, (resposta) => resolve(resposta.trim())),
+  );
+}
 
-    return new Promise((resolve) => {
-      leitor.question(`${mensagem}: `, (resposta) => {
-        leitor.close();
-        resolve(resposta);
-      });
-    });
-  }
+async function perguntarSenha(leitor, mensagem) {
+  return perguntar(leitor, mensagem);
+}
 
-  return new Promise((resolve, reject) => {
-    const entrada = process.stdin;
-    const saida = process.stdout;
-    let senha = '';
+async function buscarOpcoes() {
+  const [perfis] = await pool.execute(
+    "SELECT id, nome FROM perfis WHERE ativo = TRUE ORDER BY id ASC",
+  );
+  const [departamentos] = await pool.execute(
+    "SELECT id, nome FROM departamentos WHERE ativo = TRUE ORDER BY nome ASC",
+  );
+  return { perfis, departamentos };
+}
 
-    saida.write(`${mensagem}: `);
-    entrada.setRawMode(true);
-    entrada.resume();
-    entrada.setEncoding('utf8');
-
-    function finalizar(erro = null) {
-      entrada.setRawMode(false);
-      entrada.pause();
-      entrada.removeListener('data', receberTecla);
-      saida.write('\n');
-
-      if (erro) reject(erro);
-      else resolve(senha);
-    }
-
-    function receberTecla(tecla) {
-      if (tecla === '\u0003') {
-        finalizar(new Error('Operação cancelada.'));
-        return;
-      }
-
-      if (tecla === '\r' || tecla === '\n') {
-        finalizar();
-        return;
-      }
-
-      if (tecla === '\u007f' || tecla === '\b') {
-        if (senha.length > 0) {
-          senha = senha.slice(0, -1);
-          saida.write('\b \b');
-        }
-        return;
-      }
-
-      if (tecla >= ' ' && tecla !== '\u007f') {
-        senha += tecla;
-        saida.write('*');
-      }
-    }
-
-    entrada.on('data', receberTecla);
+function mostrarOpcoes(titulo, itens) {
+  console.log(`\n${titulo}:`);
+  itens.forEach((item, indice) => {
+    console.log(`${indice + 1}. ${item.nome}`);
   });
 }
 
-function perguntar(leitor, mensagem) {
-  return new Promise((resolve) => {
-    leitor.question(`${mensagem}: `, resolve);
-  });
+async function escolherOpcao(leitor, titulo, itens, obrigatoria = true) {
+  if (!itens.length && obrigatoria)
+    throw new Error(`Nenhuma opção cadastrada para ${titulo.toLowerCase()}.`);
+  if (!itens.length) return null;
+
+  mostrarOpcoes(titulo, itens);
+  const resposta = await perguntar(leitor, "Escolha o número");
+  const indice = Number(resposta) - 1;
+  if (!Number.isInteger(indice) || !itens[indice]) {
+    throw new Error(`Escolha inválida para ${titulo.toLowerCase()}.`);
+  }
+  return itens[indice];
 }
 
 async function executar() {
   const leitor = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   try {
-    console.log('=== Cadastro de operador Babycare ===');
-    console.log('A senha será usada somente para gerar o hash bcrypt e não será exibida.');
-    console.log('');
+    console.log("=== Cadastro de usuário Babycare ===");
+    console.log("A senha será armazenada somente como hash bcrypt.");
 
-    const nome = (await perguntar(leitor, 'Nome completo')).trim();
-    const email = (await perguntar(leitor, 'E-mail')).trim();
-    leitor.close();
+    const { perfis, departamentos } = await buscarOpcoes();
+    const perfil = await escolherOpcao(leitor, "Cargo/perfil", perfis);
+    const departamento = await escolherOpcao(
+      leitor,
+      "Departamento",
+      departamentos,
+      false,
+    );
 
-    const senha = await perguntarSenha('Senha');
-    const confirmacao = await perguntarSenha('Confirme a senha');
+    const nome = await perguntar(leitor, "Nome completo");
+    const email = (await perguntar(leitor, "E-mail")).toLowerCase();
+    const senha = await perguntarSenha(leitor, "Senha");
+    const confirmacao = await perguntarSenha(leitor, "Confirme a senha");
 
-    if (senha !== confirmacao) {
-      throw new Error('As senhas não coincidem.');
-    }
+    if (nome.length < 3)
+      throw new Error("O nome deve ter pelo menos 3 caracteres.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      throw new Error("Informe um e-mail válido.");
+    if (senha.length < 6)
+      throw new Error("A senha deve ter pelo menos 6 caracteres.");
+    if (senha !== confirmacao) throw new Error("As senhas não coincidem.");
 
-    const usuario = await authService.cadastrar({
-      nome,
-      email,
-      senha
-    });
+    const [existentes] = await pool.execute(
+      "SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?) LIMIT 1",
+      [email],
+    );
+    if (existentes.length)
+      throw new Error("Já existe um usuário com este e-mail.");
 
-    console.log('');
-    console.log('Usuário criado com sucesso.');
-    console.log(`Nome: ${usuario.nome}`);
-    console.log(`E-mail: ${usuario.email}`);
-    console.log(`Perfil: ${usuario.perfil}`);
+    const senhaHash = await bcrypt.hash(senha, 10);
+    const [resultado] = await pool.execute(
+      `
+      INSERT INTO usuarios
+        (nome, email, senha_hash, perfil_id, departamento_id, ativo)
+      VALUES (?, ?, ?, ?, ?, TRUE)
+    `,
+      [nome, email, senhaHash, perfil.id, departamento?.id || null],
+    );
+
+    await pool.execute(
+      `
+      INSERT INTO auditorias
+        (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
+      VALUES (NULL, 'USUARIO_CRIADO_CLI', 'USUARIO', ?, 'SUCESSO', ?)
+    `,
+      [
+        resultado.insertId,
+        JSON.stringify({
+          email,
+          perfil: perfil.nome,
+          departamento: departamento?.nome || null,
+        }),
+      ],
+    );
+
+    console.log("\nUsuário criado com sucesso.");
+    console.log(`Nome: ${nome}`);
+    console.log(`E-mail: ${email}`);
+    console.log(`Cargo: ${perfil.nome}`);
+    console.log(`Departamento: ${departamento?.nome || "Sem departamento"}`);
   } finally {
+    leitor.close();
     await pool.end();
   }
 }

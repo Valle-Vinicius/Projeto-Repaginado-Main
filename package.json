@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "babycare-main",
   "version": "1.0.0",
   "private": true,
@@ -6,6 +6,12 @@
   "scripts": {
     "dev": "npm --prefix backend run dev",
     "start": "npm --prefix backend start",
-    "test": "npm --prefix backend test"
+    "test": "npm --prefix backend test",
+    "test:jest": "jest --config jest.config.js --runInBand",
+    "test:setup": "node tests/scripts/setup-test-db.js",
+    "test:all": "npm run test:setup && npm run test:jest"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2"
   }
 }
