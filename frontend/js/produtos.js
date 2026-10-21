@@ -23,10 +23,6 @@ const productElements = {
 let produtos = [];
 let categorias = [];
 
-function obterToken() {
-  return localStorage.getItem('babycareToken') || sessionStorage.getItem('babycareToken');
-}
-
 function obterUsuario() {
   const salvo = localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
   try {
@@ -37,9 +33,7 @@ function obterUsuario() {
 }
 
 function limparSessao() {
-  localStorage.removeItem('babycareToken');
   localStorage.removeItem('babycareUsuario');
-  sessionStorage.removeItem('babycareToken');
   sessionStorage.removeItem('babycareUsuario');
 }
 
@@ -66,9 +60,9 @@ async function requisitarAPI(caminho, opcoes = {}) {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${obterToken()}`,
       ...(opcoes.headers || {})
-    }
+    },
+    credentials: 'include'
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -275,8 +269,12 @@ function configurarEventos() {
   });
 
   productElements.logout.addEventListener('click', () => {
-    limparSessao();
-    window.BabycareUI.transicionarPara('./login.html');
+    if (window.BabycareUI?.fazerLogout) {
+      window.BabycareUI.fazerLogout();
+    } else {
+      limparSessao();
+      window.BabycareUI.transicionarPara('./login.html');
+    }
   });
 
   document.querySelectorAll('[data-coming-soon]').forEach((link) => {
@@ -295,11 +293,6 @@ function configurarEventos() {
 }
 
 async function inicializarProdutos() {
-  if (!obterToken()) {
-    window.location.replace('./login.html');
-    return;
-  }
-
   configurarUsuario();
   configurarEventos();
   await carregarProdutos();

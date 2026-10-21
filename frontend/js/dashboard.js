@@ -1,5 +1,4 @@
 const API_URL = window.location.origin;
-const TOKEN_KEYS = ['babycareToken', 'token'];
 const USER_KEYS = ['babycareUsuario', 'babycareUser'];
 
 const dashboardState = {
@@ -16,23 +15,10 @@ const elementos = {};
 
 function selecionarElementos() {
   const ids = [
-    'pageLoader',
-    'sidebar',
     'openSidebarButton',
-    'closeSidebarButton',
-    'logoutButton',
-    'sidebarSearch',
     'topbarSearch',
     'notificationButton',
     'notificationCount',
-    'sidebarAvatar',
-    'sidebarUserName',
-    'sidebarUserRole',
-    'topbarAvatar',
-    'topbarUserName',
-    'topbarUserRole',
-    'welcomeName',
-    'currentDate',
     'periodSelect',
     'refreshButton',
     'metricProducts',
@@ -40,38 +26,21 @@ function selecionarElementos() {
     'metricLowStock',
     'metricMovements',
     'movementPeriodLabel',
-    'movementChart',
-    'entryArea',
-    'exitArea',
-    'entryLine',
-    'exitLine',
-    'axisTop',
-    'axisMiddle',
-    'chartLabels',
-    'chartEmpty',
-    'alertList',
-    'alertCountLabel',
-    'alertsButton',
     'categoryList',
-    'categoryEmpty',
     'categoryTotal',
     'activityBody',
     'historyButton',
-    'dashboardToast'
+    'dashboardToast',
+    'topbarAvatar',
+    'topbarUserName',
+    'topbarUserRole',
+    'welcomeName',
+    'currentDate'
   ];
 
   ids.forEach((id) => {
     elementos[id] = document.getElementById(id);
   });
-}
-
-function obterToken() {
-  for (const chave of TOKEN_KEYS) {
-    const token = window.localStorage.getItem(chave) || window.sessionStorage.getItem(chave);
-    if (token) return token;
-  }
-
-  return null;
 }
 
 function obterUsuarioSessao() {
@@ -115,14 +84,11 @@ function inicializarUsuario() {
   const perfil = formatarPerfil(usuario.perfil);
   const iniciais = obterIniciais(nome);
 
-  elementos.sidebarUserName.textContent = nome;
-  elementos.topbarUserName.textContent = nome;
-  elementos.welcomeName.textContent = nome.split(/\s+/u)[0];
-  elementos.sidebarUserRole.textContent = perfil;
-  elementos.topbarUserRole.textContent = perfil;
-  elementos.sidebarAvatar.textContent = iniciais;
-  elementos.topbarAvatar.textContent = iniciais;
-  elementos.currentDate.textContent = `Hoje é ${new Intl.DateTimeFormat('pt-BR', {
+  if (elementos.topbarUserName) elementos.topbarUserName.textContent = nome;
+  if (elementos.topbarUserRole) elementos.topbarUserRole.textContent = perfil;
+  if (elementos.welcomeName) elementos.welcomeName.textContent = nome.split(/\s+/u)[0];
+  if (elementos.topbarAvatar) elementos.topbarAvatar.textContent = iniciais;
+  if (elementos.currentDate) elementos.currentDate.textContent = `Hoje é ${new Intl.DateTimeFormat('pt-BR', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
@@ -131,7 +97,7 @@ function inicializarUsuario() {
 }
 
 function limparSessao() {
-  [...TOKEN_KEYS, ...USER_KEYS].forEach((chave) => {
+  [...USER_KEYS].forEach((chave) => {
     window.localStorage.removeItem(chave);
     window.sessionStorage.removeItem(chave);
   });
@@ -142,6 +108,10 @@ function formatarNumero(valor, casas = 0) {
     minimumFractionDigits: casas,
     maximumFractionDigits: casas
   }).format(valor);
+}
+
+function formatarQuantidade(valor) {
+  return formatarNumero(valor, 3).replace(/,?0+$/u, '').replace(/,$/u, '');
 }
 
 function obterNumero(objeto, chaves, nomeCampo) {
@@ -236,107 +206,11 @@ function normalizarResposta(payload) {
 }
 
 function atualizarIndicadores(resumo) {
-  elementos.metricProducts.textContent = formatarNumero(resumo.totalProdutos);
-  elementos.metricStock.textContent = formatarNumero(resumo.estoqueTotal, 3);
-  elementos.metricLowStock.textContent = formatarNumero(resumo.estoqueBaixo);
-  elementos.metricMovements.textContent = formatarNumero(resumo.movimentacoesPeriodo);
-  elementos.movementPeriodLabel.textContent = `no período selecionado (${dashboardState.periodo})`;
-}
-
-function normalizarSerieGrafico(grafico) {
-  if (!grafico) return { labels: [], entradas: [], saidas: [] };
-
-  if (Array.isArray(grafico)) {
-    return {
-      labels: grafico.map((item) => item.label || item.data || item.periodo || ''),
-      entradas: grafico.map((item) => Number(item.entradas ?? item.entrada ?? 0)),
-      saidas: grafico.map((item) => Number(item.saidas ?? item.saida ?? 0))
-    };
-  }
-
-  const labels = Array.isArray(grafico.labels)
-    ? grafico.labels
-    : Array.isArray(grafico.datas) ? grafico.datas : [];
-  const entradas = Array.isArray(grafico.entradas)
-    ? grafico.entradas
-    : Array.isArray(grafico.entries) ? grafico.entries : [];
-  const saidas = Array.isArray(grafico.saidas)
-    ? grafico.saidas
-    : Array.isArray(grafico.exits) ? grafico.exits : [];
-
-  if (labels.length !== entradas.length || labels.length !== saidas.length) {
-    throw new Error('A série do gráfico possui tamanhos diferentes.');
-  }
-
-  const valoresValidos = [...entradas, ...saidas].every((valor) => {
-    const numero = Number(valor);
-    return Number.isFinite(numero) && numero >= 0;
-  });
-  if (!valoresValidos) throw new Error('A série do gráfico possui valores inválidos.');
-
-  return {
-    labels: labels.map(String),
-    entradas: entradas.map(Number),
-    saidas: saidas.map(Number)
-  };
-}
-
-function criarPontos(valores, maiorValor) {
-  const largura = 720;
-  const altura = 210;
-  const quantidade = valores.length;
-
-  return valores.map((valor, indice) => ({
-    x: quantidade === 1 ? largura / 2 : (indice / (quantidade - 1)) * largura,
-    y: altura - (Number(valor) / maiorValor) * (altura - 20) + 10
-  }));
-}
-
-function criarPathLinha(pontos) {
-  if (pontos.length === 0) return 'M0 230 L720 230';
-  return pontos.map((ponto, indice) => `${indice === 0 ? 'M' : 'L'}${ponto.x.toFixed(2)} ${ponto.y.toFixed(2)}`).join(' ');
-}
-
-function criarPathArea(pontos) {
-  if (pontos.length === 0) return 'M0 230 L720 230 Z';
-  const linha = criarPathLinha(pontos);
-  const primeiro = pontos[0];
-  const ultimo = pontos[pontos.length - 1];
-  return `${linha} L${ultimo.x.toFixed(2)} 230 L${primeiro.x.toFixed(2)} 230 Z`;
-}
-
-function renderizarGrafico(grafico) {
-  const serie = normalizarSerieGrafico(grafico);
-  const temDados = serie.labels.length > 0 && [...serie.entradas, ...serie.saidas].some((valor) => valor > 0);
-  const maiorValor = Math.max(...serie.entradas, ...serie.saidas, 1);
-
-  elementos.movementChart.dataset.chartState = temDados ? 'ready' : 'empty';
-  elementos.chartEmpty.classList.toggle('visible', !temDados);
-  elementos.axisTop.textContent = formatarNumero(maiorValor);
-  elementos.axisMiddle.textContent = formatarNumero(maiorValor / 2);
-
-  if (!temDados) {
-    elementos.entryLine.setAttribute('d', 'M0 230 L720 230');
-    elementos.exitLine.setAttribute('d', 'M0 230 L720 230');
-    elementos.entryArea.setAttribute('d', 'M0 230 L720 230 Z');
-    elementos.exitArea.setAttribute('d', 'M0 230 L720 230 Z');
-    elementos.chartLabels.replaceChildren();
-    return;
-  }
-
-  const pontosEntrada = criarPontos(serie.entradas, maiorValor);
-  const pontosSaida = criarPontos(serie.saidas, maiorValor);
-  elementos.entryLine.setAttribute('d', criarPathLinha(pontosEntrada));
-  elementos.exitLine.setAttribute('d', criarPathLinha(pontosSaida));
-  elementos.entryArea.setAttribute('d', criarPathArea(pontosEntrada));
-  elementos.exitArea.setAttribute('d', criarPathArea(pontosSaida));
-
-  elementos.chartLabels.replaceChildren();
-  serie.labels.forEach((label) => {
-    const item = document.createElement('span');
-    item.textContent = label;
-    elementos.chartLabels.appendChild(item);
-  });
+  if (elementos.metricProducts) elementos.metricProducts.textContent = formatarNumero(resumo.totalProdutos);
+  if (elementos.metricStock) elementos.metricStock.textContent = formatarQuantidade(resumo.estoqueTotal);
+  if (elementos.metricLowStock) elementos.metricLowStock.textContent = formatarNumero(resumo.estoqueBaixo);
+  if (elementos.metricMovements) elementos.metricMovements.textContent = formatarNumero(resumo.movimentacoesPeriodo);
+  if (elementos.movementPeriodLabel) elementos.movementPeriodLabel.textContent = `no período selecionado (${dashboardState.periodo})`;
 }
 
 function criarEstadoVazio(titulo, detalhe) {
@@ -352,58 +226,19 @@ function criarEstadoVazio(titulo, detalhe) {
   return estado;
 }
 
-function renderizarAlertas(alertas) {
-  elementos.alertList.dataset.state = 'ready';
-  elementos.alertCountLabel.textContent = formatarNumero(alertas.length);
-  elementos.notificationCount.textContent = formatarNumero(alertas.length);
-  elementos.notificationCount.hidden = alertas.length === 0;
-  elementos.alertList.replaceChildren();
-
-  if (alertas.length === 0) {
-    elementos.alertList.appendChild(criarEstadoVazio(
-      'Nenhum alerta no momento',
-      'Avisos de estoque baixo e validade aparecerão aqui.'
-    ));
-    return;
-  }
-
-  alertas.slice(0, 5).forEach((alerta) => {
-    const tipo = ['danger', 'warning', 'attention'].includes(alerta.tipo) ? alerta.tipo : 'warning';
-    const item = document.createElement('div');
-    item.className = `alert-item ${tipo}`;
-
-    const simbolo = document.createElement('span');
-    simbolo.className = 'alert-item-icon';
-    simbolo.textContent = tipo === 'danger' ? '!' : '△';
-    simbolo.setAttribute('aria-hidden', 'true');
-
-    const copia = document.createElement('div');
-    copia.className = 'alert-item-copy';
-    const titulo = document.createElement('strong');
-    const detalhe = document.createElement('span');
-    titulo.textContent = String(alerta.titulo || alerta.nome || 'Alerta de estoque');
-    detalhe.textContent = String(alerta.detalhe || alerta.mensagem || 'Verifique este item no estoque.');
-    copia.append(titulo, detalhe);
-    item.append(simbolo, copia);
-    elementos.alertList.appendChild(item);
-  });
-}
-
 function renderizarCategorias(categorias) {
-  elementos.categoryList.dataset.state = 'ready';
-  elementos.categoryList.replaceChildren();
+  if (elementos.categoryList) elementos.categoryList.dataset.state = 'ready';
+  elementos.categoryList?.replaceChildren();
 
   if (categorias.length === 0) {
-    elementos.categoryTotal.textContent = '0';
-    elementos.categoryEmpty.hidden = false;
+    if (elementos.categoryTotal) elementos.categoryTotal.textContent = '0';
     return;
   }
 
-  elementos.categoryEmpty.hidden = true;
   const valores = categorias.map((item) => Number(item.total ?? item.quantidade ?? item.valor ?? 0));
   const maiorValor = Math.max(...valores, 1);
   const total = valores.reduce((soma, valor) => soma + (Number.isFinite(valor) && valor >= 0 ? valor : 0), 0);
-  elementos.categoryTotal.textContent = formatarNumero(total);
+  if (elementos.categoryTotal) elementos.categoryTotal.textContent = formatarNumero(total);
 
   categorias.slice(0, 5).forEach((categoria) => {
     const valor = Number(categoria.total ?? categoria.quantidade ?? categoria.valor ?? 0);
@@ -426,7 +261,7 @@ function renderizarCategorias(categorias) {
     barra.style.width = `${Math.max((valor / maiorValor) * 100, valor > 0 ? 4 : 0)}%`;
     trilho.appendChild(barra);
     linha.append(cabecalho, trilho);
-    elementos.categoryList.appendChild(linha);
+    elementos.categoryList?.appendChild(linha);
   });
 }
 
@@ -441,7 +276,7 @@ function formatarDataHora(valor) {
 }
 
 function renderizarAtividades(atividades) {
-  elementos.activityBody.replaceChildren();
+  elementos.activityBody?.replaceChildren();
 
   if (atividades.length === 0) {
     const linha = document.createElement('tr');
@@ -450,7 +285,7 @@ function renderizarAtividades(atividades) {
     celula.className = 'table-empty';
     celula.textContent = 'Nenhuma atividade registrada neste período.';
     linha.appendChild(celula);
-    elementos.activityBody.appendChild(linha);
+    elementos.activityBody?.appendChild(linha);
     return;
   }
 
@@ -470,7 +305,7 @@ function renderizarAtividades(atividades) {
     status.textContent = statusTexto;
     statusCelula.appendChild(status);
     linha.append(atividadeCelula, responsavelCelula, dataCelula, statusCelula);
-    elementos.activityBody.appendChild(linha);
+    elementos.activityBody?.appendChild(linha);
   });
 }
 
@@ -499,19 +334,11 @@ function mostrarToast(mensagem) {
 
 function atualizarInterface(dados) {
   atualizarIndicadores(dados.resumo);
-  renderizarGrafico(dados.grafico);
-  renderizarAlertas(dados.alertas);
   renderizarCategorias(dados.categorias);
   renderizarAtividades(dados.atividadesRecentes);
 }
 
 async function requisitarDashboard() {
-  const token = obterToken();
-  if (!token) {
-    window.location.replace('./login.html');
-    return null;
-  }
-
   const url = new URL(`${API_URL}/api/dashboard`);
   url.searchParams.set('periodo', dashboardState.periodo);
   const resposta = await fetch(url, {
@@ -519,8 +346,8 @@ async function requisitarDashboard() {
     cache: 'no-store',
     headers: {
       Accept: 'application/json',
-      Authorization: `Bearer ${token}`
     },
+    credentials: 'include',
     signal: dashboardState.controlador.signal
   });
 
@@ -547,7 +374,7 @@ async function carregarDashboard({ silencioso = false } = {}) {
   const requestAtual = dashboardState.requestId;
   dashboardState.controlador?.abort();
   dashboardState.controlador = new AbortController();
-  elementos.refreshButton.disabled = true;
+  if (elementos.refreshButton) elementos.refreshButton.disabled = true;
 
   if (!silencioso && !dashboardState.dados) {
     document.body.dataset.dashboardState = 'loading';
@@ -571,14 +398,13 @@ async function carregarDashboard({ silencioso = false } = {}) {
     if (requestAtual === dashboardState.requestId) {
       dashboardState.carregando = false;
       dashboardState.controlador = null;
-      elementos.refreshButton.disabled = false;
+      if (elementos.refreshButton) elementos.refreshButton.disabled = false;
     }
   }
 }
 
 function configurarNavegacao() {
-  elementos.openSidebarButton?.addEventListener('click', () => document.body.classList.add('sidebar-open'));
-  elementos.closeSidebarButton?.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+  if (elementos.openSidebarButton) elementos.openSidebarButton.addEventListener('click', () => document.body.classList.add('sidebar-open'));
 
   document.querySelectorAll('.nav-link').forEach((link) => {
     link.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
@@ -588,28 +414,12 @@ function configurarNavegacao() {
     botao.addEventListener('click', () => mostrarToast(`${botao.dataset.comingSoon} será implementado nas próximas etapas.`));
   });
 
-  elementos.logoutButton?.addEventListener('click', () => {
-    limparSessao();
-    window.location.replace('./login.html');
-  });
-
   elementos.notificationButton?.addEventListener('click', () => {
-    document.querySelector('.alerts-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-
-  elementos.alertsButton?.addEventListener('click', () => {
     document.querySelector('.alerts-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
   elementos.historyButton?.addEventListener('click', () => {
     mostrarToast('O histórico completo será implementado na etapa de Movimentações.');
-  });
-
-  elementos.sidebarSearch?.addEventListener('input', (evento) => {
-    const termo = evento.target.value.trim().toLocaleLowerCase('pt-BR');
-    document.querySelectorAll('.main-nav .nav-link').forEach((link) => {
-      link.hidden = Boolean(termo) && !link.textContent.toLocaleLowerCase('pt-BR').includes(termo);
-    });
   });
 
   elementos.topbarSearch?.addEventListener('search', () => {
@@ -625,7 +435,7 @@ function configurarControles() {
     carregarDashboard();
   });
 
-  elementos.refreshButton?.addEventListener('click', () => carregarDashboard());
+  if (elementos.refreshButton) elementos.refreshButton.addEventListener('click', () => carregarDashboard());
 
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) carregarDashboard({ silencioso: true });
@@ -636,11 +446,6 @@ function configurarControles() {
 
 function iniciarDashboard() {
   selecionarElementos();
-
-  if (!obterToken()) {
-    window.location.replace('./login.html');
-    return;
-  }
 
   inicializarUsuario();
   configurarNavegacao();

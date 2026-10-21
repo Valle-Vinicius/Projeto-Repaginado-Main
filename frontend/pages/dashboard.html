@@ -180,126 +180,6 @@
             </article>
           </section>
 
-          <section class="dashboard-grid dashboard-grid-primary">
-            <article class="panel movement-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">MOVIMENTAÇÃO</span>
-                  <h3>Entradas e saídas</h3>
-                </div>
-                <div class="chart-legend" aria-label="Legenda do gráfico">
-                  <span><i class="legend-dot entry"></i>Entradas</span>
-                  <span><i class="legend-dot exit"></i>Saídas</span>
-                </div>
-              </div>
-              <div
-                id="movementChart"
-                class="chart-container"
-                data-chart-state="loading"
-              >
-                <div class="chart-loading" aria-hidden="true">
-                  <span></span><span></span><span></span><span></span
-                  ><span></span><span></span><span></span>
-                </div>
-                <div class="chart-y-axis" aria-hidden="true">
-                  <span id="axisTop">—</span><span id="axisMiddle">—</span
-                  ><span id="axisBottom">0</span>
-                </div>
-                <div class="chart-visual">
-                  <div class="chart-grid-lines" aria-hidden="true">
-                    <i></i><i></i><i></i>
-                  </div>
-                  <svg
-                    id="movementChartSvg"
-                    class="line-chart"
-                    viewBox="0 0 720 230"
-                    role="img"
-                    aria-label="Gráfico de movimentações"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="entryFill"
-                        x1="0"
-                        x2="0"
-                        y1="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stop-color="#3c7be8"
-                          stop-opacity="0.2"
-                        ></stop>
-                        <stop
-                          offset="100%"
-                          stop-color="#3c7be8"
-                          stop-opacity="0"
-                        ></stop>
-                      </linearGradient>
-                      <linearGradient id="exitFill" x1="0" x2="0" y1="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stop-color="#52bfae"
-                          stop-opacity="0.16"
-                        ></stop>
-                        <stop
-                          offset="100%"
-                          stop-color="#52bfae"
-                          stop-opacity="0"
-                        ></stop>
-                      </linearGradient>
-                    </defs>
-                    <path
-                      id="entryArea"
-                      class="chart-area-fill entry-area"
-                      d="M0 230 L720 230 Z"
-                    ></path>
-                    <path
-                      id="exitArea"
-                      class="chart-area-fill exit-area"
-                      d="M0 230 L720 230 Z"
-                    ></path>
-                    <path
-                      id="entryLine"
-                      class="chart-line entry-line"
-                      d="M0 230 L720 230"
-                    ></path>
-                    <path
-                      id="exitLine"
-                      class="chart-line exit-line"
-                      d="M0 230 L720 230"
-                    ></path>
-                  </svg>
-                  <div
-                    id="chartLabels"
-                    class="chart-labels"
-                    aria-hidden="true"
-                  ></div>
-                  <p id="chartEmpty" class="chart-empty">
-                    Ainda não há movimentações neste período.
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <article class="panel alerts-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">ATENÇÃO</span>
-                  <h3>Alertas importantes</h3>
-                </div>
-                <span id="alertCountLabel" class="panel-count">—</span>
-              </div>
-              <div id="alertList" class="alert-list" aria-live="polite">
-                <div class="panel-skeleton">
-                  <span></span><span></span><span></span>
-                </div>
-              </div>
-              <button id="alertsButton" class="text-button" type="button">
-                Ver todos os alertas <span aria-hidden="true">→</span>
-              </button>
-            </article>
-          </section>
-
           <section class="dashboard-grid dashboard-grid-secondary">
             <article class="panel category-panel">
               <div class="panel-header">
@@ -314,9 +194,6 @@
                   <span></span><span></span><span></span><span></span>
                 </div>
               </div>
-              <p id="categoryEmpty" class="inline-empty" hidden>
-                Ainda não existem categorias com produtos cadastrados.
-              </p>
             </article>
 
             <article class="panel activity-panel">

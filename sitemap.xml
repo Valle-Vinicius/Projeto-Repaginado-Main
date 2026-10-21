@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!--
+    Sitemap - BabyCare
+    Gerado automaticamente em 2026-10-16
+    Domínio: https://www.babycare.com.br
+  -->
+
+  <!-- Página Inicial -->
+  <url>
+    <loc>https://www.babycare.com.br/</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Login -->
+  <url>
+    <loc>https://www.babycare.com.br/login</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Usuários -->
+  <url>
+    <loc>https://www.babycare.com.br/users</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Produtos -->
+  <url>
+    <loc>https://www.babycare.com.br/produtos</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Formulário de Produto -->
+  <url>
+    <loc>https://www.babycare.com.br/formulário-produto</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Estoque -->
+  <url>
+    <loc>https://www.babycare.com.br/estoque</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Validade -->
+  <url>
+    <loc>https://www.babycare.com.br/validade</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Expedições -->
+  <url>
+    <loc>https://www.babycare.com.br/expedicoes</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Recebimentos -->
+  <url>
+    <loc>https://www.babycare.com.br/recebimentos</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Relatórios -->
+  <url>
+    <loc>https://www.babycare.com.br/relatorios</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Auditoria -->
+  <url>
+    <loc>https://www.babycare.com.br/auditoria</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Configurações -->
+  <url>
+    <loc>https://www.babycare.com.br/configuracoes</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Página de Erro 404 -->
+  <url>
+    <loc>https://www.babycare.com.br/404</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>

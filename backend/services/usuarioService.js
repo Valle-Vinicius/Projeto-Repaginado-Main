@@ -66,7 +66,10 @@ async function atualizar(id, dados, solicitante) {
   const atual = await repository.buscarPorId(usuarioId);
   if (!atual) throw erro('Usuário não encontrado.', 'USUARIO_NAO_ENCONTRADO', 404);
   const perfilDestino = dados.perfil === undefined ? atual.perfil : perfilValido(dados.perfil);
-  usuarioPodeGerenciar(solicitante, perfilDestino, 'EDITAR');
+  usuarioPodeGerenciar(solicitante, atual.perfil, 'EDITAR');
+  if (perfilDestino !== atual.perfil) {
+    usuarioPodeGerenciar(solicitante, perfilDestino, 'EDITAR');
+  }
   if (usuarioId === Number(solicitante.id) && dados.ativo === false) throw erro('Você não pode inativar o próprio usuário.');
   const campos = {};
   if (dados.nome !== undefined) campos.nome = nomeValido(dados.nome);

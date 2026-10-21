@@ -100,6 +100,25 @@ describe("Autorização - gestão de usuários (gerente e administrador)", () =>
     expect(resultado.status).toBe(403);
   });
 
+  it("gerente NÃO pode EDITAR administrador (mesmo tentando rebaixar para operador) -> 403", async () => {
+    const tokenGerente = await tokenDe(config.USUARIO_GERENTE);
+    // Busca ID do admin
+    const listagem = await requisitar("/api/usuarios", { token: tokenGerente });
+    const admin = listagem.corpo.usuarios.find((u) => u.perfil === "ADMINISTRADOR");
+    expect(admin).toBeDefined();
+
+    const resultado = await requisitar(`/api/usuarios/${admin.id}`, {
+      metodo: "PATCH",
+      token: tokenGerente,
+      corpo: {
+        perfil: "OPERADOR_ESTOQUE",
+        nome: "Admin Alterado Por Gerente",
+      },
+    });
+    expect(resultado.status).toBe(403);
+    expect(resultado.corpo.codigo).toBe("PERMISSAO_NEGADA");
+  });
+
   it("usuário com perfil inexistente no token é tratado como 403", async () => {
     const path = require("path");
     const jwt = require(path.join(config.BACKEND, "node_modules", "jsonwebtoken"));

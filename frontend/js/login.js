@@ -38,13 +38,13 @@ function validarFormulario() {
   return true;
 }
 
-function salvarSessao(resultado) {
+async function salvarSessao(resultado) {
   const armazenamento = lembrarInput.checked ? localStorage : sessionStorage;
   const outroArmazenamento = lembrarInput.checked ? sessionStorage : localStorage;
 
   outroArmazenamento.removeItem('babycareToken');
   outroArmazenamento.removeItem('babycareUsuario');
-  armazenamento.setItem('babycareToken', resultado.token);
+  armazenamento.removeItem('babycareToken');
   armazenamento.setItem('babycareUsuario', JSON.stringify(resultado.usuario));
 }
 

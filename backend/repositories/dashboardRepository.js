@@ -1,16 +1,35 @@
 const { executarQuery } = require('../config/database');
 
-const EXPRESSOES_INICIO_PERIODO = Object.freeze({
-  hoje: 'CURDATE()',
-  '7d': 'DATE_SUB(CURDATE(), INTERVAL 6 DAY)',
-  '30d': 'DATE_SUB(CURDATE(), INTERVAL 29 DAY)',
-  mes: "DATE_FORMAT(CURDATE(), '%Y-%m-01')"
+const DIAS_POR_PERIODO = Object.freeze({
+  hoje: 0,
+  '7d': 6,
+  '30d': 29
 });
 
-function obterInicioPeriodo(periodo) {
-  const inicio = EXPRESSOES_INICIO_PERIODO[periodo];
-  if (!inicio) throw new Error('Período de dashboard não permitido.');
-  return inicio;
+function inicioDoDia(referencia) {
+  const dia = new Date(referencia.getTime());
+  dia.setHours(0, 0, 0, 0);
+  return dia;
+}
+
+function obterIntervaloPeriodo(periodo) {
+  const hoje = inicioDoDia(new Date());
+
+  if (!Object.prototype.hasOwnProperty.call(DIAS_POR_PERIODO, periodo) && periodo !== 'mes') {
+    throw new Error('Período de dashboard não permitido.');
+  }
+
+  const inicio = new Date(hoje.getTime());
+  if (periodo === 'mes') {
+    inicio.setDate(1);
+  } else {
+    inicio.setDate(inicio.getDate() - DIAS_POR_PERIODO[periodo]);
+  }
+
+  const fim = new Date(hoje.getTime());
+  fim.setDate(fim.getDate() + 1);
+
+  return { inicio, fim };
 }
 
 async function buscarResumo() {
@@ -49,7 +68,7 @@ async function buscarResumo() {
 }
 
 async function buscarResumoMovimentacoes(periodo) {
-  const inicio = obterInicioPeriodo(periodo);
+  const { inicio, fim } = obterIntervaloPeriodo(periodo);
   const [resumo] = await executarQuery(`
     SELECT
       COUNT(*) AS movimentacoesPeriodo,
@@ -57,9 +76,9 @@ async function buscarResumoMovimentacoes(periodo) {
       COALESCE(SUM(CASE WHEN tipo = 'SAIDA' THEN quantidade ELSE 0 END), 0) AS saidasPeriodo
     FROM movimentacoes
     WHERE status = 'CONFIRMADA'
-      AND criado_em >= ${inicio}
-      AND criado_em < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-  `);
+      AND criado_em >= ?
+      AND criado_em < ?
+  `, [inicio, fim]);
 
   return resumo || {
     movimentacoesPeriodo: 0,
@@ -170,7 +189,7 @@ async function buscarVencidos() {
 }
 
 async function buscarMovimentacoes(periodo) {
-  const inicio = obterInicioPeriodo(periodo);
+  const { inicio, fim } = obterIntervaloPeriodo(periodo);
 
   return executarQuery(`
     SELECT
@@ -179,11 +198,11 @@ async function buscarMovimentacoes(periodo) {
       COALESCE(SUM(CASE WHEN tipo = 'SAIDA' THEN quantidade ELSE 0 END), 0) AS saidas
     FROM movimentacoes
     WHERE status = 'CONFIRMADA'
-      AND criado_em >= ${inicio}
-      AND criado_em < DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+      AND criado_em >= ?
+      AND criado_em < ?
     GROUP BY DATE(criado_em)
     ORDER BY data ASC
-  `);
+  `, [inicio, fim]);
 }
 
 async function buscarCategorias(limite = 5) {
@@ -232,5 +251,5 @@ module.exports = {
   buscarMovimentacoes,
   buscarCategorias,
   buscarAtividadesRecentes,
-  obterInicioPeriodo
+  obterIntervaloPeriodo
 };

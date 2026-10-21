@@ -4,7 +4,6 @@
 
   function lerUsuario() {
     const ler = (storage) => {
-      if (!storage.getItem("babycareToken")) return null;
       const raw =
         storage.getItem("babycareUsuario") || storage.getItem("babycareUser");
       if (!raw) return null;
@@ -57,6 +56,11 @@
       "expedicoes.html",
       "Expedições",
       '<path d="M4 12h13M13 6l6 6-6 6"></path>',
+    ],
+    [
+      "validade.html",
+      "Validade",
+      '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path>',
     ],
     [
       "relatorios.html",
@@ -146,7 +150,14 @@
           !link.textContent.toLocaleLowerCase("pt-BR").includes(termo);
       });
     });
-  document.querySelector("#logoutButton")?.addEventListener("click", () => {
+  document.querySelector("#logoutButton")?.addEventListener("click", async () => {
+    if (window.BabycareUI?.fazerLogout) {
+      await window.BabycareUI.fazerLogout();
+      return;
+    }
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {}
     ["babycareToken", "babycareUsuario", "babycareUser"].forEach((chave) => {
       localStorage.removeItem(chave);
       sessionStorage.removeItem(chave);

@@ -24,6 +24,23 @@ function transicionarPara(url, duracao = 560) {
   }, duracao);
 }
 
+async function fazerLogout() {
+  try {
+    await fetch(`${UI_API_URL}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (erro) {
+    // Prossegue com a limpeza local mesmo se o servidor estiver inacessível
+  } finally {
+    ["babycareToken", "babycareUsuario", "babycareUser"].forEach((chave) => {
+      localStorage.removeItem(chave);
+      sessionStorage.removeItem(chave);
+    });
+    window.location.href = "./login.html";
+  }
+}
+
 function mostrarToast(texto, tipo = "") {
   let toast = document.querySelector("#uiToast");
   if (!toast) {
@@ -141,6 +158,7 @@ window.BabycareUI = {
   esconderCarregamento,
   mostrarCarregamento,
   transicionarPara,
+  fazerLogout,
   mostrarToast,
   aplicarMascara,
   formatarCPF,

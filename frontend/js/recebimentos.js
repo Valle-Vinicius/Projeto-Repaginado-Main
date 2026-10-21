@@ -36,7 +36,7 @@ function numero(valor) { return window.BabycareUI.formatarNumero(Number(valor ||
 function data(valor) { return valor ? window.BabycareUI.formatarDataHora(valor) : '—'; }
 
 async function requisitar(url, opcoes = {}) {
-  const resposta = await fetch(url, { ...opcoes, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}`, ...(opcoes.headers || {}) } });
+  const resposta = await fetch(url, { ...opcoes, headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) }, credentials: 'include' });
   const corpo = await resposta.json().catch(() => ({}));
   if (!resposta.ok) { const erro = new Error(corpo.mensagem || 'Não foi possível concluir a operação.'); erro.status = resposta.status; throw erro; }
   return corpo;

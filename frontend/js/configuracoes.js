@@ -1,9 +1,4 @@
 (() => {
-  const token = () =>
-    localStorage.getItem("babycareToken") ||
-    sessionStorage.getItem("babycareToken") ||
-    "";
-
   const $ = (seletor) => document.querySelector(seletor);
 
   function normalizarPerfil(usuario = {}) {
@@ -43,9 +38,9 @@
       ...opcoes,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token()}`,
         ...(opcoes.headers || {}),
       },
+      credentials: 'include'
     });
 
     const corpo = await resposta.json().catch(() => ({}));

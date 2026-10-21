@@ -19,12 +19,6 @@ const auditEl = {
   bell: document.querySelector("#notificationButton"),
 };
 let buscaTimer;
-function auditToken() {
-  return (
-    localStorage.getItem("babycareToken") ||
-    sessionStorage.getItem("babycareToken")
-  );
-}
 function auditEsc(v) {
   const d = document.createElement("div");
   d.textContent = v ?? "";
@@ -59,9 +53,9 @@ async function fetchAudit() {
   const response = await fetch(`${AUDIT_API}?${params}`, {
     cache: "no-store",
     headers: {
-      Authorization: `Bearer ${auditToken()}`,
       "Cache-Control": "no-cache",
     },
+    credentials: 'include'
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {

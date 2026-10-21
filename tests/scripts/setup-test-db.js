@@ -29,7 +29,7 @@ const bcrypt = require(path.join(
   "bcryptjs",
 ));
 
-const SQL_OFICIAL = path.join(config.PROJETO, "database.sql");
+const SQL_OFICIAL = path.join(config.BACKEND, "database.sql");
 
 function transformarParaBancoDeTeste(sql) {
   let texto = sql;

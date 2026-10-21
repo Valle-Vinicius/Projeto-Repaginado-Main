@@ -58,9 +58,10 @@ async function atualizar(id, dados) {
   if (dados.novaSenha !== undefined && dados.novaSenha !== "") {
     if (!dados.senhaAtual)
       throw erro("Informe sua senha atual para definir uma nova senha.");
+    const senhaHash = await usuarioRepository.buscarSenhaHash(usuarioId);
     const senhaOk = await bcrypt.compare(
       String(dados.senhaAtual),
-      atual.senhaHash || "",
+      senhaHash || "",
     );
     if (!senhaOk)
       throw erro("A senha atual está incorreta.", "SENHA_ATUAL_INVALIDA", 400);

@@ -229,3 +229,17 @@ describe("Autenticação - auditoria", () => {
     expect(depois[0].resultado).toBe("FALHA");
   });
 });
+
+describe("Autenticação - logout", () => {
+  test("POST /api/auth/logout limpa o cookie babycareToken", async () => {
+    const resultado = await requisitar("/api/auth/logout", {
+      metodo: "POST"
+    });
+    expect(resultado.status).toBe(200);
+    expect(resultado.corpo.sucesso).toBe(true);
+    expect(resultado.corpo.mensagem).toBe("Sessão encerrada com sucesso.");
+    const setCookie = resultado.resposta.headers.get("set-cookie");
+    expect(setCookie).toBeTruthy();
+    expect(setCookie).toMatch(/babycareToken=;/);
+  });
+});

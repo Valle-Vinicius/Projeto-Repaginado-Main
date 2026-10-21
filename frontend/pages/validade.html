@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Controle de validade dos lotes da Babycare">
+  <title>Validade | Babycare</title>
+  <link rel="stylesheet" href="../styles/dashboard.css">
+  <link rel="stylesheet" href="../styles/validade.css">
+</head>
+<body>
+  <div id="pageLoader" class="page-loader" aria-live="polite"><span class="loader-mark"></span><span>Carregando validade...</span></div>
+  <div class="dashboard-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+          <div><p class="breadcrumb">Babycare <span>/</span> <strong>Validade</strong></p><h1>Validade</h1></div>
+        </div>
+        <div class="topbar-actions"><label class="topbar-search" for="topbarSearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="topbarSearch" type="search" placeholder="Pesquisar no painel"></label><button id="notificationButton" class="notification-button" type="button" aria-label="Ver notificações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></button><div class="topbar-divider"></div><div class="topbar-user"><div id="topbarAvatar" class="avatar avatar-small">U</div><div class="topbar-user-copy"><strong id="topbarUserName">Usuário Babycare</strong><span id="topbarUserRole">Perfil de acesso</span></div></div></div>
+      </header>
+      <div class="dashboard-content validade-content">
+        <section class="validade-heading"><div><p class="section-kicker">CONTROLE DE ESTOQUE</p><h2>Validade dos lotes</h2><p>Acompanhe produtos vencidos e próximos do vencimento.</p></div><button id="refreshValidity" class="validade-button secondary" type="button">Atualizar</button></section>
+        <section class="validade-metrics" aria-label="Resumo das validades"><article><span>Total com validade</span><strong id="totalValidity">—</strong><small>lotes monitorados</small></article><article class="danger-card"><span>Vencidos</span><strong id="expiredValidity">—</strong><small>exigem atenção imediata</small></article><article class="critical-card"><span>Até 7 dias</span><strong id="criticalValidity">—</strong><small>risco crítico</small></article><article class="attention-card"><span>De 8 a 30 dias</span><strong id="attentionValidity">—</strong><small>planeje a movimentação</small></article></section>
+        <section class="panel validade-panel"><div class="validade-toolbar"><label class="validade-search" for="validitySearch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="validitySearch" type="search" placeholder="Pesquisar produto, SKU, lote ou fornecedor..."></label><label class="validity-filter">Status<select id="validityStatus"><option value="TODOS">Todos</option><option value="VENCIDOS">Vencidos</option><option value="CRITICO">Até 7 dias</option><option value="ATENCAO">De 8 a 30 dias</option><option value="NORMAL">Mais de 30 dias</option></select></label></div><div class="validade-table-heading"><div><span class="section-kicker">RASTREABILIDADE</span><h3>Lotes monitorados</h3></div><span id="validityCount" class="result-count">—</span></div><div class="validade-table-wrap"><table class="validade-table"><thead><tr><th>PRODUTO</th><th>LOTE</th><th>VALIDADE</th><th>DIAS</th><th>QUANTIDADE</th><th>LOCALIZAÇÃO</th><th>FORNECEDOR</th><th>STATUS</th></tr></thead><tbody id="validityBody"></tbody></table><div id="validityEmpty" class="validade-empty" hidden>Nenhum lote corresponde aos filtros.</div></div></section>
+      </div>
+    </main>
+  </div>
+  <script src="../js/ui.js?v=1"></script>
+  <script src="../js/sidebar.js?v=1"></script>
+  <script src="../js/validade.js"></script>
+</body>
+</html>

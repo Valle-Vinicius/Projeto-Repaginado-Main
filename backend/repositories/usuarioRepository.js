@@ -38,6 +38,14 @@ async function buscarPorEmail(email, excluirId = null) {
   return rows[0] || null;
 }
 
+async function buscarSenhaHash(id) {
+  const rows = await executarQuery(
+    'SELECT senha_hash AS senhaHash FROM usuarios WHERE id = ?',
+    [id]
+  );
+  return rows[0] ? rows[0].senhaHash : null;
+}
+
 async function buscarOpcoes() {
   const [perfis, departamentos] = await Promise.all([
     executarQuery('SELECT id, nome FROM perfis WHERE ativo = TRUE ORDER BY id ASC'),
@@ -73,4 +81,4 @@ async function atualizar(id, campos) {
   return buscarPorId(id);
 }
 
-module.exports = { listar, buscarPorId, buscarPorEmail, buscarOpcoes, criar, atualizar };
+module.exports = { listar, buscarPorId, buscarPorEmail, buscarSenhaHash, buscarOpcoes, criar, atualizar };

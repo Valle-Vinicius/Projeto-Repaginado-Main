@@ -57,13 +57,6 @@ let estoqueDados = {
   localizacoes: [],
 };
 
-function obterToken() {
-  return (
-    localStorage.getItem("babycareToken") ||
-    sessionStorage.getItem("babycareToken")
-  );
-}
-
 function obterUsuario() {
   const salvo =
     localStorage.getItem("babycareUsuario") ||
@@ -100,15 +93,14 @@ function configurarUsuario() {
 }
 
 async function requisitarAPI(caminho = "", opcoes = {}) {
-  const token = obterToken();
   const resposta = await fetch(`${ESTOQUE_API_URL}${caminho}`, {
     ...opcoes,
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
       ...(opcoes.headers || {}),
     },
+    credentials: "include"
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -689,11 +681,15 @@ function configurarEventos() {
   });
 
   estoqueElementos.logout.addEventListener("click", () => {
-    localStorage.removeItem("babycareToken");
-    localStorage.removeItem("babycareUsuario");
-    sessionStorage.removeItem("babycareToken");
-    sessionStorage.removeItem("babycareUsuario");
-    window.BabycareUI.transicionarPara("./login.html");
+    if (window.BabycareUI?.fazerLogout) {
+      window.BabycareUI.fazerLogout();
+    } else {
+      localStorage.removeItem("babycareToken");
+      localStorage.removeItem("babycareUsuario");
+      sessionStorage.removeItem("babycareToken");
+      sessionStorage.removeItem("babycareUsuario");
+      window.BabycareUI.transicionarPara("./login.html");
+    }
   });
 
   document.querySelectorAll("[data-coming-soon]").forEach((link) => {
@@ -707,11 +703,6 @@ function configurarEventos() {
 }
 
 async function inicializarEstoque() {
-  if (!obterToken()) {
-    window.location.replace("./login.html");
-    return;
-  }
-
   configurarUsuario();
   configurarEventos();
   await carregarEstoque();

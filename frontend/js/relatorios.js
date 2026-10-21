@@ -30,12 +30,6 @@ const el = {
   bell: document.querySelector("#notificationButton"),
 };
 let dados = null;
-function token() {
-  return (
-    localStorage.getItem("babycareToken") ||
-    sessionStorage.getItem("babycareToken")
-  );
-}
 function esc(v) {
   const d = document.createElement("div");
   d.textContent = v ?? "";
@@ -67,9 +61,9 @@ async function api() {
   const r = await fetch(`${API_URL}?${params}&_atualizacao=${Date.now()}`, {
     cache: "no-store",
     headers: {
-      Authorization: `Bearer ${token()}`,
       "Cache-Control": "no-cache",
     },
+    credentials: "include"
   });
   const b = await r.json().catch(() => ({}));
   if (!r.ok) {
@@ -269,8 +263,8 @@ function configurar() {
     ),
   );
   el.logout?.addEventListener("click", () => {
-    localStorage.removeItem("babycareToken");
-    sessionStorage.removeItem("babycareToken");
+    localStorage.removeItem("babycareUsuario");
+    sessionStorage.removeItem("babycareUsuario");
     location.href = "/pages/login.html";
   });
 }

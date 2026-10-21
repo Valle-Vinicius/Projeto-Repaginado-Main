@@ -2,12 +2,6 @@ const API = "/api/usuarios";
 const $ = (s) => document.querySelector(s);
 let opcoes = { perfis: [], departamentos: [] },
   editando = null;
-function token() {
-  return (
-    localStorage.getItem("babycareToken") ||
-    sessionStorage.getItem("babycareToken")
-  );
-}
 function usuarioAtual() {
   const raw =
     localStorage.getItem("babycareUsuario") ||
@@ -51,9 +45,9 @@ async function requisitar(url, opts = {}) {
     ...opts,
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token()}`,
       ...(opts.headers || {}),
     },
+    credentials: "include"
   });
   const b = await r.json().catch(() => ({}));
   if (!r.ok) {

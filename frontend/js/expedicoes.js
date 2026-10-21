@@ -21,11 +21,10 @@ function atualizarUsuario() {
     ['sidebarUserRole', 'topbarUserRole'].forEach((id) => { const item = document.getElementById(id); if (item) item.textContent = perfil; });
     ['sidebarAvatar', 'topbarAvatar'].forEach((id) => { const item = document.getElementById(id); if (item) item.textContent = avatar; });
 }
-function auth() { return localStorage.getItem('babycareToken') || sessionStorage.getItem('babycareToken'); }
 function esc(v) { const d = document.createElement('div'); d.textContent = v ?? ''; return d.innerHTML; }
 function num(v) { return window.BabycareUI.formatarNumero(Number(v || 0), 3).replace(/,?0+$/, '').replace(/,$/, ''); }
 function date(v) { return v ? window.BabycareUI.formatarDataHora(v) : '—'; }
-async function api(url, options = {}) { const r = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth()}`, ...(options.headers || {}) } }); const b = await r.json().catch(() => ({})); if (!r.ok) { const x = new Error(b.mensagem || 'Não foi possível concluir a operação.'); x.status = r.status; throw x; } return b; }
+async function api(url, options = {}) { const r = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, credentials: 'include' }); const b = await r.json().catch(() => ({})); if (!r.ok) { const x = new Error(b.mensagem || 'Não foi possível concluir a operação.'); x.status = r.status; throw x; } return b; }
 function preencherProdutos() { el.product.replaceChildren(new Option('Selecione um produto', '')); products.forEach((p) => el.product.appendChild(new Option(`${p.nome} — ${p.codigo} | saldo: ${num(p.estoqueAtual)}`, p.id))); }
 function atualizarSaldo() { const p = products.find((x) => String(x.id) === el.product.value); el.available.hidden = !p; if (p) el.available.textContent = `Saldo disponível: ${num(p.estoqueAtual)} ${p.unidade || 'unidade(s)'}`; }
 function filtrados() { const t = el.search.value.trim().toLocaleLowerCase('pt-BR'); const days = { HOJE: 1, '7D': 7, '30D': 30 }[el.period.value]; const now = Date.now(); return rows.filter((x) => { const text = [x.produto, x.codigo, x.destinatario, x.destino, x.documento, x.numeroLote].join(' ').toLocaleLowerCase('pt-BR'); return (!t || text.includes(t)) && (!days || (now - new Date(x.criadoEm).getTime()) <= days * 86400000); }); }

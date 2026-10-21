@@ -1,5 +1,7 @@
 const estoqueRepository = require("../repositories/estoqueRepository");
 const auditoriaRepository = require("../repositories/auditoriaRepository");
+const expedicaoValidator = require("../validators/expedicaoValidator");
+const recebimentoValidator = require("../validators/recebimentoValidator");
 
 const PERFIS_ESTOQUE = ["OPERADOR_ESTOQUE", "GERENTE", "ADMINISTRADOR"];
 
@@ -9,27 +11,8 @@ function erroValidacao(mensagem, codigo = "DADOS_INVALIDOS") {
   erro.codigo = codigo;
   return erro;
 }
-function numeroPositivo(valor, campo) {
-  const numero = Number(valor);
-  if (!Number.isFinite(numero) || numero <= 0)
-    throw erroValidacao(`Informe ${campo} com um valor maior que zero.`);
-  return numero;
-}
-function textoObrigatorio(valor, campo, maximo = 150) {
-  const texto = String(valor || "").trim();
-  if (!texto) throw erroValidacao(`Informe ${campo}.`);
-  if (texto.length > maximo)
-    throw erroValidacao(`${campo} ultrapassa o limite permitido.`);
-  return texto;
-}
 function idUsuario(usuario) {
   return Number(usuario?.id || usuario?.usuarioId || 0) || null;
-}
-function idProduto(valor) {
-  const id = Number(valor);
-  if (!Number.isInteger(id) || id <= 0)
-    throw erroValidacao("Informe um produto válido.");
-  return id;
 }
 
 function normalizarProduto(produto) {
@@ -113,48 +96,27 @@ async function listarRecebimentos() {
   }));
 }
 async function registrarMovimentacao(dados, usuario) {
-  const tipo = String(dados.tipo || "").toUpperCase();
-  const produtoId = idProduto(dados.produtoId);
-  const quantidade = numeroPositivo(dados.quantidade, "a quantidade");
+  const tipo = String(dados.tipo || "").trim().toUpperCase();
   const usuarioId = idUsuario(usuario);
-  const documento = dados.documento
-    ? String(dados.documento).trim().slice(0, 80)
-    : null;
-  const observacao = dados.observacao
-    ? String(dados.observacao).trim().slice(0, 255)
-    : null;
 
   if (tipo === "SAIDA") {
+    const saida = expedicaoValidator.validarSaida(dados);
     return estoqueRepository.registrarSaida({
-      produtoId,
-      quantidade,
+      ...saida,
       usuarioId,
-      destinatario: textoObrigatorio(dados.destinatario, "o destinatário"),
-      destino: textoObrigatorio(dados.destino, "o destino"),
-      documento,
-      motivo: dados.motivo ? String(dados.motivo).trim().slice(0, 80) : null,
-      observacao,
       auditoriaRepository,
     });
   }
+
   if (tipo === "ENTRADA") {
+    const entrada = recebimentoValidator.validarEntrada(dados);
     return estoqueRepository.registrarEntrada({
-      produtoId,
-      quantidade,
+      ...entrada,
       usuarioId,
-      fornecedor: dados.fornecedor
-        ? String(dados.fornecedor).trim().slice(0, 150)
-        : null,
-      documento,
-      numeroLote: dados.numeroLote
-        ? String(dados.numeroLote).trim().slice(0, 80)
-        : null,
-      dataValidade: dados.dataValidade || null,
-      localizacaoId: dados.localizacaoId ? Number(dados.localizacaoId) : null,
-      observacao,
       auditoriaRepository,
     });
   }
+
   throw erroValidacao("Tipo de movimentação inválido. Use ENTRADA ou SAIDA.");
 }
 

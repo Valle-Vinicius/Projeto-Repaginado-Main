@@ -1,0 +1,21 @@
+# Robots.txt - BabyCare
+# Controla o acesso dos motores de busca ( crawlers )
+
+User-agent: *
+Allow: /
+
+# Bloquear acesso a arquivos de administração e API
+Disallow: /backend/
+Disallow: /api/
+Disallow: /admin/
+
+# Bloquear páginas que não devem ser indexadas
+Disallow: /login
+Disallow: /configuracoes
+
+# Permitir que o Google indexe normalmente
+User-agent: Googlebot
+Allow: /
+
+# Sitemap de referência
+Sitemap: https://www.babycare.com.br/sitemap.xml

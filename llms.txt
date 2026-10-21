@@ -1,0 +1,64 @@
+# llms.txt - BabyCare
+# Arquivo para ferramentas de IA (LLMs) descrevendo o conteúdo do site
+# Mais info: https://llmstxt.org/
+
+# > Domínio do site
+# > Substitua pelo domínio real do BabyCare
+
+# BabyCare - Sistema de Gestão para Cuidados com Bebês
+# Plataforma web para gestão de produtos, estoque, validade, 
+# expedientes, recebimentos, relatórios, auditoria e usuários.
+
+## Páginas Principais
+
+### Página Inicial (Dashboard)
+- URL: /
+- Descrição: Visão geral do sistema com estatísticas e resumo de atividades
+
+### Login
+- URL: /login
+- Descrição: Página de autenticação de usuários
+
+### Usuários
+- URL: /users
+- Descrição: Gestão de usuários do sistema (cadastro, edição, exclusão)
+
+### Produtos
+- URL: /produtos
+- Descrição: Cadastro e listagem de produtos do catálogo
+
+### Formulário de Produto
+- URL: /formulário-produto
+- Descrição: Formulário para cadastro de novos produtos
+
+### Estoque
+- URL: /estoque
+- Descrição: Controle de quantidade de produtos em estoque
+
+### Validade
+- URL: /validade
+- Descrição: Controle de prazos de validade dos produtos
+
+### Expedições
+- URL: /expedicoes
+- Descrição: Gestão de saídas/expedições de produtos
+
+### Recebimentos
+- URL: /recebimentos
+- Descrição: Gestão de entradas/recebimentos de produtos
+
+### Relatórios
+- URL: /relatorios
+- Descrição: Relatórios e estatísticas do sistema
+
+### Auditoria
+- URL: /auditoria
+- Descrição: Log de auditoria do sistema
+
+### Configurações
+- URL: /configuracoes
+- Descrição: Configurações do sistema e do usuário
+
+### Página de Erro 404
+- URL: /404
+- Descrição: Página padrão de erro não encontrado

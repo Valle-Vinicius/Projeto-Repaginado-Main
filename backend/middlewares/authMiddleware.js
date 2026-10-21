@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
 
 function verificarToken(req, res, next) {
+  // Prioriza cookie httpOnly (mais seguro); fallback para Authorization header
   const autorizacao = req.headers.authorization;
-  const token = autorizacao && autorizacao.startsWith('Bearer ')
-    ? autorizacao.slice(7).trim()
-    : null;
+  const token = req.cookies?.babycareToken
+    ? req.cookies.babycareToken
+    : autorizacao && autorizacao.startsWith('Bearer ')
+      ? autorizacao.slice(7).trim()
+      : null;
 
   if (!token) {
     return res.status(401).json({
@@ -24,9 +27,11 @@ function verificarToken(req, res, next) {
   }
 
   try {
-    req.usuario = jwt.verify(token, process.env.JWT_SECRET, {
+    const dadosToken = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ['HS256']
     });
+    req.usuario = dadosToken;
+    req.valor = dadosToken;
     return next();
   } catch (erro) {
     return res.status(401).json({
@@ -39,7 +44,9 @@ function verificarToken(req, res, next) {
 
 function permitirPerfis(...perfisPermitidos) {
   return (req, res, next) => {
-    if (!req.usuario || !perfisPermitidos.includes(req.usuario.perfil)) {
+    const usuario = req.usuario || req.valor;
+
+    if (!usuario || !perfisPermitidos.includes(usuario.perfil)) {
       return res.status(403).json({
         sucesso: false,
         codigo: 'PERMISSAO_NEGADA',

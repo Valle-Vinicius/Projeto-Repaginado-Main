@@ -4,7 +4,6 @@ function registrarErroInterno(contexto, erro) {
   console.error(`[Auth][${contexto}]`, {
     mensagem: erro.message,
     codigo: erro.code || erro.codigo,
-    detalheMySQL: erro.sqlMessage,
     campo: erro.campo
   });
 }
@@ -24,7 +23,7 @@ function responderErro(res, erro, contexto) {
     return res.status(409).json({
       sucesso: false,
       codigo: 'EMAIL_EM_USO',
-      mensagem: 'Este e-mail já está cadastrado.',
+      mensagem: 'Este e-mail já está registrado.',
       campo: 'email'
     });
   }
@@ -61,7 +60,7 @@ async function cadastrar(req, res) {
 
     return res.status(201).json({
       sucesso: true,
-      mensagem: 'Usuário cadastrado com sucesso.',
+      mensagem: 'Usuário registrado com sucesso.',
       usuario
     });
   } catch (erro) {
@@ -76,17 +75,45 @@ async function login(req, res) {
       navegador: req.get('user-agent') || null
     });
 
+    // SEGURANÇA: Define token em cookie httpOnly (não acessável via JS)
+    const expiracao = new Date();
+    expiracao.setHours(expiracao.getHours() + 2); // 2 horas
+
+    res.cookie('babycareToken', resultado.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: expiracao,
+      path: '/'
+    });
+
     return res.json({
       sucesso: true,
       mensagem: 'Login realizado com sucesso.',
-      ...resultado
+      token: resultado.token,
+      usuario: resultado.usuario
     });
   } catch (erro) {
     return responderErro(res, erro, 'Login');
   }
 }
 
+async function logout(req, res) {
+  res.clearCookie('babycareToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/'
+  });
+
+  return res.json({
+    sucesso: true,
+    mensagem: 'Sessão encerrada com sucesso.'
+  });
+}
+
 module.exports = {
   cadastrar,
-  login
+  login,
+  logout
 };

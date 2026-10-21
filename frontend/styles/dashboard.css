@@ -745,7 +745,8 @@ body[data-dashboard-state="error"] .page-loader {
 }
 
 .dashboard-grid-secondary {
-  grid-template-columns: minmax(300px, 0.86fr) minmax(0, 1.64fr);
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
   margin-top: 17px;
 }
 
@@ -1172,6 +1173,8 @@ body[data-dashboard-state="error"] .page-loader {
 
 .activity-table-wrap {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 340px;
   margin-top: 19px;
 }
 

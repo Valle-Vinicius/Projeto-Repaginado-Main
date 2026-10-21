@@ -14,10 +14,6 @@ const notificationButton = document.querySelector('#notificationButton');
 const openSidebarButton = document.querySelector('#openSidebarButton');
 const closeSidebarButton = document.querySelector('#closeSidebarButton');
 
-function obterToken() {
-  return localStorage.getItem('babycareToken') || sessionStorage.getItem('babycareToken');
-}
-
 function obterUsuarioDoFormulario() {
   const salvo = localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
   try {
@@ -134,9 +130,9 @@ async function requisitarAPI(caminho, opcoes = {}) {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${obterToken()}`,
       ...(opcoes.headers || {})
-    }
+    },
+    credentials: 'include'
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -200,8 +196,12 @@ function configurarNavegacao() {
   });
 
   document.querySelector('#logoutButton').addEventListener('click', () => {
-    limparSessao();
-    window.BabycareUI.transicionarPara('./login.html');
+    if (window.BabycareUI?.fazerLogout) {
+      window.BabycareUI.fazerLogout();
+    } else {
+      limparSessao();
+      window.BabycareUI.transicionarPara('./login.html');
+    }
   });
 }
 
@@ -255,7 +255,7 @@ form.addEventListener('submit', async (evento) => {
 });
 
 window.addEventListener('load', async () => {
-  if (!obterToken()) {
+  if (!obterUsuarioDoFormulario()) {
     window.location.replace('./login.html');
     return;
   }
