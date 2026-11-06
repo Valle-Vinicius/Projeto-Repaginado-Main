@@ -56,7 +56,7 @@ async function redefinirSenha(token, novaSenha) {
   }
 
   const tokens = await executarQuery(
-    'SELECT * FROM password_reset_tokens WHERE token = ? AND usado = FALSE AND expira_em > NOW()',
+    'SELECT * FROM password_reset_tokens WHERE token = ? AND usado = FALSE AND expira_em > CURRENT_TIMESTAMP',
     [token]
   );
 
@@ -70,7 +70,7 @@ async function redefinirSenha(token, novaSenha) {
   const resetToken = tokens[0];
   const senhaHash = await bcrypt.hash(novaSenha, 10);
 
-  await executarQuery('UPDATE usuarios SET senha_hash = ?, atualizado_em = NOW() WHERE id = ?', [
+  await executarQuery('UPDATE usuarios SET senha_hash = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?', [
     senhaHash,
     resetToken.usuario_id,
   ]);

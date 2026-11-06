@@ -1,19 +1,19 @@
 const { executarQuery } = require('../config/database');
 
 function filtrosSql(status, busca) {
-  const where = ['p.ativo = 1', 'l.ativo = 1', 'l.data_validade IS NOT NULL'];
+  const where = ['p.ativo = TRUE', 'l.ativo = TRUE', 'l.data_validade IS NOT NULL'];
   const valores = [];
 
   if (status === 'VENCIDOS') {
-    where.push('l.data_validade < CURDATE()');
+    where.push('l.data_validade < CURRENT_DATE');
   } else if (status === 'CRITICO') {
-    where.push('l.data_validade >= CURDATE()');
-    where.push('DATEDIFF(l.data_validade, CURDATE()) <= 7');
+    where.push('l.data_validade >= CURRENT_DATE');
+    where.push('(l.data_validade - CURRENT_DATE) <= 7');
   } else if (status === 'ATENCAO') {
-    where.push('l.data_validade >= CURDATE()');
-    where.push('DATEDIFF(l.data_validade, CURDATE()) BETWEEN 8 AND 30');
+    where.push('l.data_validade >= CURRENT_DATE');
+    where.push('(l.data_validade - CURRENT_DATE) BETWEEN 8 AND 30');
   } else if (status === 'NORMAL') {
-    where.push('DATEDIFF(l.data_validade, CURDATE()) > 30');
+    where.push('(l.data_validade - CURRENT_DATE) > 30');
   }
 
   if (busca) {
@@ -37,15 +37,15 @@ async function listarValidades({ status = 'TODOS', busca = '', limite = 200 }) {
       l.numero_lote AS numeroLote,
       l.fornecedor,
       l.documento,
-      DATE_FORMAT(l.data_validade, '%Y-%m-%d') AS dataValidade,
-      DATEDIFF(l.data_validade, CURDATE()) AS diasRestantes,
+      TO_CHAR(l.data_validade, 'YYYY-MM-DD') AS dataValidade,
+      (l.data_validade - CURRENT_DATE) AS diasRestantes,
       l.quantidade_atual AS quantidadeAtual,
       p.unidade,
       loc.nome AS localizacao,
       CASE
-        WHEN l.data_validade < CURDATE() THEN 'VENCIDO'
-        WHEN DATEDIFF(l.data_validade, CURDATE()) <= 7 THEN 'CRITICO'
-        WHEN DATEDIFF(l.data_validade, CURDATE()) <= 30 THEN 'ATENCAO'
+        WHEN l.data_validade < CURRENT_DATE THEN 'VENCIDO'
+        WHEN (l.data_validade - CURRENT_DATE) <= 7 THEN 'CRITICO'
+        WHEN (l.data_validade - CURRENT_DATE) <= 30 THEN 'ATENCAO'
         ELSE 'NORMAL'
       END AS status
     FROM lotes l
@@ -64,13 +64,13 @@ async function obterResumo() {
   const [resumo] = await executarQuery(`
     SELECT
       COUNT(*) AS total,
-      SUM(CASE WHEN l.data_validade < CURDATE() THEN 1 ELSE 0 END) AS vencidos,
-      SUM(CASE WHEN l.data_validade >= CURDATE() AND DATEDIFF(l.data_validade, CURDATE()) <= 7 THEN 1 ELSE 0 END) AS criticos,
-      SUM(CASE WHEN DATEDIFF(l.data_validade, CURDATE()) BETWEEN 8 AND 30 THEN 1 ELSE 0 END) AS atencao,
-      SUM(CASE WHEN DATEDIFF(l.data_validade, CURDATE()) > 30 THEN 1 ELSE 0 END) AS normais
+      SUM(CASE WHEN l.data_validade < CURRENT_DATE THEN 1 ELSE 0 END) AS vencidos,
+      SUM(CASE WHEN l.data_validade >= CURRENT_DATE AND (l.data_validade - CURRENT_DATE) <= 7 THEN 1 ELSE 0 END) AS criticos,
+      SUM(CASE WHEN (l.data_validade - CURRENT_DATE) BETWEEN 8 AND 30 THEN 1 ELSE 0 END) AS atencao,
+      SUM(CASE WHEN (l.data_validade - CURRENT_DATE) > 30 THEN 1 ELSE 0 END) AS normais
     FROM lotes l
     INNER JOIN produtos p ON p.id = l.produto_id
-    WHERE p.ativo = 1 AND l.ativo = 1 AND l.data_validade IS NOT NULL
+    WHERE p.ativo = TRUE AND l.ativo = TRUE AND l.data_validade IS NOT NULL
   `);
 
   return {

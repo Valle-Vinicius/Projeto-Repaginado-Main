@@ -1,6 +1,6 @@
 const readline = require('readline');
 const bcrypt = require('bcryptjs');
-const { pool } = require('../config/database');
+const { executarQuery, pool } = require('../config/database');
 
 function perguntar(leitor, mensagem) {
   return new Promise((resolve) =>
@@ -13,10 +13,10 @@ async function perguntarSenha(leitor, mensagem) {
 }
 
 async function buscarOpcoes() {
-  const [perfis] = await pool.execute(
+  const perfis = await executarQuery(
     'SELECT id, nome FROM perfis WHERE ativo = TRUE ORDER BY id ASC'
   );
-  const [departamentos] = await pool.execute(
+  const departamentos = await executarQuery(
     'SELECT id, nome FROM departamentos WHERE ativo = TRUE ORDER BY nome ASC'
   );
   return { perfis, departamentos };
@@ -78,8 +78,8 @@ async function executar() {
       throw new Error('As senhas não coincidem.');
     }
 
-    const [existentes] = await pool.execute(
-      'SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?) LIMIT 1',
+    const existentes = await executarQuery(
+      'SELECT id FROM usuarios WHERE LOWER(email) = LOWER($1) LIMIT 1',
       [email]
     );
     if (existentes.length) {
@@ -87,23 +87,25 @@ async function executar() {
     }
 
     const senhaHash = await bcrypt.hash(senha, 10);
-    const [resultado] = await pool.execute(
+    const resultado = await executarQuery(
       `
       INSERT INTO usuarios
         (nome, email, senha_hash, perfil_id, departamento_id, ativo)
-      VALUES (?, ?, ?, ?, ?, TRUE)
+      VALUES ($1, $2, $3, $4, $5, TRUE)
+      RETURNING id
     `,
       [nome, email, senhaHash, perfil.id, departamento?.id || null]
     );
 
-    await pool.execute(
+    await executarQuery(
       `
       INSERT INTO auditorias
         (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
-      VALUES (NULL, 'USUARIO_CRIADO_CLI', 'USUARIO', ?, 'SUCESSO', ?)
+      VALUES ($1, 'USUARIO_CRIADO_CLI', 'USUARIO', $2, 'SUCESSO', $3)
     `,
       [
-        resultado.insertId,
+        null,
+        resultado[0].id,
         JSON.stringify({
           email,
           perfil: perfil.nome,

@@ -29,7 +29,7 @@ const config = Object.freeze({
   port: obterPorta(),
   database: Object.freeze({
     host: exigirTexto('DB_HOST'),
-    port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.DB_PORT || 5432),
     user: exigirTexto('DB_USER'),
     password: process.env.DB_PASSWORD ?? '',
     name: exigirTexto('DB_NAME'),

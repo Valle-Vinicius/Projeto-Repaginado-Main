@@ -64,13 +64,13 @@ async function registrarFalhaLogin(id, limiteTentativas, minutosBloqueio) {
     `UPDATE usuarios
         SET bloqueado_ate = CASE
               WHEN tentativas_login + 1 >= ?
-                THEN COALESCE(bloqueado_ate, DATE_ADD(NOW(), INTERVAL ? MINUTE))
+                THEN COALESCE(bloqueado_ate, CURRENT_TIMESTAMP + (? * INTERVAL '1 minute'))
               ELSE bloqueado_ate
             END,
             tentativas_login = LEAST(tentativas_login + 1, ?)
       WHERE id = ?
         AND ativo = TRUE
-        AND (bloqueado_ate IS NULL OR bloqueado_ate <= NOW())`,
+        AND (bloqueado_ate IS NULL OR bloqueado_ate <= CURRENT_TIMESTAMP)`,
     [limiteTentativas, minutosBloqueio, limiteTentativas, id]
   );
 }
@@ -80,7 +80,7 @@ async function limparFalhasLogin(id) {
     `UPDATE usuarios
         SET tentativas_login = 0,
             bloqueado_ate = NULL,
-            ultimo_login_em = NOW()
+            ultimo_login_em = CURRENT_TIMESTAMP
       WHERE id = ?`,
     [id]
   );

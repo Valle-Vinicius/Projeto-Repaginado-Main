@@ -131,8 +131,8 @@ async function contarResumo({ periodoInicio = null, periodoFim = null } = {}) {
   const [resultado] = await executarQuery(
     `
     SELECT COUNT(*) AS total,
-      SUM(resultado = 'SUCESSO') AS sucessos,
-      SUM(resultado = 'FALHA') AS falhas,
+      SUM(CASE WHEN resultado = 'SUCESSO' THEN 1 ELSE 0 END) AS sucessos,
+      SUM(CASE WHEN resultado = 'FALHA' THEN 1 ELSE 0 END) AS falhas,
       COUNT(DISTINCT usuario_id) AS usuarios
     FROM auditorias ${clausula}`,
     valores

@@ -188,14 +188,14 @@ async function atualizarProduto(id, campos) {
 
   valores.push(id);
   await executarQuery(
-    `UPDATE produtos SET ${partes.join(', ')}, atualizado_em = NOW() WHERE id = ? AND ativo = TRUE`,
+    `UPDATE produtos SET ${partes.join(', ')}, atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND ativo = TRUE`,
     valores
   );
   return buscarProdutoPorId(id);
 }
 
 async function desativarProduto(id) {
-  await executarQuery('UPDATE produtos SET ativo = FALSE, atualizado_em = NOW() WHERE id = ?', [
+  await executarQuery('UPDATE produtos SET ativo = FALSE, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?', [
     id,
   ]);
 }

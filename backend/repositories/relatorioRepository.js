@@ -55,13 +55,13 @@ async function buscarSerie(filtro) {
   const { clausula, valores } = montarFiltro(filtro);
   return executarQuery(
     `
-    SELECT DATE_FORMAT(m.criado_em, '%Y-%m-%d') AS data,
+    SELECT TO_CHAR(m.criado_em, 'YYYY-MM-DD') AS data,
       COALESCE(SUM(CASE WHEN m.tipo = 'ENTRADA' THEN m.quantidade ELSE 0 END), 0) AS entradas,
       COALESCE(SUM(CASE WHEN m.tipo = 'SAIDA' THEN m.quantidade ELSE 0 END), 0) AS saidas
     FROM movimentacoes m
     INNER JOIN produtos p ON p.id = m.produto_id
     WHERE ${clausula}
-    GROUP BY DATE_FORMAT(m.criado_em, '%Y-%m-%d')
+    GROUP BY TO_CHAR(m.criado_em, 'YYYY-MM-DD')
     ORDER BY data ASC
   `,
     valores

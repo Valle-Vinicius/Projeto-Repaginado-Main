@@ -154,9 +154,9 @@ async function buscarValidadesProximas(dias = 30) {
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
       l.data_validade AS dataValidade,
-      DATEDIFF(l.data_validade, CURDATE()) AS diasParaVencer,
+      (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       CASE
-        WHEN DATEDIFF(l.data_validade, CURDATE()) <= 7 THEN 'CRITICO'
+        WHEN (l.data_validade - CURRENT_DATE) <= 7 THEN 'CRITICO'
         ELSE 'ATENCAO'
       END AS status
     FROM lotes l
@@ -165,8 +165,8 @@ async function buscarValidadesProximas(dias = 30) {
       AND p.ativo = TRUE
       AND l.quantidade_atual > 0
       AND l.data_validade IS NOT NULL
-      AND l.data_validade >= CURDATE()
-      AND l.data_validade <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
+      AND l.data_validade >= CURRENT_DATE
+      AND l.data_validade <= CURRENT_TIMESTAMP + (? * INTERVAL '1 day')
     ORDER BY l.data_validade ASC, l.id ASC
     LIMIT 10
   `,
@@ -184,7 +184,7 @@ async function buscarVencidos() {
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
       l.data_validade AS dataValidade,
-      DATEDIFF(l.data_validade, CURDATE()) AS diasParaVencer,
+      (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       'VENCIDO' AS status
     FROM lotes l
     INNER JOIN produtos p ON p.id = l.produto_id
@@ -192,7 +192,7 @@ async function buscarVencidos() {
       AND p.ativo = TRUE
       AND l.quantidade_atual > 0
       AND l.data_validade IS NOT NULL
-      AND l.data_validade < CURDATE()
+      AND l.data_validade < CURRENT_DATE
     ORDER BY l.data_validade ASC, l.id ASC
     LIMIT 10
   `);
