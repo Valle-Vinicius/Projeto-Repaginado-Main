@@ -1,0 +1,26 @@
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 10
+
+[build]
+builder = "docker"
+
+[deploy.limits]
+memory = "1024"
+
+[[deploy.services]]
+name = "babycare-backend"
+source = "."
+dockerfile = "Dockerfile"
+internalPort = 3000
+externalPort = 3000
+
+[[deploy.domains]]
+service = "babycare-backend"
+domain = ""
+
+[[deploy.metrics]]
+service = "babycare-backend"
+type = "request_count"
