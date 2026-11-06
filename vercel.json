@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "frontend/dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/frontend/dist/assets/$1"
+    },
+    {
+      "src": "/(login|dashboard|produtos|estoque|recebimentos|expedicoes|auditoria|relatorios|validade|usuarios|configuracoes|formulario-produto|redefinir-senha|erro404)",
+      "dest": "/frontend/dist/src/pages/$1/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/src/pages/login/index.html"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}
