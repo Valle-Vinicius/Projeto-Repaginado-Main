@@ -201,15 +201,11 @@
   display: block;
 }
 .auditoria-page .sidebar .nav-heading-secondary {
-  margin-top: 24px !important;
+  margin-top: 16px !important;
   margin-bottom: 8px !important;
 }
 .auditoria-page .sidebar .secondary-nav {
   margin-top: 0 !important;
-}
-.auditoria-page .sidebar {
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 .auditoria-page .dashboard-main,
 .auditoria-page .dashboard-content {

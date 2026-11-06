@@ -1,4 +1,4 @@
-const API_URL = window.location.origin;
+const API_URL = window.BabycareUI?.API_URL || window.location.origin;
 const USER_KEYS = ['babycareUsuario', 'babycareUser'];
 
 const dashboardState = {
@@ -8,7 +8,7 @@ const dashboardState = {
   erro: null,
   requestId: 0,
   controlador: null,
-  toastTimer: null
+  toastTimer: null,
 };
 
 const elementos = {};
@@ -17,8 +17,6 @@ function selecionarElementos() {
   const ids = [
     'openSidebarButton',
     'topbarSearch',
-    'notificationButton',
-    'notificationCount',
     'periodSelect',
     'refreshButton',
     'metricProducts',
@@ -35,7 +33,7 @@ function selecionarElementos() {
     'topbarUserName',
     'topbarUserRole',
     'welcomeName',
-    'currentDate'
+    'currentDate',
   ];
 
   ids.forEach((id) => {
@@ -48,11 +46,15 @@ function obterUsuarioSessao() {
     const valores = [window.localStorage.getItem(chave), window.sessionStorage.getItem(chave)];
 
     for (const valor of valores) {
-      if (!valor) continue;
+      if (!valor) {
+        continue;
+      }
 
       try {
         const usuario = JSON.parse(valor);
-        if (usuario && typeof usuario === 'object') return usuario;
+        if (usuario && typeof usuario === 'object') {
+          return usuario;
+        }
       } catch (erro) {
         // A interface permanece utilizável mesmo se a sessão antiga estiver corrompida.
       }
@@ -63,9 +65,16 @@ function obterUsuarioSessao() {
 }
 
 function obterIniciais(nome) {
-  const partes = String(nome || '').trim().split(/\s+/u).filter(Boolean);
-  if (partes.length === 0) return 'U';
-  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  const partes = String(nome || '')
+    .trim()
+    .split(/\s+/u)
+    .filter(Boolean);
+  if (partes.length === 0) {
+    return 'U';
+  }
+  if (partes.length === 1) {
+    return partes[0].slice(0, 2).toUpperCase();
+  }
   return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
 }
 
@@ -78,22 +87,33 @@ function formatarPerfil(perfil) {
 
 function inicializarUsuario() {
   const usuario = obterUsuarioSessao();
-  const nome = typeof usuario.nome === 'string' && usuario.nome.trim()
-    ? usuario.nome.trim()
-    : 'Usuário Babycare';
+  const nome =
+    typeof usuario.nome === 'string' && usuario.nome.trim()
+      ? usuario.nome.trim()
+      : 'Usuário Babycare';
   const perfil = formatarPerfil(usuario.perfil);
   const iniciais = obterIniciais(nome);
 
-  if (elementos.topbarUserName) elementos.topbarUserName.textContent = nome;
-  if (elementos.topbarUserRole) elementos.topbarUserRole.textContent = perfil;
-  if (elementos.welcomeName) elementos.welcomeName.textContent = nome.split(/\s+/u)[0];
-  if (elementos.topbarAvatar) elementos.topbarAvatar.textContent = iniciais;
-  if (elementos.currentDate) elementos.currentDate.textContent = `Hoje é ${new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date())}.`;
+  if (elementos.topbarUserName) {
+    elementos.topbarUserName.textContent = nome;
+  }
+  if (elementos.topbarUserRole) {
+    elementos.topbarUserRole.textContent = perfil;
+  }
+  if (elementos.welcomeName) {
+    elementos.welcomeName.textContent = nome.split(/\s+/u)[0];
+  }
+  if (elementos.topbarAvatar) {
+    elementos.topbarAvatar.textContent = iniciais;
+  }
+  if (elementos.currentDate) {
+    elementos.currentDate.textContent = `Hoje é ${new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date())}.`;
+  }
 }
 
 function limparSessao() {
@@ -106,7 +126,7 @@ function limparSessao() {
 function formatarNumero(valor, casas = 0) {
   return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: casas,
-    maximumFractionDigits: casas
+    maximumFractionDigits: casas,
   }).format(valor);
 }
 
@@ -120,7 +140,9 @@ function obterNumero(objeto, chaves, nomeCampo) {
   }
 
   const chave = chaves.find((item) => Object.prototype.hasOwnProperty.call(objeto, item));
-  if (!chave) throw new Error(`Campo ausente na resposta: ${nomeCampo}`);
+  if (!chave) {
+    throw new Error(`Campo ausente na resposta: ${nomeCampo}`);
+  }
 
   const numero = Number(objeto[chave]);
   if (!Number.isFinite(numero) || numero < 0) {
@@ -135,8 +157,12 @@ function obterLista(valor) {
 }
 
 function normalizarAlertas(alertas) {
-  if (alertas == null) return [];
-  if (Array.isArray(alertas)) return alertas;
+  if (alertas === null) {
+    return [];
+  }
+  if (Array.isArray(alertas)) {
+    return alertas;
+  }
   if (typeof alertas !== 'object') {
     throw new Error('Os alertas da resposta possuem uma estrutura inválida.');
   }
@@ -151,7 +177,7 @@ function normalizarAlertas(alertas) {
     lista.push({
       tipo: 'warning',
       titulo: `${produto.nome || 'Produto'} está abaixo do mínimo`,
-      detalhe: `${formatarNumero(produto.estoqueAtual)} disponíveis · mínimo ${formatarNumero(produto.estoqueMinimo)}`
+      detalhe: `${formatarNumero(produto.estoqueAtual)} disponíveis · mínimo ${formatarNumero(produto.estoqueMinimo)}`,
     });
   });
 
@@ -159,7 +185,7 @@ function normalizarAlertas(alertas) {
     lista.push({
       tipo: 'danger',
       titulo: `${produto.nome || 'Produto'} sem estoque`,
-      detalhe: 'Produto precisa de reposição.'
+      detalhe: 'Produto precisa de reposição.',
     });
   });
 
@@ -167,7 +193,7 @@ function normalizarAlertas(alertas) {
     lista.push({
       tipo: 'attention',
       titulo: `${lote.nome || 'Produto'} próximo do vencimento`,
-      detalhe: `${formatarNumero(lote.diasParaVencer)} dias restantes · lote ${lote.numeroLote || 'não informado'}`
+      detalhe: `${formatarNumero(lote.diasParaVencer)} dias restantes · lote ${lote.numeroLote || 'não informado'}`,
     });
   });
 
@@ -175,7 +201,7 @@ function normalizarAlertas(alertas) {
     lista.push({
       tipo: 'danger',
       titulo: `${lote.nome || 'Produto'} possui lote vencido`,
-      detalhe: `Lote ${lote.numeroLote || 'não informado'} · validade ${lote.dataValidade || 'não informada'}`
+      detalhe: `Lote ${lote.numeroLote || 'não informado'} · validade ${lote.dataValidade || 'não informada'}`,
     });
   });
 
@@ -193,24 +219,52 @@ function normalizarResposta(payload) {
   return {
     periodo: dados.periodo || dashboardState.periodo,
     resumo: {
-      totalProdutos: obterNumero(resumo, ['totalProdutos', 'produtosAtivos', 'total_produtos'], 'totalProdutos'),
-      estoqueTotal: obterNumero(resumo, ['estoqueTotal', 'totalEstoque', 'estoque_total'], 'estoqueTotal'),
-      estoqueBaixo: obterNumero(resumo, ['estoqueBaixo', 'produtosEstoqueBaixo', 'estoque_baixo'], 'estoqueBaixo'),
-      movimentacoesPeriodo: obterNumero(resumo, ['movimentacoesPeriodo', 'totalMovimentacoes', 'movimentacoes_periodo'], 'movimentacoesPeriodo')
+      totalProdutos: obterNumero(
+        resumo,
+        ['totalProdutos', 'produtosAtivos', 'total_produtos'],
+        'totalProdutos'
+      ),
+      estoqueTotal: obterNumero(
+        resumo,
+        ['estoqueTotal', 'totalEstoque', 'estoque_total'],
+        'estoqueTotal'
+      ),
+      estoqueBaixo: obterNumero(
+        resumo,
+        ['estoqueBaixo', 'produtosEstoqueBaixo', 'estoque_baixo'],
+        'estoqueBaixo'
+      ),
+      movimentacoesPeriodo: obterNumero(
+        resumo,
+        ['movimentacoesPeriodo', 'totalMovimentacoes', 'movimentacoes_periodo'],
+        'movimentacoesPeriodo'
+      ),
     },
     grafico: dados.grafico || dados.movimentacoesGrafico || dados.serieMovimentacoes || null,
     alertas: normalizarAlertas(dados.alertas),
     categorias: obterLista(dados.categorias || dados.produtosPorCategoria),
-    atividadesRecentes: obterLista(dados.atividadesRecentes || dados.atividades || dados.movimentacoesRecentes)
+    atividadesRecentes: obterLista(
+      dados.atividadesRecentes || dados.atividades || dados.movimentacoesRecentes
+    ),
   };
 }
 
 function atualizarIndicadores(resumo) {
-  if (elementos.metricProducts) elementos.metricProducts.textContent = formatarNumero(resumo.totalProdutos);
-  if (elementos.metricStock) elementos.metricStock.textContent = formatarQuantidade(resumo.estoqueTotal);
-  if (elementos.metricLowStock) elementos.metricLowStock.textContent = formatarNumero(resumo.estoqueBaixo);
-  if (elementos.metricMovements) elementos.metricMovements.textContent = formatarNumero(resumo.movimentacoesPeriodo);
-  if (elementos.movementPeriodLabel) elementos.movementPeriodLabel.textContent = `no período selecionado (${dashboardState.periodo})`;
+  if (elementos.metricProducts) {
+    elementos.metricProducts.textContent = formatarNumero(resumo.totalProdutos);
+  }
+  if (elementos.metricStock) {
+    elementos.metricStock.textContent = formatarQuantidade(resumo.estoqueTotal);
+  }
+  if (elementos.metricLowStock) {
+    elementos.metricLowStock.textContent = formatarNumero(resumo.estoqueBaixo);
+  }
+  if (elementos.metricMovements) {
+    elementos.metricMovements.textContent = formatarNumero(resumo.movimentacoesPeriodo);
+  }
+  if (elementos.movementPeriodLabel) {
+    elementos.movementPeriodLabel.textContent = `no período selecionado (${dashboardState.periodo})`;
+  }
 }
 
 function criarEstadoVazio(titulo, detalhe) {
@@ -227,22 +281,35 @@ function criarEstadoVazio(titulo, detalhe) {
 }
 
 function renderizarCategorias(categorias) {
-  if (elementos.categoryList) elementos.categoryList.dataset.state = 'ready';
+  if (elementos.categoryList) {
+    elementos.categoryList.dataset.state = 'ready';
+  }
   elementos.categoryList?.replaceChildren();
 
   if (categorias.length === 0) {
-    if (elementos.categoryTotal) elementos.categoryTotal.textContent = '0';
+    if (elementos.categoryTotal) {
+      elementos.categoryTotal.textContent = '0';
+    }
     return;
   }
 
-  const valores = categorias.map((item) => Number(item.total ?? item.quantidade ?? item.valor ?? 0));
+  const valores = categorias.map((item) =>
+    Number(item.total ?? item.quantidade ?? item.valor ?? 0)
+  );
   const maiorValor = Math.max(...valores, 1);
-  const total = valores.reduce((soma, valor) => soma + (Number.isFinite(valor) && valor >= 0 ? valor : 0), 0);
-  if (elementos.categoryTotal) elementos.categoryTotal.textContent = formatarNumero(total);
+  const total = valores.reduce(
+    (soma, valor) => soma + (Number.isFinite(valor) && valor >= 0 ? valor : 0),
+    0
+  );
+  if (elementos.categoryTotal) {
+    elementos.categoryTotal.textContent = formatarNumero(total);
+  }
 
   categorias.slice(0, 5).forEach((categoria) => {
     const valor = Number(categoria.total ?? categoria.quantidade ?? categoria.valor ?? 0);
-    if (!Number.isFinite(valor) || valor < 0) return;
+    if (!Number.isFinite(valor) || valor < 0) {
+      return;
+    }
 
     const linha = document.createElement('div');
     linha.className = 'category-row';
@@ -266,12 +333,16 @@ function renderizarCategorias(categorias) {
 }
 
 function formatarDataHora(valor) {
-  if (!valor) return 'Data não informada';
+  if (!valor) {
+    return 'Data não informada';
+  }
   const data = new Date(valor);
-  if (Number.isNaN(data.getTime())) return 'Data não informada';
+  if (Number.isNaN(data.getTime())) {
+    return 'Data não informada';
+  }
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
-    timeStyle: 'short'
+    timeStyle: 'short',
   }).format(data);
 }
 
@@ -297,9 +368,15 @@ function renderizarAtividades(atividades) {
     const statusCelula = document.createElement('td');
     const status = document.createElement('span');
 
-    atividadeCelula.textContent = String(atividade.atividade || atividade.descricao || atividade.tipo || 'Movimentação');
-    responsavelCelula.textContent = String(atividade.responsavel || atividade.usuario || 'Não informado');
-    dataCelula.textContent = formatarDataHora(atividade.data || atividade.criadoEm || atividade.criado_em);
+    atividadeCelula.textContent = String(
+      atividade.atividade || atividade.descricao || atividade.tipo || 'Movimentação'
+    );
+    responsavelCelula.textContent = String(
+      atividade.responsavel || atividade.usuario || 'Não informado'
+    );
+    dataCelula.textContent = formatarDataHora(
+      atividade.data || atividade.criadoEm || atividade.criado_em
+    );
     const statusTexto = String(atividade.status || 'CONFIRMADA').toUpperCase();
     status.className = `activity-status${statusTexto === 'CANCELADA' ? ' cancelled' : ''}`;
     status.textContent = statusTexto;
@@ -318,12 +395,15 @@ function mostrarErroDashboard() {
   const erro = document.createElement('section');
   erro.id = 'dashboardError';
   erro.className = 'dashboard-error';
-  erro.innerHTML = '<div><strong>Não foi possível carregar os dados.</strong><br><span>Tente novamente. Se o problema continuar, confira a API da Dashboard.</span></div>';
+  erro.innerHTML =
+    '<div><strong>Não foi possível carregar os dados.</strong><br><span>Tente novamente. Se o problema continuar, confira a API da Dashboard.</span></div>';
   document.querySelector('.dashboard-content').prepend(erro);
 }
 
 function mostrarToast(mensagem) {
-  if (!elementos.dashboardToast) return;
+  if (!elementos.dashboardToast) {
+    return;
+  }
   window.clearTimeout(dashboardState.toastTimer);
   elementos.dashboardToast.textContent = mensagem;
   elementos.dashboardToast.classList.add('show');
@@ -348,7 +428,7 @@ async function requisitarDashboard() {
       Accept: 'application/json',
     },
     credentials: 'include',
-    signal: dashboardState.controlador.signal
+    signal: dashboardState.controlador.signal,
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -366,7 +446,9 @@ async function requisitarDashboard() {
 }
 
 async function carregarDashboard({ silencioso = false } = {}) {
-  if (dashboardState.carregando) return;
+  if (dashboardState.carregando) {
+    return;
+  }
 
   dashboardState.carregando = true;
   dashboardState.erro = null;
@@ -374,7 +456,9 @@ async function carregarDashboard({ silencioso = false } = {}) {
   const requestAtual = dashboardState.requestId;
   dashboardState.controlador?.abort();
   dashboardState.controlador = new AbortController();
-  if (elementos.refreshButton) elementos.refreshButton.disabled = true;
+  if (elementos.refreshButton) {
+    elementos.refreshButton.disabled = true;
+  }
 
   if (!silencioso && !dashboardState.dados) {
     document.body.dataset.dashboardState = 'loading';
@@ -382,40 +466,50 @@ async function carregarDashboard({ silencioso = false } = {}) {
 
   try {
     const dados = await requisitarDashboard();
-    if (!dados || requestAtual !== dashboardState.requestId) return;
+    if (!dados || requestAtual !== dashboardState.requestId) {
+      return;
+    }
     dashboardState.dados = dados;
     atualizarInterface(dados);
     removerErroDashboard();
     document.body.dataset.dashboardState = 'ready';
   } catch (erro) {
-    if (erro.name === 'AbortError' || requestAtual !== dashboardState.requestId) return;
+    if (erro.name === 'AbortError' || requestAtual !== dashboardState.requestId) {
+      return;
+    }
     console.error('[Dashboard]', erro);
     dashboardState.erro = erro;
     document.body.dataset.dashboardState = 'error';
     mostrarErroDashboard();
-    if (!silencioso) mostrarToast('Não foi possível atualizar a dashboard.');
+    if (!silencioso) {
+      mostrarToast('Não foi possível atualizar a dashboard.');
+    }
   } finally {
     if (requestAtual === dashboardState.requestId) {
       dashboardState.carregando = false;
       dashboardState.controlador = null;
-      if (elementos.refreshButton) elementos.refreshButton.disabled = false;
+      if (elementos.refreshButton) {
+        elementos.refreshButton.disabled = false;
+      }
     }
   }
 }
 
 function configurarNavegacao() {
-  if (elementos.openSidebarButton) elementos.openSidebarButton.addEventListener('click', () => document.body.classList.add('sidebar-open'));
+  if (elementos.openSidebarButton) {
+    elementos.openSidebarButton.addEventListener('click', () =>
+      document.body.classList.add('sidebar-open')
+    );
+  }
 
   document.querySelectorAll('.nav-link').forEach((link) => {
     link.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
   });
 
   document.querySelectorAll('[data-coming-soon]').forEach((botao) => {
-    botao.addEventListener('click', () => mostrarToast(`${botao.dataset.comingSoon} será implementado nas próximas etapas.`));
-  });
-
-  elementos.notificationButton?.addEventListener('click', () => {
-    document.querySelector('.alerts-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    botao.addEventListener('click', () =>
+      mostrarToast(`${botao.dataset.comingSoon} será implementado nas próximas etapas.`)
+    );
   });
 
   elementos.historyButton?.addEventListener('click', () => {
@@ -435,10 +529,14 @@ function configurarControles() {
     carregarDashboard();
   });
 
-  if (elementos.refreshButton) elementos.refreshButton.addEventListener('click', () => carregarDashboard());
+  if (elementos.refreshButton) {
+    elementos.refreshButton.addEventListener('click', () => carregarDashboard());
+  }
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) carregarDashboard({ silencioso: true });
+    if (!document.hidden) {
+      carregarDashboard({ silencioso: true });
+    }
   });
 
   window.addEventListener('pageshow', () => carregarDashboard({ silencioso: true }));

@@ -5,7 +5,7 @@ const PARAMETROS_PERMITIDOS = new Set(['periodo']);
 function criarErroValidacao(mensagem, codigo) {
   const erro = new Error(mensagem);
   erro.statusCode = 400;
-  erro.code = codigo;
+  erro.codigo = codigo;
   return erro;
 }
 
@@ -20,7 +20,9 @@ function obterPeriodo(query) {
     );
   }
 
-  if (query?.periodo == null) return '30d';
+  if (query?.periodo === null) {
+    return '30d';
+  }
   if (typeof query.periodo !== 'string') {
     throw criarErroValidacao('O parâmetro periodo deve ser um texto.', 'PERIODO_TIPO_INVALIDO');
   }
@@ -40,8 +42,8 @@ function ehErroDeConexao(erro) {
     'ETIMEDOUT',
     'ENETUNREACH',
     'PROTOCOL_CONNECTION_LOST',
-    'ER_CON_COUNT_ERROR'
-  ].includes(erro.code);
+    'ER_CON_COUNT_ERROR',
+  ].includes(erro.codigo);
 }
 
 async function obterDashboard(req, res) {
@@ -51,35 +53,36 @@ async function obterDashboard(req, res) {
 
     return res.status(200).json({
       sucesso: true,
-      ...dados
+      ...dados,
     });
   } catch (erro) {
     const statusCode = erro.statusCode || (ehErroDeConexao(erro) ? 503 : 500);
-    const mensagem = statusCode === 400
-      ? erro.message
-      : statusCode === 503
-        ? 'O banco de dados está temporariamente indisponível.'
-        : 'Não foi possível carregar os dados da dashboard.';
+    const mensagem =
+      statusCode === 400
+        ? erro.message
+        : statusCode === 503
+          ? 'O banco de dados está temporariamente indisponível.'
+          : 'Não foi possível carregar os dados da dashboard.';
 
     console.error('[Dashboard]', {
       mensagem: erro.message,
-      codigo: erro.code,
+      codigo: erro.codigo,
       statusCode,
-      detalheMySQL: erro.sqlMessage
     });
 
     return res.status(statusCode).json({
       sucesso: false,
-      codigo: statusCode === 400
-        ? erro.code || 'PARAMETRO_INVALIDO'
-        : statusCode === 503
-          ? 'BANCO_INDISPONIVEL'
-          : 'ERRO_DASHBOARD',
-      mensagem
+      codigo:
+        statusCode === 400
+          ? erro.codigo || 'PARAMETRO_INVALIDO'
+          : statusCode === 503
+            ? 'BANCO_INDISPONIVEL'
+            : 'ERRO_DASHBOARD',
+      mensagem,
     });
   }
 }
 
 module.exports = {
-  obterDashboard
+  obterDashboard,
 };

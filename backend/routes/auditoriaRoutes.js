@@ -1,9 +1,6 @@
 const express = require('express');
 
-const {
-  verificarToken,
-  permitirPerfis
-} = require('../middlewares/authMiddleware');
+const { verificarToken, permitirPerfis } = require('../middlewares/authMiddleware');
 
 const auditoriaController = require('../controllers/auditoriaController');
 
@@ -19,11 +16,7 @@ router.use((req, res, next) => {
 router.get(
   '/',
   verificarToken,
-  permitirPerfis(
-    'OPERADOR_ESTOQUE',
-    'GERENTE',
-    'ADMINISTRADOR'
-  ),
+  permitirPerfis('OPERADOR_ESTOQUE', 'GERENTE', 'ADMINISTRADOR'),
   auditoriaController.listar
 );
 

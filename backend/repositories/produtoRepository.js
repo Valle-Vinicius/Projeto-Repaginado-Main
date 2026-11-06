@@ -9,22 +9,38 @@ async function buscarCategorias() {
   `);
 }
 
-async function buscarProdutos({ busca = '', categoriaId = null } = {}) {
+async function buscarProdutos({ busca = '', categoriaId = null, pagina = 1, limite = 20 } = {}) {
   const valores = [];
   const filtros = ['p.ativo = TRUE'];
 
   if (busca) {
     const termo = `%${busca}%`;
-    filtros.push('(p.nome LIKE ? OR p.codigo LIKE ? OR COALESCE(p.descricao, \'\') LIKE ?)');
+    filtros.push("(p.nome LIKE ? OR p.codigo LIKE ? OR COALESCE(p.descricao, '') LIKE ?)");
     valores.push(termo, termo, termo);
   }
 
-  if (categoriaId != null) {
+  if (categoriaId !== null) {
     filtros.push('p.categoria_id = ?');
     valores.push(categoriaId);
   }
 
-  return executarQuery(`
+  const offset = (pagina - 1) * limite;
+
+  // Count total
+  const [countResult] = await executarQuery(
+    `
+    SELECT COUNT(DISTINCT p.id) AS total
+    FROM produtos p
+    LEFT JOIN categorias c ON c.id = p.categoria_id
+    WHERE ${filtros.join(' AND ')}
+  `,
+    valores
+  );
+
+  const total = countResult?.total || 0;
+
+  const produtos = await executarQuery(
+    `
     SELECT
       p.id,
       p.codigo AS sku,
@@ -59,16 +75,24 @@ async function buscarProdutos({ busca = '', categoriaId = null } = {}) {
       p.estoque_minimo, p.unidade, p.possui_validade, p.criado_em, p.atualizado_em,
       m.ultimaMovimentacao
     ORDER BY p.nome ASC
-  `, valores);
+    LIMIT ? OFFSET ?
+  `,
+    [...valores, Number(limite), Number(offset)]
+  );
+
+  return { dados: produtos, total, pagina, limite, totalPaginas: Math.ceil(total / limite) };
 }
 
 async function buscarCategoriaAtiva(categoriaId) {
-  const categorias = await executarQuery(`
+  const categorias = await executarQuery(
+    `
     SELECT id, nome
     FROM categorias
     WHERE id = ? AND ativo = TRUE
     LIMIT 1
-  `, [categoriaId]);
+  `,
+    [categoriaId]
+  );
 
   return categorias[0] || null;
 }
@@ -80,9 +104,10 @@ async function criarProduto({
   categoriaId,
   estoqueMinimo,
   unidade,
-  possuiValidade
+  possuiValidade,
 }) {
-  const resultado = await executarQuery(`
+  const resultado = await executarQuery(
+    `
     INSERT INTO produtos (
       codigo,
       nome,
@@ -94,21 +119,16 @@ async function criarProduto({
       ativo
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)
-  `, [
-    codigo,
-    nome,
-    descricao,
-    categoriaId,
-    estoqueMinimo,
-    unidade,
-    possuiValidade
-  ]);
+  `,
+    [codigo, nome, descricao, categoriaId, estoqueMinimo, unidade, possuiValidade]
+  );
 
   return resultado.insertId;
 }
 
 async function buscarProdutoPorId(id) {
-  const produtos = await executarQuery(`
+  const produtos = await executarQuery(
+    `
     SELECT
       p.id,
       p.codigo AS sku,
@@ -135,9 +155,49 @@ async function buscarProdutoPorId(id) {
     GROUP BY p.id, p.codigo, p.nome, p.descricao, p.categoria_id, c.nome,
       p.estoque_minimo, p.unidade, p.possui_validade, p.criado_em, p.atualizado_em
     LIMIT 1
-  `, [id]);
+  `,
+    [id]
+  );
 
   return produtos[0] || null;
+}
+
+async function atualizarProduto(id, campos) {
+  const permitidos = {
+    codigo: 'codigo',
+    nome: 'nome',
+    descricao: 'descricao',
+    categoriaId: 'categoria_id',
+    estoqueMinimo: 'estoque_minimo',
+    unidade: 'unidade',
+    possuiValidade: 'possui_validade',
+  };
+
+  const partes = [];
+  const valores = [];
+  for (const [chave, coluna] of Object.entries(permitidos)) {
+    if (Object.prototype.hasOwnProperty.call(campos, chave)) {
+      partes.push(`${coluna} = ?`);
+      valores.push(campos[chave] === '' ? null : campos[chave]);
+    }
+  }
+
+  if (!partes.length) {
+    return buscarProdutoPorId(id);
+  }
+
+  valores.push(id);
+  await executarQuery(
+    `UPDATE produtos SET ${partes.join(', ')}, atualizado_em = NOW() WHERE id = ? AND ativo = TRUE`,
+    valores
+  );
+  return buscarProdutoPorId(id);
+}
+
+async function desativarProduto(id) {
+  await executarQuery('UPDATE produtos SET ativo = FALSE, atualizado_em = NOW() WHERE id = ?', [
+    id,
+  ]);
 }
 
 module.exports = {
@@ -145,5 +205,7 @@ module.exports = {
   buscarProdutos,
   buscarCategoriaAtiva,
   criarProduto,
-  buscarProdutoPorId
+  buscarProdutoPorId,
+  atualizarProduto,
+  desativarProduto,
 };

@@ -3,7 +3,7 @@ const { executarQuery } = require('../config/database');
 const DIAS_POR_PERIODO = Object.freeze({
   hoje: 0,
   '7d': 6,
-  '30d': 29
+  '30d': 29,
 });
 
 function inicioDoDia(referencia) {
@@ -58,18 +58,21 @@ async function buscarResumo() {
     ) posicao
   `);
 
-  return resumo || {
-    totalProdutos: 0,
-    produtosAtivos: 0,
-    estoqueTotal: 0,
-    estoqueBaixo: 0,
-    semEstoque: 0
-  };
+  return (
+    resumo || {
+      totalProdutos: 0,
+      produtosAtivos: 0,
+      estoqueTotal: 0,
+      estoqueBaixo: 0,
+      semEstoque: 0,
+    }
+  );
 }
 
 async function buscarResumoMovimentacoes(periodo) {
   const { inicio, fim } = obterIntervaloPeriodo(periodo);
-  const [resumo] = await executarQuery(`
+  const [resumo] = await executarQuery(
+    `
     SELECT
       COUNT(*) AS movimentacoesPeriodo,
       COALESCE(SUM(CASE WHEN tipo = 'ENTRADA' THEN quantidade ELSE 0 END), 0) AS entradasPeriodo,
@@ -78,13 +81,17 @@ async function buscarResumoMovimentacoes(periodo) {
     WHERE status = 'CONFIRMADA'
       AND criado_em >= ?
       AND criado_em < ?
-  `, [inicio, fim]);
+  `,
+    [inicio, fim]
+  );
 
-  return resumo || {
-    movimentacoesPeriodo: 0,
-    entradasPeriodo: 0,
-    saidasPeriodo: 0
-  };
+  return (
+    resumo || {
+      movimentacoesPeriodo: 0,
+      entradasPeriodo: 0,
+      saidasPeriodo: 0,
+    }
+  );
 }
 
 async function buscarEstoqueBaixo() {
@@ -137,7 +144,8 @@ async function buscarValidadesProximas(dias = 30) {
     throw new Error('Janela de validade inválida.');
   }
 
-  return executarQuery(`
+  return executarQuery(
+    `
     SELECT
       l.id AS loteId,
       p.id AS produtoId,
@@ -161,7 +169,9 @@ async function buscarValidadesProximas(dias = 30) {
       AND l.data_validade <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
     ORDER BY l.data_validade ASC, l.id ASC
     LIMIT 10
-  `, [diasNumeros]);
+  `,
+    [diasNumeros]
+  );
 }
 
 async function buscarVencidos() {
@@ -191,7 +201,8 @@ async function buscarVencidos() {
 async function buscarMovimentacoes(periodo) {
   const { inicio, fim } = obterIntervaloPeriodo(periodo);
 
-  return executarQuery(`
+  return executarQuery(
+    `
     SELECT
       DATE(criado_em) AS data,
       COALESCE(SUM(CASE WHEN tipo = 'ENTRADA' THEN quantidade ELSE 0 END), 0) AS entradas,
@@ -202,11 +213,14 @@ async function buscarMovimentacoes(periodo) {
       AND criado_em < ?
     GROUP BY DATE(criado_em)
     ORDER BY data ASC
-  `, [inicio, fim]);
+  `,
+    [inicio, fim]
+  );
 }
 
 async function buscarCategorias(limite = 5) {
-  return executarQuery(`
+  return executarQuery(
+    `
     SELECT
       COALESCE(c.nome, 'Sem categoria') AS nome,
       COUNT(DISTINCT p.id) AS total
@@ -216,11 +230,14 @@ async function buscarCategorias(limite = 5) {
     GROUP BY c.id, c.nome
     ORDER BY total DESC, nome ASC
     LIMIT ?
-  `, [limite]);
+  `,
+    [limite]
+  );
 }
 
 async function buscarAtividadesRecentes(limite = 8) {
-  return executarQuery(`
+  return executarQuery(
+    `
     SELECT
       m.id,
       m.tipo,
@@ -238,7 +255,9 @@ async function buscarAtividadesRecentes(limite = 8) {
     WHERE m.status = 'CONFIRMADA'
     ORDER BY m.criado_em DESC, m.id DESC
     LIMIT ?
-  `, [limite]);
+  `,
+    [limite]
+  );
 }
 
 module.exports = {
@@ -251,5 +270,5 @@ module.exports = {
   buscarMovimentacoes,
   buscarCategorias,
   buscarAtividadesRecentes,
-  obterIntervaloPeriodo
+  obterIntervaloPeriodo,
 };

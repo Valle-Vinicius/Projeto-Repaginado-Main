@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditoria | Babycare</title>
+  <script type="module" crossorigin src="/assets/auditoria-DlzVZWos.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
+  <link rel="stylesheet" crossorigin href="/assets/auditoria-B17y7aZW.css">
+  <link rel="stylesheet" crossorigin href="/assets/dashboard-CUmOQbee.css">
+</head>
+<body class="dashboard-page auditoria-page">
+  <div id="pageLoader" class="page-loader" aria-live="polite">
+    <div class="loader-mark" aria-hidden="true"></div>
+    <span>Carregando auditoria...</span>
+  </div>
+
+  <div class="dashboard-curtain dashboard-curtain-left" aria-hidden="true"></div>
+  <div class="dashboard-curtain dashboard-curtain-right" aria-hidden="true"></div>
+
+  <div class="dashboard-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <div>
+            <p class="breadcrumb">Babycare <span>/</span> <strong>Auditoria</strong></p>
+            <h1>Auditoria</h1>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="topbar-search" for="topbarSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" />
+          </label>
+
+          <div class="topbar-divider" aria-hidden="true"></div>
+          <div class="topbar-user">
+            <div class="avatar avatar-small" id="topbarAvatar">U</div>
+            <div class="user-copy topbar-user-copy">
+              <strong id="topbarUserName">Usuário Babycare</strong>
+              <span id="topbarUserRole">Perfil de acesso</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-content auditoria-content">
+        <section class="intro-row">
+          <div><p class="section-kicker">CONTROLE E CONFORMIDADE</p><h2>Histórico de auditoria</h2><p>Acompanhe as ações realizadas no sistema e mantenha a rastreabilidade operacional.</p></div>
+          <button id="refreshAuditButton" class="refresh-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L4 9m0-4v4h4M4 13a8 8 0 0 0 14.8 4L20 15m0 4v-4h-4"></path></svg><span>Atualizar</span></button>
+        </section>
+        <section class="audit-filters"><label><span>Período</span><select id="auditPeriod"><option value="hoje">Hoje</option><option value="7d">Últimos 7 dias</option><option value="30d" selected>Últimos 30 dias</option><option value="mes">Este mês</option><option value="todos">Todo o histórico</option></select></label><label><span>Resultado</span><select id="auditResult"><option value="">Todos</option><option value="SUCESSO">Sucesso</option><option value="FALHA">Falha</option></select></label><label><span>Ação</span><select id="auditAction"><option value="">Todas as ações</option></select></label><label class="audit-search"><span>Pesquisar no histórico</span><div><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg><input id="auditSearch" type="search" placeholder="Usuário, entidade ou detalhe" /></div></label></section>
+        <section class="audit-metrics"><article><span>Eventos encontrados</span><strong id="auditTotal">—</strong><small>no período selecionado</small></article><article><span>Ações bem-sucedidas</span><strong id="auditSuccess">—</strong><small>operações concluídas</small></article><article><span>Falhas registradas</span><strong id="auditFailure">—</strong><small>requerem atenção</small></article><article><span>Usuários ativos</span><strong id="auditUsers">—</strong><small>com ações no período</small></article></section>
+        <section class="audit-panel"><div class="panel-header"><div><span class="section-kicker">HISTÓRICO DO SISTEMA</span><h2>Eventos registrados</h2></div><span id="auditCount" class="panel-count">—</span></div><div class="audit-table-wrap"><table><thead><tr><th>Data e hora</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Resultado</th><th>Detalhes</th></tr></thead><tbody id="auditBody"></tbody></table></div><p id="auditEmpty" class="audit-empty" hidden>Nenhum evento encontrado com os filtros selecionados.</p></section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

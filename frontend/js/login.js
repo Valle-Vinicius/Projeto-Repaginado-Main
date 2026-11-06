@@ -1,4 +1,4 @@
-const API_URL = window.location.origin;
+const API_URL = window.BabycareUI?.API_URL || window.location.origin;
 
 const loginForm = document.querySelector('#loginForm');
 const emailInput = document.querySelector('#email');
@@ -60,7 +60,9 @@ async function fazerLogin(event) {
   event.preventDefault();
   mostrarMensagem('');
 
-  if (!validarFormulario()) return;
+  if (!validarFormulario()) {
+    return;
+  }
 
   alterarEstadoDoBotao(true);
 
@@ -69,13 +71,14 @@ async function fazerLogin(event) {
       method: 'POST',
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: emailInput.value.trim(),
-        senha: senhaInput.value
+        senha: senhaInput.value,
       }),
-      cache: 'no-store'
+      credentials: 'include',
+      cache: 'no-store',
     });
 
     const resultado = await obterResposta(resposta);
@@ -84,7 +87,7 @@ async function fazerLogin(event) {
       throw new Error(resultado.mensagem || 'Não foi possível realizar o login.');
     }
 
-    if (!resultado.token || !resultado.usuario) {
+    if (!resultado.usuario) {
       throw new Error('O servidor não retornou uma sessão válida.');
     }
 
@@ -98,9 +101,10 @@ async function fazerLogin(event) {
       window.location.assign('/pages/dashboard.html');
     }, tempoTransicao);
   } catch (erro) {
-    const mensagem = erro.name === 'TypeError'
-      ? 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
-      : erro.message || 'Não foi possível realizar o login.';
+    const mensagem =
+      erro.name === 'TypeError'
+        ? 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
+        : erro.message || 'Não foi possível realizar o login.';
 
     mostrarMensagem(mensagem, 'error');
   } finally {
@@ -117,7 +121,26 @@ togglePassword.addEventListener('click', () => {
 
 forgotPassword.addEventListener('click', (event) => {
   event.preventDefault();
-  mostrarMensagem('A recuperação de senha será disponibilizada em breve.', 'success');
+  const email = window.prompt('Informe seu e-mail cadastrado:');
+  if (!email) {
+    return;
+  }
+  fetch(`${API_URL}/api/auth/esqueci-senha`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email.trim() }),
+    credentials: 'include',
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      mostrarMensagem(
+        data.mensagem || 'Se o e-mail estiver cadastrado, você receberá instruções.',
+        'success'
+      );
+    })
+    .catch(() => {
+      mostrarMensagem('Não foi possível processar a solicitação.', 'error');
+    });
 });
 
 requestAccess.addEventListener('click', (event) => {

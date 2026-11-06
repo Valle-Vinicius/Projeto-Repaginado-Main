@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
 const auditoriaRepository = require('../repositories/auditoriaRepository');
-const { criarErro, validarLoginPayload, validarCadastroPayload } = require('../validators/authValidator');
+const { criarErro, validarLoginPayload } = require('../validators/authValidator');
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
 const MAX_TENTATIVAS = 5;
@@ -18,7 +18,7 @@ function usuarioPublico(usuario) {
     email: usuario.email,
     perfil: usuario.perfil,
     departamento: usuario.departamento || null,
-    ativo: Boolean(usuario.ativo)
+    ativo: Boolean(usuario.ativo),
   };
 }
 
@@ -29,7 +29,7 @@ async function registrarAuditoria(dados) {
     // Falha de auditoria não deve registrar senha nem impedir uma resposta coerente ao usuário.
     console.error('[Auth][Auditoria]', {
       mensagem: erro.message,
-      codigo: erro.code
+      codigo: erro.code,
     });
   }
 }
@@ -50,34 +50,6 @@ function erroDeCredenciais() {
   return criarErro('CREDENCIAIS_INVALIDAS', 'E-mail ou senha inválidos.', 401);
 }
 
-async function cadastrar(payload) {
-  const dados = validarCadastroPayload(payload);
-  const usuarioExistente = await userRepository.buscarPorEmail(dados.email);
-
-  if (usuarioExistente) {
-    throw criarErro('EMAIL_EM_USO', 'Este e-mail já está cadastrado.', 409, 'email');
-  }
-
-  const senhaHash = await bcrypt.hash(dados.senha, 12);
-  const usuario = await userRepository.inserir({
-    nome: dados.nome,
-    email: dados.email,
-    senhaHash,
-    perfilId: 1,
-    departamentoId: null
-  });
-
-  await registrarAuditoria({
-    usuarioId: usuario.id,
-    acao: 'USUARIO_CRIADO',
-    entidade: 'USUARIO',
-    entidadeId: usuario.id,
-    detalhes: { origem: 'cadastro' }
-  });
-
-  return usuarioPublico(usuario);
-}
-
 async function login(payload, informacoes = {}) {
   const dados = validarLoginPayload(payload);
   const usuario = await userRepository.buscarPorEmail(dados.email);
@@ -90,11 +62,7 @@ async function login(payload, informacoes = {}) {
 
   if (!usuario || !senhaCorreta || !usuario.ativo || !perfilAtivo || contaBloqueada) {
     if (usuario && usuario.ativo && perfilAtivo && !contaBloqueada && !senhaCorreta) {
-      await userRepository.registrarFalhaLogin(
-        usuario.id,
-        MAX_TENTATIVAS,
-        MINUTOS_BLOQUEIO
-      );
+      await userRepository.registrarFalhaLogin(usuario.id, MAX_TENTATIVAS, MINUTOS_BLOQUEIO);
     }
 
     await registrarAuditoria({
@@ -102,9 +70,9 @@ async function login(payload, informacoes = {}) {
       acao: 'LOGIN_FALHOU',
       resultado: 'FALHA',
       detalhes: {
-        motivo: 'credenciais_invalidas'
+        motivo: 'credenciais_invalidas',
       },
-      ...informacoes
+      ...informacoes,
     });
 
     // Usuário inexistente, senha incorreta, conta inativa e conta bloqueada têm a mesma resposta.
@@ -115,26 +83,23 @@ async function login(payload, informacoes = {}) {
 
   await userRepository.limparFalhasLogin(usuario.id);
 
-  const token = jwt.sign(
-    { id: usuario.id, perfil: usuario.perfil },
-    jwtSecret,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  const token = jwt.sign({ id: usuario.id, perfil: usuario.perfil }, jwtSecret, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 
   await registrarAuditoria({
     usuarioId: usuario.id,
     acao: 'LOGIN_REALIZADO',
-    detalhes: informacoes
+    detalhes: informacoes,
   });
 
   return {
     token,
-    usuario: usuarioPublico(usuario)
+    usuario: usuarioPublico(usuario),
   };
 }
 
 module.exports = {
-  cadastrar,
   login,
-  usuarioPublico
+  usuarioPublico,
 };

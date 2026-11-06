@@ -1,13 +1,11 @@
-const validadeService = require("../services/validadeService");
+const validadeService = require('../services/validadeService');
 
 function responderErro(res, erro) {
-  console.error("[Validade]", { mensagem: erro.message, codigo: erro.codigo });
+  console.error('[Validade]', { mensagem: erro.message, codigo: erro.codigo });
   return res.status(erro.statusCode || 500).json({
     sucesso: false,
-    codigo: erro.codigo || "ERRO_VALIDADE",
-    mensagem: erro.statusCode
-      ? erro.message
-      : "Não foi possível carregar as validades.",
+    codigo: erro.codigo || 'ERRO_VALIDADE',
+    mensagem: erro.statusCode ? erro.message : 'Não foi possível carregar as validades.',
   });
 }
 

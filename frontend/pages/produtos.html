@@ -72,21 +72,7 @@
                 autocomplete="off"
               />
             </label>
-            <button
-              id="notificationButton"
-              class="notification-button"
-              type="button"
-              aria-label="Ver notificações"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path
-                  d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
-                ></path>
-              </svg>
-              <span id="notificationCount" class="notification-count" hidden
-                >0</span
-              >
-            </button>
+            
             <div class="topbar-divider" aria-hidden="true"></div>
             <div class="topbar-user">
               <div class="avatar avatar-small" id="topbarAvatar">U</div>
@@ -175,6 +161,7 @@
               <span id="productResultCount" class="result-count"
                 >0 produtos</span
               >
+              <button id="prodExportarCsv" type="button" class="export-button">Exportar CSV</button>
             </div>
 
             <div class="product-table-wrap">
@@ -195,6 +182,11 @@
               <div id="productsEmpty" class="products-empty" hidden>
                 Nenhum produto corresponde aos filtros.
               </div>
+              <div class="product-pagination" aria-label="Paginação">
+                <button id="prodPaginaAnterior" type="button">← Anterior</button>
+                <span id="prodPaginaInfo">Página <span id="prodPaginaAtual">1</span> de <span id="prodPaginaTotal">1</span></span>
+                <button id="prodPaginaProxima" type="button">Próxima →</button>
+              </div>
             </div>
           </section>
         </div>
@@ -203,6 +195,7 @@
 
     <script src="../js/ui.js"></script>
     <script src="../js/sidebar.js?v=1"></script>
+    <script src="../js/core.js?v=1"></script>
     <script src="../js/produtos.js"></script>
   </body>
 </html>

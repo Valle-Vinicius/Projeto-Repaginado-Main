@@ -11,7 +11,8 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   decimalNumbers: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  collation: 'utf8mb4_unicode_ci',
 });
 
 async function executarQuery(sql, valores = []) {
@@ -38,5 +39,5 @@ async function executarTransacao(callback) {
 module.exports = {
   pool,
   executarQuery,
-  executarTransacao
+  executarTransacao,
 };

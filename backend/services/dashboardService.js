@@ -6,7 +6,7 @@ const LIMITE_ATIVIDADES = 8;
 
 function erroDadoInvalido(mensagem) {
   const erro = new Error(mensagem);
-  erro.code = 'DASHBOARD_DADO_INVALIDO';
+  erro.codigo = 'DASHBOARD_DADO_INVALIDO';
   erro.statusCode = 500;
   return erro;
 }
@@ -36,7 +36,9 @@ function inteiroPositivo(valor, campo) {
 }
 
 function listaOuVazia(valor) {
-  if (valor == null) return [];
+  if (valor === null) {
+    return [];
+  }
   if (!Array.isArray(valor)) {
     throw erroDadoInvalido('Uma lista da Dashboard retornou uma estrutura inválida.');
   }
@@ -46,7 +48,7 @@ function listaOuVazia(valor) {
 function validarPeriodo(periodo) {
   if (!PERIODOS_PERMITIDOS.includes(periodo)) {
     const erro = new Error(`Período inválido. Use: ${PERIODOS_PERMITIDOS.join(', ')}.`);
-    erro.code = 'PERIODO_INVALIDO';
+    erro.codigo = 'PERIODO_INVALIDO';
     erro.statusCode = 400;
     throw erro;
   }
@@ -62,16 +64,14 @@ function normalizarResumo(resumo, resumoMovimentacoes) {
     resumoMovimentacoes.movimentacoesPeriodo,
     'movimentacoesPeriodo'
   );
-  const entradasPeriodo = numeroNaoNegativo(
-    resumoMovimentacoes.entradasPeriodo,
-    'entradasPeriodo'
-  );
-  const saidasPeriodo = numeroNaoNegativo(
-    resumoMovimentacoes.saidasPeriodo,
-    'saidasPeriodo'
-  );
+  const entradasPeriodo = numeroNaoNegativo(resumoMovimentacoes.entradasPeriodo, 'entradasPeriodo');
+  const saidasPeriodo = numeroNaoNegativo(resumoMovimentacoes.saidasPeriodo, 'saidasPeriodo');
 
-  if (produtosAtivos > totalProdutos || estoqueBaixo > totalProdutos || semEstoque > totalProdutos) {
+  if (
+    produtosAtivos > totalProdutos ||
+    estoqueBaixo > totalProdutos ||
+    semEstoque > totalProdutos
+  ) {
     throw erroDadoInvalido('Os indicadores de produtos da Dashboard são inconsistentes.');
   }
 
@@ -87,7 +87,7 @@ function normalizarResumo(resumo, resumoMovimentacoes) {
     semEstoque,
     movimentacoesPeriodo,
     entradasPeriodo,
-    saidasPeriodo
+    saidasPeriodo,
   };
 }
 
@@ -98,7 +98,7 @@ function normalizarProdutoAlerta(produto) {
     nome: String(produto.nome || 'Produto sem nome'),
     estoqueMinimo: numeroNaoNegativo(produto.estoqueMinimo, 'estoqueMinimo'),
     estoqueAtual: numeroNaoNegativo(produto.estoqueAtual, 'estoqueAtual'),
-    status: String(produto.status || '')
+    status: String(produto.status || ''),
   };
 }
 
@@ -112,7 +112,7 @@ function normalizarValidade(lote) {
     quantidadeAtual: numeroNaoNegativo(lote.quantidadeAtual, 'quantidadeAtual'),
     dataValidade: lote.dataValidade,
     diasParaVencer: numeroFinito(lote.diasParaVencer, 'diasParaVencer'),
-    status: String(lote.status || '')
+    status: String(lote.status || ''),
   };
 }
 
@@ -120,14 +120,14 @@ function normalizarGrafico(movimentacoes) {
   return listaOuVazia(movimentacoes).map((movimentacao) => ({
     data: String(movimentacao.data),
     entradas: numeroNaoNegativo(movimentacao.entradas, 'grafico.entradas'),
-    saidas: numeroNaoNegativo(movimentacao.saidas, 'grafico.saidas')
+    saidas: numeroNaoNegativo(movimentacao.saidas, 'grafico.saidas'),
   }));
 }
 
 function normalizarCategorias(categorias) {
   return listaOuVazia(categorias).map((categoria) => ({
     nome: String(categoria.nome || 'Sem categoria'),
-    total: numeroNaoNegativo(categoria.total, 'categorias.total')
+    total: numeroNaoNegativo(categoria.total, 'categorias.total'),
   }));
 }
 
@@ -146,9 +146,12 @@ function normalizarAtividade(atividade) {
     quantidade,
     observacao: atividade.observacao ? String(atividade.observacao) : null,
     usuario: String(atividade.usuario || 'Usuário removido'),
-    usuarioId: atividade.usuarioId == null ? null : inteiroPositivo(atividade.usuarioId, 'atividade.usuarioId'),
+    usuarioId:
+      atividade.usuarioId === null
+        ? null
+        : inteiroPositivo(atividade.usuarioId, 'atividade.usuarioId'),
     criadoEm: atividade.criadoEm,
-    status
+    status,
   };
 }
 
@@ -164,7 +167,7 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     vencidos,
     movimentacoes,
     categorias,
-    atividadesRecentes
+    atividadesRecentes,
   ] = await Promise.all([
     dashboardRepository.buscarResumo(),
     dashboardRepository.buscarResumoMovimentacoes(periodo),
@@ -174,7 +177,7 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     dashboardRepository.buscarVencidos(),
     dashboardRepository.buscarMovimentacoes(periodo),
     dashboardRepository.buscarCategorias(5),
-    dashboardRepository.buscarAtividadesRecentes(LIMITE_ATIVIDADES)
+    dashboardRepository.buscarAtividadesRecentes(LIMITE_ATIVIDADES),
   ]);
 
   return {
@@ -182,17 +185,23 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     resumo: normalizarResumo(resumo || {}, resumoMovimentacoes || {}),
     grafico: normalizarGrafico(movimentacoes),
     alertas: {
-      estoqueBaixo: listaOuVazia(estoqueBaixo).slice(0, LIMITE_ALERTAS).map(normalizarProdutoAlerta),
+      estoqueBaixo: listaOuVazia(estoqueBaixo)
+        .slice(0, LIMITE_ALERTAS)
+        .map(normalizarProdutoAlerta),
       semEstoque: listaOuVazia(semEstoque).slice(0, LIMITE_ALERTAS).map(normalizarProdutoAlerta),
-      produtosProximosDaValidade: listaOuVazia(validadesProximas).slice(0, LIMITE_ALERTAS).map(normalizarValidade),
-      produtosVencidos: listaOuVazia(vencidos).slice(0, LIMITE_ALERTAS).map(normalizarValidade)
+      produtosProximosDaValidade: listaOuVazia(validadesProximas)
+        .slice(0, LIMITE_ALERTAS)
+        .map(normalizarValidade),
+      produtosVencidos: listaOuVazia(vencidos).slice(0, LIMITE_ALERTAS).map(normalizarValidade),
     },
     categorias: normalizarCategorias(categorias),
-    atividadesRecentes: listaOuVazia(atividadesRecentes).slice(0, LIMITE_ATIVIDADES).map(normalizarAtividade)
+    atividadesRecentes: listaOuVazia(atividadesRecentes)
+      .slice(0, LIMITE_ATIVIDADES)
+      .map(normalizarAtividade),
   };
 }
 
 module.exports = {
   obterDashboard,
-  PERIODOS_PERMITIDOS
+  PERIODOS_PERMITIDOS,
 };

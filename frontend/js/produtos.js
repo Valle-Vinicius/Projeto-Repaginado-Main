@@ -1,4 +1,8 @@
 const PRODUTOS_API_URL = window.BabycareUI?.API_URL || window.location.origin;
+const {
+  salvarFiltros: salvarFiltrosCore,
+  carregarFiltros: carregarFiltrosCore,
+} = window.BabycareCore;
 
 const productElements = {
   body: document.querySelector('#productsBody'),
@@ -16,15 +20,24 @@ const productElements = {
   topbarSearch: document.querySelector('#topbarSearch'),
   openSidebar: document.querySelector('#openSidebarButton'),
   closeSidebar: document.querySelector('#closeSidebarButton'),
-  notification: document.querySelector('#notificationButton'),
-  logout: document.querySelector('#logoutButton')
+  logout: document.querySelector('#logoutButton'),
 };
 
 let produtos = [];
 let categorias = [];
+let paginaAtual = 1;
+const LIMITE_POR_PAGINA = 20;
+
+const paginacaoElementos = {
+  anterior: document.querySelector('#prodPaginaAnterior'),
+  proxima: document.querySelector('#prodPaginaProxima'),
+  atual: document.querySelector('#prodPaginaAtual'),
+  total: document.querySelector('#prodPaginaTotal'),
+};
 
 function obterUsuario() {
-  const salvo = localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
+  const salvo =
+    localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
   try {
     return salvo ? JSON.parse(salvo) : null;
   } catch (erro) {
@@ -44,7 +57,13 @@ function configurarUsuario() {
     .replaceAll('_', ' ')
     .toLowerCase()
     .replace(/(^|\s)\S/g, (letra) => letra.toUpperCase());
-  const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map((parte) => parte[0].toUpperCase()).join('') || 'U';
+  const iniciais =
+    nome
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0].toUpperCase())
+      .join('') || 'U';
 
   document.querySelector('#sidebarUserName').textContent = nome;
   document.querySelector('#sidebarUserRole').textContent = perfil;
@@ -60,9 +79,9 @@ async function requisitarAPI(caminho, opcoes = {}) {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      ...(opcoes.headers || {})
+      ...(opcoes.headers || {}),
     },
-    credentials: 'include'
+    credentials: 'include',
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -82,35 +101,65 @@ async function requisitarAPI(caminho, opcoes = {}) {
 function estadoEstoque(produto) {
   const estoque = Number(produto.estoque || 0);
   const minimo = Number(produto.estoqueMinimo || 0);
-  if (estoque === 0) return 'SEM_ESTOQUE';
-  if (estoque < minimo) return 'BAIXO';
+  if (estoque === 0) {
+    return 'SEM_ESTOQUE';
+  }
+  if (estoque < minimo) {
+    return 'BAIXO';
+  }
   return 'NORMAL';
 }
 
 function classeStatus(estado) {
-  return {
-    ATIVO: 'active',
-    INATIVO: 'inactive',
-    NORMAL: 'normal',
-    BAIXO: 'low',
-    SEM_ESTOQUE: 'empty'
-  }[estado] || 'normal';
+  return (
+    {
+      ATIVO: 'active',
+      INATIVO: 'inactive',
+      NORMAL: 'normal',
+      BAIXO: 'low',
+      SEM_ESTOQUE: 'empty',
+    }[estado] || 'normal'
+  );
 }
 
 function textoStatus(estado) {
-  return {
-    ATIVO: 'Ativo',
-    INATIVO: 'Inativo',
-    NORMAL: 'Normal',
-    BAIXO: 'Estoque baixo',
-    SEM_ESTOQUE: 'Sem estoque'
-  }[estado] || estado;
+  return (
+    {
+      ATIVO: 'Ativo',
+      INATIVO: 'Inativo',
+      NORMAL: 'Normal',
+      BAIXO: 'Estoque baixo',
+      SEM_ESTOQUE: 'Sem estoque',
+    }[estado] || estado
+  );
 }
 
 function criarCelula(texto, classe = '') {
   const celula = document.createElement('td');
   celula.className = classe;
   celula.textContent = texto ?? '—';
+  return celula;
+}
+
+function criarCelulaSKU(sku) {
+  const celula = document.createElement('td');
+  celula.className = 'sku-cell';
+  celula.textContent = sku ?? '—';
+  const botao = document.createElement('button');
+  botao.type = 'button';
+  botao.className = 'copy-button';
+  botao.title = 'Copiar SKU';
+  botao.setAttribute('aria-label', 'Copiar SKU');
+  botao.textContent = '📋';
+  botao.addEventListener('click', async () => {
+    const ok = await window.BabycareCore.copiarParaAreaDeTransferencia(sku);
+    const textoOriginal = botao.textContent;
+    botao.textContent = ok ? '✓' : '✗';
+    setTimeout(() => {
+      botao.textContent = textoOriginal;
+    }, 1200);
+  });
+  celula.appendChild(botao);
   return celula;
 }
 
@@ -157,7 +206,7 @@ function criarLinha(produto) {
   statusCell.appendChild(criarBadge(produto.statusProduto || 'ATIVO', 'table-status'));
   linha.append(
     produtoCell,
-    criarCelula(produto.sku),
+    criarCelulaSKU(produto.sku),
     criarCelula(produto.categoria),
     estoqueCell,
     statusCell,
@@ -170,7 +219,9 @@ function criarLinha(produto) {
   visualizar.setAttribute('aria-label', `Visualizar ${produto.nome}`);
   visualizar.textContent = '⋮';
   visualizar.addEventListener('click', () => {
-    window.BabycareUI.mostrarToast(`Detalhes de ${produto.nome} serão desenvolvidos na próxima etapa.`);
+    window.BabycareUI.mostrarToast(
+      `Detalhes de ${produto.nome} serão desenvolvidos na próxima etapa.`
+    );
   });
   acoesCell.appendChild(visualizar);
   linha.appendChild(acoesCell);
@@ -186,17 +237,25 @@ function produtoPassaFiltros(produto) {
   const estado = estadoEstoque(produto);
   const textoPesquisavel = `${produto.nome} ${produto.sku} ${produto.categoria}`.toLowerCase();
 
-  return (!termo || textoPesquisavel.includes(termo))
-    && (!categoriaId || String(produto.categoriaId) === categoriaId)
-    && (status === 'TODOS' || !status || produto.statusProduto === status)
-    && (!estoqueFiltro || estado === estoqueFiltro);
+  return (
+    (!termo || textoPesquisavel.includes(termo)) &&
+    (!categoriaId || String(produto.categoriaId) === categoriaId) &&
+    (status === 'TODOS' || !status || produto.statusProduto === status) &&
+    (!estoqueFiltro || estado === estoqueFiltro)
+  );
 }
 
 function atualizarResumo() {
   productElements.total.textContent = window.BabycareUI.formatarNumero(produtos.length);
-  productElements.active.textContent = window.BabycareUI.formatarNumero(produtos.filter((produto) => produto.statusProduto === 'ATIVO').length);
-  productElements.low.textContent = window.BabycareUI.formatarNumero(produtos.filter((produto) => estadoEstoque(produto) === 'BAIXO').length);
-  productElements.emptyStock.textContent = window.BabycareUI.formatarNumero(produtos.filter((produto) => estadoEstoque(produto) === 'SEM_ESTOQUE').length);
+  productElements.active.textContent = window.BabycareUI.formatarNumero(
+    produtos.filter((produto) => produto.statusProduto === 'ATIVO').length
+  );
+  productElements.low.textContent = window.BabycareUI.formatarNumero(
+    produtos.filter((produto) => estadoEstoque(produto) === 'BAIXO').length
+  );
+  productElements.emptyStock.textContent = window.BabycareUI.formatarNumero(
+    produtos.filter((produto) => estadoEstoque(produto) === 'SEM_ESTOQUE').length
+  );
 }
 
 function renderizarProdutos() {
@@ -216,24 +275,37 @@ function preencherCategorias() {
 function mostrarErro(erro) {
   productElements.body.replaceChildren();
   productElements.empty.hidden = false;
-  productElements.empty.textContent = erro.message || 'Não foi possível carregar os produtos reais.';
+  productElements.empty.textContent =
+    erro.message || 'Não foi possível carregar os produtos reais.';
   productElements.count.textContent = 'Nenhum resultado';
   atualizarResumo();
   window.BabycareUI.mostrarToast(erro.message || 'Não foi possível carregar os produtos.', 'error');
 }
 
 async function carregarProdutos() {
+  // Restaura filtros persistidos antes de carregar.
+  const persistidos = carregarFiltrosCore('produtos');
+  if (persistidos.busca !== undefined) productElements.search.value = persistidos.busca;
+  if (persistidos.categoriaId !== undefined) productElements.category.value = persistidos.categoriaId;
+  if (persistidos.status !== undefined) productElements.status.value = persistidos.status;
+  if (persistidos.stock !== undefined) productElements.stock.value = persistidos.stock;
+  if (persistidos.pagina !== undefined) paginaAtual = Math.max(1, Number(persistidos.pagina) || 1);
+
   window.BabycareUI.mostrarCarregamento('Consultando produtos no banco...');
   try {
     const [categoriasResposta, produtosResposta] = await Promise.all([
       requisitarAPI('/api/produtos/categorias'),
-      requisitarAPI('/api/produtos')
+      requisitarAPI(
+        `/api/produtos?pagina=${paginaAtual}&limite=${LIMITE_POR_PAGINA}`
+      ),
     ]);
     categorias = Array.isArray(categoriasResposta.categorias) ? categoriasResposta.categorias : [];
-    produtos = Array.isArray(produtosResposta.produtos) ? produtosResposta.produtos : [];
+    const dadosProdutos = Array.isArray(produtosResposta.dados) ? produtosResposta.dados : [];
+    produtos = dadosProdutos;
     preencherCategorias();
     atualizarResumo();
     renderizarProdutos();
+    renderizarPaginacao(produtosResposta.totalPaginas || 1, produtosResposta.pagina || 1);
   } catch (erro) {
     produtos = [];
     mostrarErro(erro);
@@ -242,9 +314,47 @@ async function carregarProdutos() {
   }
 }
 
+function renderizarPaginacao(totalPaginas, pagina) {
+  paginaAtual = Math.max(1, Math.min(totalPaginas, pagina));
+  if (paginacaoElementos.atual) paginacaoElementos.atual.textContent = paginaAtual;
+  if (paginacaoElementos.total) paginacaoElementos.total.textContent = totalPaginas;
+  if (paginacaoElementos.anterior)
+    paginacaoElementos.anterior.disabled = paginaAtual <= 1;
+  if (paginacaoElementos.proxima)
+    paginacaoElementos.proxima.disabled = paginaAtual >= totalPaginas || totalPaginas === 0;
+}
+
 function configurarEventos() {
-  [productElements.search, productElements.category, productElements.status, productElements.stock]
-    .forEach((elemento) => elemento.addEventListener('input', renderizarProdutos));
+  [
+    productElements.search,
+    productElements.category,
+    productElements.status,
+    productElements.stock,
+  ].forEach((elemento) => {
+    elemento.addEventListener('input', () => {
+      salvarFiltrosCore('produtos', {
+        busca: productElements.search.value,
+        categoriaId: productElements.category.value,
+        status: productElements.status.value,
+        stock: productElements.stock.value,
+      });
+      renderizarProdutos();
+    });
+  });
+
+  paginacaoElementos.anterior?.addEventListener('click', () => {
+    if (paginaAtual > 1) {
+      paginaAtual -= 1;
+      salvarFiltrosCore('produtos', { pagina: paginaAtual });
+      carregarProdutos();
+    }
+  });
+
+  paginacaoElementos.proxima?.addEventListener('click', () => {
+    paginaAtual += 1;
+    salvarFiltrosCore('produtos', { pagina: paginaAtual });
+    carregarProdutos();
+  });
 
   productElements.openSidebar?.addEventListener('click', () => {
     document.body.classList.add('sidebar-open');
@@ -254,19 +364,34 @@ function configurarEventos() {
     document.body.classList.remove('sidebar-open');
   });
 
+  document.getElementById('prodExportarCsv')?.addEventListener('click', () => {
+    if (!produtos.length) {
+      window.BabycareUI.mostrarToast('Nenhum produto para exportar.');
+      return;
+    }
+    window.BabycareUI.exportarCSV(
+      produtos.map((p) => ({
+        SKU: p.sku,
+        Nome: p.nome,
+        Categoria: p.categoria,
+        Estoque: p.estoque,
+        Mínimo: p.estoqueMinimo,
+        Status: p.statusProduto,
+        Atualizado: p.atualizadoEm,
+      })),
+      ['SKU', 'Nome', 'Categoria', 'Estoque', 'Mínimo', 'Status', 'Atualizado'],
+      'produtos.csv'
+    );
+  });
+
   document.querySelectorAll('.nav-link').forEach((link) => {
     link.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
   });
 
-  productElements.notification?.addEventListener('click', () => {
-    document.querySelector('.products-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+  window.BabycareUI.conectarBuscaTopbar(productElements.search);
 
-  productElements.topbarSearch?.addEventListener('search', () => {
-    if (productElements.topbarSearch.value.trim()) {
-      window.BabycareUI.mostrarToast('Use a busca de produtos para filtrar o catálogo.');
-    }
-  });
+  window.BabycareCore.tornarBreadcrumbClicavel();
+  window.BabycareCore.adicionarBotaoVoltar('.products-toolbar', 'Voltar ao dashboard');
 
   productElements.logout.addEventListener('click', () => {
     if (window.BabycareUI?.fazerLogout) {
@@ -280,7 +405,9 @@ function configurarEventos() {
   document.querySelectorAll('[data-coming-soon]').forEach((link) => {
     link.addEventListener('click', (evento) => {
       evento.preventDefault();
-      window.BabycareUI.mostrarToast(`O módulo ${link.dataset.comingSoon} será desenvolvido na próxima etapa.`);
+      window.BabycareUI.mostrarToast(
+        `O módulo ${link.dataset.comingSoon} será desenvolvido na próxima etapa.`
+      );
     });
   });
 

@@ -394,5 +394,19 @@ SELECT COUNT(*) AS produtos_demo FROM produtos WHERE codigo LIKE 'DEMO-%';
 SELECT COUNT(*) AS lotes_demo FROM lotes WHERE numero_lote LIKE 'DEMO-%';
 SELECT COUNT(*) AS movimentacoes_demo FROM movimentacoes WHERE observacao LIKE '[DEMO] %';
 
+
+-- Tokens de recupera��o de senha
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT NOT NULL,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expira_em DATETIME NOT NULL,
+  usado BOOLEAN NOT NULL DEFAULT FALSE,
+  criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+  INDEX idx_token (token),
+  INDEX idx_usuario (usuario_id)
+);
+
 -- Restaura a proteção da sessão após a carga.
 SET SQL_SAFE_UPDATES = 1;

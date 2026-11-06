@@ -6,7 +6,7 @@ async function consultar(req, res) {
       periodo: req.query.periodo,
       tipo: req.query.tipo,
       categoriaId: req.query.categoriaId,
-      produtoId: req.query.produtoId
+      produtoId: req.query.produtoId,
     });
     return res.json({ sucesso: true, dados });
   } catch (erro) {
@@ -14,7 +14,7 @@ async function consultar(req, res) {
     return res.status(erro.statusCode || 500).json({
       sucesso: false,
       codigo: erro.codigo || 'ERRO_RELATORIO',
-      mensagem: erro.statusCode ? erro.message : 'Não foi possível gerar o relatório agora.'
+      mensagem: erro.statusCode ? erro.message : 'Não foi possível gerar o relatório agora.',
     });
   }
 }

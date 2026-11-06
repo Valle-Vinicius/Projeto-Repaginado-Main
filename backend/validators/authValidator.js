@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Validações de autenticação (login e cadastro).
@@ -29,8 +29,9 @@ function validarObjeto(payload) {
 }
 
 function rejeitarCamposDesconhecidos(payload, camposPermitidos) {
-  const camposDesconhecidos = Object.keys(payload)
-    .filter((campo) => !camposPermitidos.includes(campo));
+  const camposDesconhecidos = Object.keys(payload).filter(
+    (campo) => !camposPermitidos.includes(campo)
+  );
 
   if (camposDesconhecidos.length > 0) {
     throw criarErro(
@@ -99,50 +100,13 @@ function validarSenha(valor, { regraDeCadastro = false } = {}) {
   return valor;
 }
 
-function normalizarNome(valor) {
-  if (valor === undefined || valor === null) {
-    throw criarErro('NOME_OBRIGATORIO', 'O nome é obrigatório.', 400, 'nome');
-  }
-
-  if (typeof valor !== 'string') {
-    throw criarErro('NOME_TIPO_INVALIDO', 'O nome deve ser informado como texto.', 400, 'nome');
-  }
-
-  const nome = valor.normalize('NFKC').trim().replace(/\s+/gu, ' ');
-
-  if (!nome) {
-    throw criarErro('NOME_OBRIGATORIO', 'O nome é obrigatório.', 400, 'nome');
-  }
-
-  if (Array.from(nome).length < 3) {
-    throw criarErro('NOME_MUITO_CURTO', 'O nome deve ter pelo menos 3 caracteres.', 400, 'nome');
-  }
-
-  if (nome.length > 120) {
-    throw criarErro('NOME_MUITO_LONGO', 'O nome ultrapassa o limite permitido.', 400, 'nome');
-  }
-
-  return nome;
-}
-
 function validarLoginPayload(payload) {
   const dados = validarObjeto(payload);
   rejeitarCamposDesconhecidos(dados, ['email', 'senha']);
 
   return {
     email: normalizarEmail(dados.email),
-    senha: validarSenha(dados.senha)
-  };
-}
-
-function validarCadastroPayload(payload) {
-  const dados = validarObjeto(payload);
-  rejeitarCamposDesconhecidos(dados, ['nome', 'email', 'senha']);
-
-  return {
-    nome: normalizarNome(dados.nome),
-    email: normalizarEmail(dados.email),
-    senha: validarSenha(dados.senha, { regraDeCadastro: true })
+    senha: validarSenha(dados.senha),
   };
 }
 
@@ -150,7 +114,5 @@ module.exports = {
   criarErro,
   normalizarEmail,
   validarSenha,
-  normalizarNome,
   validarLoginPayload,
-  validarCadastroPayload
 };

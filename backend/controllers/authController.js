@@ -4,7 +4,7 @@ function registrarErroInterno(contexto, erro) {
   console.error(`[Auth][${contexto}]`, {
     mensagem: erro.message,
     codigo: erro.code || erro.codigo,
-    campo: erro.campo
+    campo: erro.campo,
   });
 }
 
@@ -15,7 +15,7 @@ function responderErro(res, erro, contexto) {
     return res.status(401).json({
       sucesso: false,
       codigo: erro.codigo,
-      mensagem: 'E-mail ou senha inválidos.'
+      mensagem: 'E-mail ou senha inválidos.',
     });
   }
 
@@ -24,7 +24,7 @@ function responderErro(res, erro, contexto) {
       sucesso: false,
       codigo: 'EMAIL_EM_USO',
       mensagem: 'Este e-mail já está registrado.',
-      campo: 'email'
+      campo: 'email',
     });
   }
 
@@ -32,10 +32,11 @@ function responderErro(res, erro, contexto) {
     const resposta = {
       sucesso: false,
       codigo: erro.codigo || 'REQUISICAO_INVALIDA',
-      mensagem: erro.message || 'Confira os dados enviados.'
+      mensagem: erro.message || 'Confira os dados enviados.',
     };
-
-    if (erro.campo) resposta.campo = erro.campo;
+    if (erro.campo) {
+      resposta.campo = erro.campo;
+    }
     return res.status(400).json(resposta);
   }
 
@@ -43,36 +44,22 @@ function responderErro(res, erro, contexto) {
     return res.status(503).json({
       sucesso: false,
       codigo: erro.codigo,
-      mensagem: 'O serviço de autenticação está temporariamente indisponível.'
+      mensagem: 'O serviço de autenticação está temporariamente indisponível.',
     });
   }
 
   return res.status(500).json({
     sucesso: false,
     codigo: 'ERRO_INTERNO',
-    mensagem: 'Não foi possível concluir a operação agora.'
+    mensagem: 'Não foi possível concluir a operação agora.',
   });
-}
-
-async function cadastrar(req, res) {
-  try {
-    const usuario = await authService.cadastrar(req.body);
-
-    return res.status(201).json({
-      sucesso: true,
-      mensagem: 'Usuário registrado com sucesso.',
-      usuario
-    });
-  } catch (erro) {
-    return responderErro(res, erro, 'Cadastro');
-  }
 }
 
 async function login(req, res) {
   try {
     const resultado = await authService.login(req.body, {
       ip: req.ip,
-      navegador: req.get('user-agent') || null
+      navegador: req.get('user-agent') || null,
     });
 
     // SEGURANÇA: Define token em cookie httpOnly (não acessável via JS)
@@ -84,14 +71,13 @@ async function login(req, res) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       expires: expiracao,
-      path: '/'
+      path: '/',
     });
 
     return res.json({
       sucesso: true,
       mensagem: 'Login realizado com sucesso.',
-      token: resultado.token,
-      usuario: resultado.usuario
+      usuario: resultado.usuario,
     });
   } catch (erro) {
     return responderErro(res, erro, 'Login');
@@ -103,17 +89,16 @@ async function logout(req, res) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    path: '/'
+    path: '/',
   });
 
   return res.json({
     sucesso: true,
-    mensagem: 'Sessão encerrada com sucesso.'
+    mensagem: 'Sessão encerrada com sucesso.',
   });
 }
 
 module.exports = {
-  cadastrar,
   login,
-  logout
+  logout,
 };

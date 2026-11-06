@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Recebimento de produtos da Babycare" />
+  <title>Recebimentos | Babycare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/recebimentos-DO7Qu3xt.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
+  <link rel="stylesheet" crossorigin href="/assets/recebimentos-D3gfUZbD.css">
+  <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
+</head>
+<body>
+  <div id="pageLoader" class="page-loader" aria-live="polite">
+    <div class="page-loader-content">
+      <span class="page-loader-mark"></span>
+      <span class="page-loader-label">Carregando recebimentos...</span>
+      <span class="page-loader-bar"></span>
+    </div>
+  </div>
+  <div class="dashboard-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <div>
+            <p class="breadcrumb">Babycare <span>/</span> <strong>Recebimentos</strong></p>
+            <h1>Recebimentos</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="topbar-search" for="topbarSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" />
+          </label>
+          <div class="topbar-divider"></div>
+          <div class="topbar-user">
+            <div class="avatar avatar-small" id="topbarAvatar">U</div>
+            <div class="user-copy topbar-user-copy">
+              <strong id="topbarUserName">Usuário Babycare</strong>
+              <span id="topbarUserRole">Perfil de acesso</span>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="dashboard-content recebimentos-content">
+        <section class="recebimentos-heading-row">
+          <div>
+            <p class="section-kicker">ENTRADA DE MERCADORIAS</p>
+            <h2>Recebimentos</h2>
+            <p>Registre lotes recebidos e mantenha a origem dos produtos rastreável.</p>
+          </div>
+          <button id="newReceiptButton" class="recebimento-button primary" type="button">Novo recebimento</button>
+        </section>
+        <section class="recebimentos-metrics" aria-label="Resumo dos recebimentos">
+          <article class="recebimento-metric"><span>Recebimentos hoje</span><strong id="todayReceipts">—</strong><small>entradas confirmadas</small></article>
+          <article class="recebimento-metric"><span>Unidades recebidas</span><strong id="todayUnits">—</strong><small>quantidade registrada hoje</small></article>
+          <article class="recebimento-metric"><span>Último recebimento</span><strong id="lastReceiptDate">—</strong><small id="lastReceiptProduct">aguardando dados</small></article>
+        </section>
+        <section class="panel recebimentos-panel">
+          <div class="recebimentos-toolbar">
+            <label class="recebimentos-search" for="receiptSearch">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+              <input id="receiptSearch" type="search" placeholder="Pesquisar produto, lote ou fornecedor..." autocomplete="off" />
+            </label>
+            <select id="receiptPeriod">
+              <option value="TODOS">Todos os períodos</option>
+              <option value="HOJE">Hoje</option>
+              <option value="7D">Últimos 7 dias</option>
+              <option value="30D">Últimos 30 dias</option>
+            </select>
+          </div>
+          <div class="recebimentos-table-heading">
+            <div><span class="section-kicker">RASTREABILIDADE</span><h3>Histórico de recebimentos</h3></div>
+            <span id="receiptCount" class="result-count">—</span>
+          </div>
+          <div class="recebimentos-table-wrap">
+            <table class="recebimentos-table">
+              <thead>
+                <tr><th>DATA</th><th>PRODUTO</th><th>LOTE</th><th>FORNECEDOR</th><th>QUANTIDADE</th><th>VALIDADE</th><th>LOCALIZAÇÃO</th><th>RESPONSÁVEL</th></tr>
+              </thead>
+              <tbody id="receiptBody"></tbody>
+            </table>
+            <div id="receiptEmpty" class="recebimentos-empty" hidden>Nenhum recebimento encontrado.</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="receiptModal" class="modal-backdrop" hidden>
+    <section class="receipt-modal" role="dialog" aria-modal="true" aria-labelledby="receiptModalTitle">
+      <button id="closeReceiptModal" class="modal-close" type="button" aria-label="Fechar">×</button>
+      <p class="section-kicker">NOVO RECEBIMENTO</p>
+      <h2 id="receiptModalTitle">Registrar recebimento</h2>
+      <p class="modal-description">A entrada será registrada no lote e atualizará o estoque real.</p>
+      <form id="receiptForm" novalidate>
+        <label class="modal-field" for="receiptProduct">Produto <span>*</span>
+          <select id="receiptProduct" required><option value="">Carregando produtos...</option></select>
+        </label>
+        <div class="receipt-grid">
+          <label class="modal-field" for="receiptQuantity">Quantidade <span>*</span>
+            <input id="receiptQuantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 50" />
+          </label>
+          <label class="modal-field" for="receiptLot">Número do lote <span>*</span>
+            <input id="receiptLot" type="text" maxlength="80" required placeholder="Ex.: LOTE-2026-08" />
+          </label>
+          <label class="modal-field" for="receiptSupplier">Fornecedor <small>opcional</small>
+            <input id="receiptSupplier" type="text" maxlength="150" placeholder="Nome do fornecedor" />
+          </label>
+          <label class="modal-field" for="receiptDocument">Nota/documento <small>opcional</small>
+            <input id="receiptDocument" type="text" maxlength="80" placeholder="NF ou documento" />
+          </label>
+          <label id="receiptExpirationField" class="modal-field" for="receiptExpiration">Validade <small>conforme produto</small>
+            <input id="receiptExpiration" type="date" />
+          </label>
+          <label class="modal-field" for="receiptLocation">Localização <span>*</span>
+            <select id="receiptLocation" required><option value="">Carregando localizações...</option></select>
+          </label>
+        </div>
+        <label class="modal-field" for="receiptNote">Observação <small>opcional</small>
+          <textarea id="receiptNote" rows="3" maxlength="255" placeholder="Informações adicionais do recebimento..."></textarea>
+        </label>
+        <p id="receiptError" class="receipt-error" role="alert" hidden></p>
+        <div class="modal-actions">
+          <button id="cancelReceipt" class="recebimento-button secondary" type="button">Cancelar</button>
+          <button id="submitReceipt" class="recebimento-button primary" type="submit">Confirmar recebimento</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

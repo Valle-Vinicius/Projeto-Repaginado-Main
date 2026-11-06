@@ -1,13 +1,13 @@
-const { executarQuery } = require("../config/database");
+const { executarQuery } = require('../config/database');
 
 function serializarDetalhes(detalhes) {
-  if (detalhes === undefined || detalhes === null) return JSON.stringify({});
+  if (detalhes === undefined || detalhes === null) {
+    return JSON.stringify({});
+  }
   try {
     return JSON.stringify(detalhes);
   } catch (erro) {
-    throw new Error(
-      "Os detalhes da auditoria não puderam ser convertidos para JSON.",
-    );
+    throw new Error('Os detalhes da auditoria não puderam ser convertidos para JSON.');
   }
 }
 
@@ -16,12 +16,13 @@ function normalizarDados({
   acao,
   entidade = null,
   entidadeId = null,
-  resultado = "SUCESSO",
+  resultado = 'SUCESSO',
   detalhes = {},
 } = {}) {
-  if (!acao || typeof acao !== "string")
-    throw new Error("A ação da auditoria é obrigatória.");
-  const resultadoNormalizado = resultado === "FALHA" ? "FALHA" : "SUCESSO";
+  if (!acao || typeof acao !== 'string') {
+    throw new Error('A ação da auditoria é obrigatória.');
+  }
+  const resultadoNormalizado = resultado === 'FALHA' ? 'FALHA' : 'SUCESSO';
   return [
     usuarioId,
     acao.trim(),
@@ -37,7 +38,7 @@ async function registrarNaConexao(conexao, dados = {}) {
   const [resultadoInsert] = await conexao.execute(
     `INSERT INTO auditorias (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    valores,
+    valores
   );
   return {
     id: resultadoInsert.insertId,
@@ -51,7 +52,7 @@ async function registrar(dados = {}) {
   const resultadoInsert = await executarQuery(
     `INSERT INTO auditorias (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    valores,
+    valores
   );
   return {
     id: resultadoInsert.insertId,
@@ -63,37 +64,35 @@ async function registrar(dados = {}) {
 async function buscarAuditorias({
   periodoInicio = null,
   periodoFim = null,
-  resultado = "",
-  acao = "",
-  busca = "",
+  resultado = '',
+  acao = '',
+  busca = '',
   limite = 100,
 } = {}) {
   const where = [];
   const valores = [];
   if (periodoInicio) {
-    where.push("a.criado_em >= ?");
+    where.push('a.criado_em >= ?');
     valores.push(periodoInicio);
   }
   if (periodoFim) {
-    where.push("a.criado_em < ?");
+    where.push('a.criado_em < ?');
     valores.push(periodoFim);
   }
   if (resultado) {
-    where.push("a.resultado = ?");
+    where.push('a.resultado = ?');
     valores.push(resultado);
   }
   if (acao) {
-    where.push("a.acao = ?");
+    where.push('a.acao = ?');
     valores.push(acao);
   }
   if (busca) {
-    where.push(
-      "(a.acao LIKE ? OR a.entidade LIKE ? OR u.nome LIKE ? OR a.detalhes LIKE ?)",
-    );
+    where.push('(a.acao LIKE ? OR a.entidade LIKE ? OR u.nome LIKE ? OR a.detalhes LIKE ?)');
     const termo = `%${busca}%`;
     valores.push(termo, termo, termo, termo);
   }
-  const clausula = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const clausula = where.length ? `WHERE ${where.join(' AND ')}` : '';
   valores.push(Number(limite));
   return executarQuery(
     `
@@ -107,13 +106,13 @@ async function buscarAuditorias({
     ${clausula}
     ORDER BY a.criado_em DESC, a.id DESC
     LIMIT ?`,
-    valores,
+    valores
   );
 }
 
 async function listarAcoes() {
   return executarQuery(
-    "SELECT DISTINCT acao FROM auditorias WHERE acao IS NOT NULL AND TRIM(acao) <> '' ORDER BY acao ASC",
+    "SELECT DISTINCT acao FROM auditorias WHERE acao IS NOT NULL AND TRIM(acao) <> '' ORDER BY acao ASC"
   );
 }
 
@@ -121,14 +120,14 @@ async function contarResumo({ periodoInicio = null, periodoFim = null } = {}) {
   const where = [];
   const valores = [];
   if (periodoInicio) {
-    where.push("criado_em >= ?");
+    where.push('criado_em >= ?');
     valores.push(periodoInicio);
   }
   if (periodoFim) {
-    where.push("criado_em < ?");
+    where.push('criado_em < ?');
     valores.push(periodoFim);
   }
-  const clausula = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const clausula = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const [resultado] = await executarQuery(
     `
     SELECT COUNT(*) AS total,
@@ -136,7 +135,7 @@ async function contarResumo({ periodoInicio = null, periodoFim = null } = {}) {
       SUM(resultado = 'FALHA') AS falhas,
       COUNT(DISTINCT usuario_id) AS usuarios
     FROM auditorias ${clausula}`,
-    valores,
+    valores
   );
   return resultado;
 }

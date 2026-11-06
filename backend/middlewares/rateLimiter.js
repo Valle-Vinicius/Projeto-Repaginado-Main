@@ -19,23 +19,11 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Cadastro: 3 cadastros a cada hora por IP
-const cadastroLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 3,
-  message: {
-    sucesso: false,
-    codigo: 'MUITOS_CADASTROS',
-    mensagem: 'Limite de cadastros atingido. Tente novamente em 1 hora.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 // Geral para API: 100 req a cada 15 min por IP
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  skip: () => process.env.NODE_ENV === 'test',
   message: {
     sucesso: false,
     codigo: 'LIMITE_EXCEDIDO',
@@ -47,6 +35,5 @@ const apiLimiter = rateLimit({
 
 module.exports = {
   loginLimiter,
-  cadastroLimiter,
   apiLimiter,
 };

@@ -22,6 +22,8 @@
   --radius: 14px;
 }
 
+
+
 * {
   box-sizing: border-box;
 }
@@ -127,13 +129,14 @@ body[data-dashboard-state="error"] .page-loader {
   left: 0;
   display: flex;
   width: 254px;
-  min-height: 100vh;
+  height: 100vh;
   flex-direction: column;
-  padding: 28px 16px 18px;
+  padding: 24px 16px 20px;
   color: var(--ink-light);
   background: var(--white);
   border-right: 1px solid var(--line);
   box-shadow: 8px 0 28px rgba(33, 59, 111, 0.035);
+  overflow: hidden;
 }
 
 .sidebar-top {
@@ -141,7 +144,8 @@ body[data-dashboard-state="error"] .page-loader {
   align-items: center;
   justify-content: space-between;
   min-height: 46px;
-  margin: 0 10px 26px;
+  margin: 0 8px 24px;
+  flex: 0 0 auto;
 }
 
 .brand {
@@ -185,12 +189,13 @@ body[data-dashboard-state="error"] .page-loader {
 
 .sidebar-search {
   height: 40px;
-  margin: 0 3px 28px;
+  margin: 0 8px 24px;
   padding: 0 11px;
   color: var(--muted);
   background: #fafbfc;
   border: 1px solid var(--line);
   border-radius: 9px;
+  flex: 0 0 auto;
 }
 
 .sidebar-search svg {
@@ -231,16 +236,30 @@ body[data-dashboard-state="error"] .page-loader {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
+  flex: 0 0 auto;
 }
 
 .nav-heading-secondary {
-  margin-top: auto;
+  margin: 16px 11px 10px;
+  color: #a1aaba;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  flex: 0 0 auto;
 }
 
-.main-nav,
+.main-nav {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .secondary-nav {
   display: grid;
   gap: 5px;
+  min-height: 0;
 }
 
 .nav-link {
@@ -304,9 +323,10 @@ body[data-dashboard-state="error"] .page-loader {
   align-items: center;
   gap: 10px;
   min-height: 64px;
-  margin-top: 17px;
-  padding: 13px 8px 0;
+  margin-top: auto;
+  padding: 16px 8px 0;
   border-top: 1px solid var(--line);
+  flex: 0 0 auto;
 }
 
 .avatar {
@@ -458,44 +478,6 @@ body[data-dashboard-state="error"] .page-loader {
 
 .topbar-search input::placeholder {
   color: var(--muted-light);
-}
-
-.notification-button {
-  position: relative;
-  transition: color 180ms ease, transform 180ms ease;
-  display: grid;
-  width: 35px;
-  height: 35px;
-  place-items: center;
-  color: var(--muted);
-  background: transparent;
-  cursor: pointer;
-}
-
-.notification-button:hover {
-  color: var(--baby-blue);
-  transform: translateY(-1px);
-}
-
-.notification-button svg {
-  width: 18px;
-  height: 18px;
-}
-
-.notification-count:not([hidden]) {
-  position: absolute;
-  top: 1px;
-  right: 0;
-  display: grid;
-  width: 15px;
-  height: 15px;
-  place-items: center;
-  color: #ffffff;
-  background: var(--baby-red);
-  border: 2px solid var(--white);
-  border-radius: 50%;
-  font-size: 8px;
-  font-weight: 800;
 }
 
 .topbar-divider {
@@ -1304,10 +1286,95 @@ body[data-dashboard-state="error"] .page-loader {
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(20, 34, 77, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms ease, visibility 180ms ease;
 }
+
+.confirm-overlay.aberto {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.confirm-modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 420px;
+  width: 90vw;
+  box-shadow: 0 24px 60px rgba(20, 34, 77, 0.25);
+  transform: scale(0.95);
+  transition: transform 200ms ease;
+}
+
+.confirm-overlay.aberto .confirm-modal {
+  transform: scale(1);
+}
+
+.confirm-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.confirm-message {
+  font-size: 13px;
+  color: var(--ink-light);
+  line-height: 1.5;
+  margin: 0 0 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-cancel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-light);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirm-cancel:hover {
+  background: var(--line);
+}
+
+.confirm-ok {
+  background: var(--baby-red);
+  border: 0;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirm-ok:hover {
+  background: #c0404a;
+}
+
+
+
+
+
 
 @media (max-width: 1200px) {
   .sidebar {

@@ -43,10 +43,7 @@ async function buscarPorId(id) {
 }
 
 async function buscarPerfilPorId(perfilId) {
-  const perfis = await executarQuery(
-    'SELECT id, nome, ativo FROM perfis WHERE id = ?',
-    [perfilId]
-  );
+  const perfis = await executarQuery('SELECT id, nome, ativo FROM perfis WHERE id = ?', [perfilId]);
 
   return perfis[0] || null;
 }
@@ -95,5 +92,5 @@ module.exports = {
   buscarPerfilPorId,
   inserir,
   registrarFalhaLogin,
-  limparFalhasLogin
+  limparFalhasLogin,
 };

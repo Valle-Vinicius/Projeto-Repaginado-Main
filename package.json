@@ -4,14 +4,29 @@
   "private": true,
   "description": "Sistema Babycare",
   "scripts": {
-    "dev": "npm --prefix backend run dev",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "vite --config vite.config.js",
+    "dev:backend": "npm --prefix backend run dev",
     "start": "npm --prefix backend start",
+    "build": "vite build --config vite.config.js",
+    "preview": "vite preview --config vite.config.js",
     "test": "npm run test:all",
     "test:jest": "jest --config jest.config.js --runInBand",
     "test:setup": "node tests/scripts/setup-test-db.js",
-    "test:all": "npm run test:setup && npm run test:jest"
+    "test:all": "npm run test:setup && npm run test:jest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"backend/**/*.js\" \"frontend/**/*.js\" \"tests/**/*.js\" \"*.js\"",
+    "format:check": "prettier --check \"backend/**/*.js\" \"frontend/**/*.js\" \"tests/**/*.js\" \"*.js\""
   },
   "devDependencies": {
-    "jest": "^30.5.2"
+    "concurrently": "^10.0.6",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "jest": "^30.5.2",
+    "prettier": "^3.9.10",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "vite": "^8.3.6"
   }
 }

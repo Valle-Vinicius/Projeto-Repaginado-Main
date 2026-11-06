@@ -1,15 +1,22 @@
 (() => {
   function lerUsuarioDoArmazenamento(armazenamento) {
     const raw = armazenamento.getItem('babycareUsuario') || armazenamento.getItem('babycareUser');
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch (erro) { return null; }
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (erro) {
+      return null;
+    }
   }
 
-  const usuario = lerUsuarioDoArmazenamento(sessionStorage)
-    || lerUsuarioDoArmazenamento(localStorage)
-    || {};
+  const usuario =
+    lerUsuarioDoArmazenamento(sessionStorage) || lerUsuarioDoArmazenamento(localStorage) || {};
   const permitido = ['GERENTE', 'ADMINISTRADOR'].includes(
-    String(usuario.perfil || usuario.perfilCodigo || '').trim().toUpperCase()
+    String(usuario.perfil || usuario.perfilCodigo || '')
+      .trim()
+      .toUpperCase()
   );
 
   // Funciona tanto com a nova marcação quanto com a sidebar HTML antiga.

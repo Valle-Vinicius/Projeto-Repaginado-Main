@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redefinir Senha | Babycare</title>
+    <link rel="stylesheet" href="../styles/login.css" />
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="login-card">
+        <div class="login-header">
+          <img src="../images/babycare-logo.png" alt="Babycare" class="login-logo" />
+          <h1>Redefinir senha</h1>
+          <p>Informe sua nova senha abaixo.</p>
+        </div>
+        <form id="resetForm" class="login-form">
+          <input type="hidden" id="token" />
+          <label>
+            <span>Nova senha</span>
+            <input id="novaSenha" type="password" required minlength="6" maxlength="72" autocomplete="new-password" />
+          </label>
+          <label>
+            <span>Confirmar senha</span>
+            <input id="confirmarSenha" type="password" required minlength="6" maxlength="72" autocomplete="new-password" />
+          </label>
+          <button id="resetButton" class="primary-button" type="submit">
+            <span class="button-text">REDEFINIR SENHA</span>
+          </button>
+          <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+        <p class="access-request">
+          <a href="./login.html">Voltar ao login</a>
+        </p>
+      </section>
+    </main>
+    <script>
+      const API_URL = window.location.origin;
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      if (!token) {
+        document.getElementById('formMessage').textContent = 'Token não informado.';
+        document.getElementById('formMessage').className = 'form-message error';
+        document.getElementById('resetForm').hidden = true;
+      } else {
+        document.getElementById('token').value = token;
+      }
+
+      document.getElementById('resetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const novaSenha = document.getElementById('novaSenha').value;
+        const confirmar = document.getElementById('confirmarSenha').value;
+        const msg = document.getElementById('formMessage');
+
+        if (novaSenha !== confirmar) {
+          msg.textContent = 'As senhas não conferem.';
+          msg.className = 'form-message error';
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_URL}/api/auth/redefinir-senha`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, novaSenha })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            msg.textContent = data.mensagem || 'Senha redefinida com sucesso!';
+            msg.className = 'form-message success';
+            setTimeout(() => { window.location.href = './login.html'; }, 2000);
+          } else {
+            msg.textContent = data.mensagem || 'Erro ao redefinir senha.';
+            msg.className = 'form-message error';
+          }
+        } catch (err) {
+          msg.textContent = 'Erro de conexão.';
+          msg.className = 'form-message error';
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-const auditoriaService = require("../services/auditoriaService");
+const auditoriaService = require('../services/auditoriaService');
 
 async function listar(req, res) {
   try {
@@ -14,18 +14,16 @@ async function listar(req, res) {
       dados: resultado,
     });
   } catch (erro) {
-    console.error("[Auditoria]", {
+    console.error('[Auditoria]', {
       mensagem: erro.message,
       codigo: erro.code,
     });
 
     return res.status(erro.statusCode || 500).json({
       sucesso: false,
-      codigo: erro.statusCode === 400 ? "FILTRO_INVALIDO" : "ERRO_AUDITORIA",
+      codigo: erro.statusCode === 400 ? 'FILTRO_INVALIDO' : 'ERRO_AUDITORIA',
       mensagem:
-        erro.statusCode === 400
-          ? erro.message
-          : "Não foi possível consultar a auditoria agora.",
+        erro.statusCode === 400 ? erro.message : 'Não foi possível consultar a auditoria agora.',
     });
   }
 }

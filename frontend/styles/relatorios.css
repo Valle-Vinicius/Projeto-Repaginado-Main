@@ -354,12 +354,8 @@ body.reports-page {
   flex-direction: column;
   min-height: 0;
 }
-.reports-page .topbar {
-  flex: 0 0 68px;
-  min-height: 68px;
-}
 .reports-page .reports-content {
-  height: calc(100vh - 68px);
+  height: calc(100vh - 88px);
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -400,46 +396,13 @@ body.reports-page {
   min-height: 0;
   max-height: none;
 }
-.reports-page .topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-.reports-page .topbar-user {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 3px;
-  min-width: 145px;
-  max-width: 190px;
-  line-height: 1.15;
-  overflow: hidden;
-}
-.reports-page .topbar-user strong,
-.reports-page .topbar-user small {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.reports-page .topbar-user strong {
-  font-size: 12px;
-  color: #263550;
-}
-.reports-page .topbar-user small {
-  font-size: 10px;
-  color: #8994a7;
-}
 .reports-page .sidebar-user {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   min-width: 0;
 }
-.reports-page .sidebar-user > div {
+.reports-page .sidebar-user > .user-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;

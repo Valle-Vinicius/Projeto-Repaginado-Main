@@ -10,12 +10,12 @@ const submitButton = form.querySelector('button[type="submit"]');
 const categorySelect = document.querySelector('#categoria');
 const sidebarSearch = document.querySelector('#sidebarSearch');
 const topbarSearch = document.querySelector('#topbarSearch');
-const notificationButton = document.querySelector('#notificationButton');
 const openSidebarButton = document.querySelector('#openSidebarButton');
 const closeSidebarButton = document.querySelector('#closeSidebarButton');
 
 function obterUsuarioDoFormulario() {
-  const salvo = localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
+  const salvo =
+    localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
   try {
     return salvo ? JSON.parse(salvo) : null;
   } catch (erro) {
@@ -37,7 +37,13 @@ function preencherUsuarioDoLayout() {
     .replaceAll('_', ' ')
     .toLowerCase()
     .replace(/(^|\s)\S/g, (letra) => letra.toUpperCase());
-  const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map((parte) => parte[0].toUpperCase()).join('') || 'U';
+  const iniciais =
+    nome
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0].toUpperCase())
+      .join('') || 'U';
 
   document.querySelector('#sidebarUserName').textContent = nome;
   document.querySelector('#sidebarUserRole').textContent = perfil;
@@ -60,7 +66,9 @@ function definirErro(campo, mensagem) {
   const input = form.querySelector(`#${campo}`);
   const error = form.querySelector(`[data-error-for="${campo}"]`);
   input?.classList.add('invalid');
-  if (error) error.textContent = mensagem;
+  if (error) {
+    error.textContent = mensagem;
+  }
 }
 
 function hojeComoTexto() {
@@ -89,7 +97,8 @@ function validarFormularioProduto() {
   const categoria = document.querySelector('#categoria').value;
   const estoqueMinimo = document.querySelector('#estoqueMinimo').value;
   const unidade = document.querySelector('#unidade').value;
-  const possuiValidade = form.querySelector('input[name="possuiValidade"]:checked')?.value === 'sim';
+  const possuiValidade =
+    form.querySelector('input[name="possuiValidade"]:checked')?.value === 'sim';
 
   if (nome.length < 3) {
     definirErro('nome', 'Informe um nome com pelo menos 3 caracteres.');
@@ -106,7 +115,11 @@ function validarFormularioProduto() {
     valido = false;
   }
 
-  if (estoqueMinimo === '' || Number(estoqueMinimo) < 0 || !Number.isFinite(Number(estoqueMinimo))) {
+  if (
+    estoqueMinimo === '' ||
+    Number(estoqueMinimo) < 0 ||
+    !Number.isFinite(Number(estoqueMinimo))
+  ) {
     definirErro('estoqueMinimo', 'Informe um número maior ou igual a zero.');
     valido = false;
   }
@@ -130,9 +143,9 @@ async function requisitarAPI(caminho, opcoes = {}) {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      ...(opcoes.headers || {})
+      ...(opcoes.headers || {}),
     },
-    credentials: 'include'
+    credentials: 'include',
   });
 
   const corpo = await resposta.json().catch(() => ({}));
@@ -171,10 +184,6 @@ function configurarNavegacao() {
     link.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
   });
 
-  notificationButton?.addEventListener('click', () => {
-    window.BabycareUI.mostrarToast('Você não possui novas notificações.');
-  });
-
   topbarSearch?.addEventListener('search', () => {
     if (topbarSearch.value.trim()) {
       window.BabycareUI.mostrarToast('Use a busca lateral para localizar uma seção do painel.');
@@ -191,7 +200,9 @@ function configurarNavegacao() {
   document.querySelectorAll('[data-coming-soon]').forEach((link) => {
     link.addEventListener('click', (evento) => {
       evento.preventDefault();
-      window.BabycareUI.mostrarToast(`O módulo ${link.dataset.comingSoon} será desenvolvido na próxima etapa.`);
+      window.BabycareUI.mostrarToast(
+        `O módulo ${link.dataset.comingSoon} será desenvolvido na próxima etapa.`
+      );
     });
   });
 
@@ -213,7 +224,7 @@ function montarPayload() {
     categoriaId: Number(document.querySelector('#categoria').value),
     estoqueMinimo: Number(document.querySelector('#estoqueMinimo').value),
     unidade: document.querySelector('#unidade').value,
-    possuiValidade: form.querySelector('input[name="possuiValidade"]:checked')?.value === 'sim'
+    possuiValidade: form.querySelector('input[name="possuiValidade"]:checked')?.value === 'sim',
   };
 }
 
@@ -240,7 +251,7 @@ form.addEventListener('submit', async (evento) => {
   try {
     await requisitarAPI('/api/produtos', {
       method: 'POST',
-      body: JSON.stringify(montarPayload())
+      body: JSON.stringify(montarPayload()),
     });
 
     formMessage.textContent = 'Produto cadastrado com sucesso no banco de dados.';

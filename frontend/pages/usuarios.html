@@ -7,62 +7,85 @@
     <link rel="stylesheet" href="../styles/usuarios.css" />
   </head>
   <body>
-    <main class="usuarios-page">
-      <header class="page-header">
-        <div>
-          <p class="eyebrow">ADMINISTRAÇÃO</p>
-          <h1>Usuários</h1>
-          <p>Gerencie os acessos e os perfis da equipe Babycare.</p>
-        </div>
-        <div class="header-actions">
-          <a href="./dashboard.html" class="secondary-button"
-            >Voltar ao dashboard</a
-          ><button id="novoUsuario" class="primary-button">Novo usuário</button>
-        </div>
-      </header>
-      <section class="toolbar">
-        <input
-          id="busca"
-          type="search"
-          placeholder="Pesquisar por nome ou e-mail"
-        /><select id="filtroPerfil">
-          <option value="">Todos os perfis</option></select
-        ><select id="filtroAtivo">
-          <option value="">Todos os status</option>
-          <option value="true">Ativos</option>
-          <option value="false">Inativos</option></select
-        ><button id="atualizar" class="secondary-button">Atualizar</button>
-      </section>
-      <section class="panel">
-        <div class="panel-title">
-          <div>
-            <span class="eyebrow">CONTROLE DE ACESSO</span>
-            <h2>Usuários cadastrados</h2>
+    <div id="pageLoader" class="page-loader" aria-live="polite" aria-label="Carregando página">
+      <div class="page-loader-content">
+        <span class="page-loader-mark" aria-hidden="true"></span>
+        <span class="page-loader-label">Carregando usuários...</span>
+        <span class="page-loader-bar" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="dashboard-shell">
+      <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+
+      <main class="dashboard-main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+            <div>
+              <p class="breadcrumb">Babycare <span>/</span> <strong>Usuários</strong></p>
+              <h1>Usuários</h1>
+            </div>
           </div>
-          <span id="contador" class="counter">—</span>
+          <div class="topbar-actions">
+            <label class="topbar-search" for="topbarSearch"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" /></label>
+            
+            <div class="topbar-divider" aria-hidden="true"></div>
+            <div class="topbar-user">
+              <div class="avatar avatar-small" id="topbarAvatar">U</div>
+              <div class="user-copy topbar-user-copy"><strong id="topbarUserName">Usuário Babycare</strong><span id="topbarUserRole">Perfil de acesso</span></div>
+            </div>
+          </div>
+        </header>
+
+        <div class="dashboard-content usuarios-content">
+          <section class="toolbar">
+            <input
+              id="busca"
+              type="search"
+              placeholder="Pesquisar por nome ou e-mail"
+            /><select id="filtroPerfil">
+              <option value="">Todos os perfis</option></select
+            ><select id="filtroAtivo">
+              <option value="">Todos os status</option>
+              <option value="true">Ativos</option>
+              <option value="false">Inativos</option></select
+            ><button id="atualizar" class="secondary-button">Atualizar</button>
+            <button id="usuExportarCsv" type="button" class="export-button">Exportar CSV</button>
+          </section>
+          <section class="panel">
+            <div class="panel-title">
+              <div>
+                <span class="eyebrow">CONTROLE DE ACESSO</span>
+                <h2>Usuários cadastrados</h2>
+              </div>
+              <span id="contador" class="counter">—</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th>Departamento</th>
+                    <th>Status</th>
+                    <th>Último acesso</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tabela">
+                  <tr>
+                    <td colspan="7" class="empty">Carregando usuários...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Usuário</th>
-                <th>E-mail</th>
-                <th>Perfil</th>
-                <th>Departamento</th>
-                <th>Status</th>
-                <th>Último acesso</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="tabela">
-              <tr>
-                <td colspan="7" class="empty">Carregando usuários...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+      </main>
+    </div>
+
     <div id="modal" class="modal" hidden>
       <div class="modal-card">
         <div class="modal-header">
@@ -118,7 +141,9 @@
         </form>
       </div>
     </div>
-    <script src="../js/usuarios.js"></script>
+    <script src="../js/ui.js?v=1"></script>
     <script src="../js/sidebar.js?v=1"></script>
+    <script src="../js/core.js?v=1"></script>
+    <script src="../js/usuarios.js"></script>
   </body>
 </html>

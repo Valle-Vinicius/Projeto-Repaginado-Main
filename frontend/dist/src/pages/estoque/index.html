@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Controle de estoque da Babycare" />
+  <title>Estoque | Babycare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/estoque-BgqTTeGg.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
+  <link rel="stylesheet" crossorigin href="/assets/estoque-2PQ7cims.css">
+  <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
+</head>
+<body>
+  <div id="pageLoader" class="page-loader" aria-live="polite" aria-label="Carregando página">
+    <div class="page-loader-content">
+      <span class="page-loader-mark" aria-hidden="true"></span>
+      <span class="page-loader-label">Carregando estoque...</span>
+      <span class="page-loader-bar" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+
+    <main class="dashboard-main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </button>
+          <div>
+            <p class="breadcrumb">Babycare <span>/</span> <strong>Estoque</strong></p>
+            <h1>Estoque</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="topbar-search" for="topbarSearch">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+            <input id="topbarSearch" type="search" placeholder="Pesquisar por produto, SKU ou categoria..." autocomplete="off" />
+          </label>
+          
+          <div class="topbar-divider" aria-hidden="true"></div>
+          <div class="topbar-user">
+            <div class="avatar avatar-small" id="topbarAvatar">U</div>
+            <div class="user-copy topbar-user-copy">
+              <strong id="topbarUserName">Usuário Babycare</strong>
+              <span id="topbarUserRole">Perfil de acesso</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dashboard-content estoque-content">
+        <section class="estoque-heading-row">
+          <div>
+            <p class="section-kicker">CONTROLE DE ESTOQUE</p>
+            <h2>Acompanhe seu estoque.</h2>
+            <p>Veja as quantidades disponíveis, os alertas e o histórico de movimentações.</p>
+          </div>
+          <div class="estoque-action-group">
+            <button id="entradaButton" class="estoque-action secondary" type="button">Registrar entrada</button>
+            <button id="saidaButton" class="estoque-action primary" type="button">Registrar saída</button>
+          </div>
+        </section>
+
+        <section class="estoque-metrics" aria-label="Resumo do estoque">
+          <article class="estoque-metric-card">
+            <div class="estoque-metric-icon blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="2"></circle></svg></div>
+            <div><span>Total em estoque</span><strong id="totalStock">—</strong><small>unidades disponíveis</small></div>
+          </article>
+          <article class="estoque-metric-card">
+            <div class="estoque-metric-icon orange" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v10M12 18h.01"></path><path d="m5 20 7-16 7 16z"></path></svg></div>
+            <div><span>Estoque baixo</span><strong id="lowStockProducts">—</strong><small>produtos abaixo do mínimo</small></div>
+          </article>
+          <article class="estoque-metric-card">
+            <div class="estoque-metric-icon red" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 8 8 8M16 8l-8 8"></path><circle cx="12" cy="12" r="8"></circle></svg></div>
+            <div><span>Sem estoque</span><strong id="outOfStockProducts">—</strong><small>produtos sem unidades</small></div>
+          </article>
+          <article class="estoque-metric-card">
+            <div class="estoque-metric-icon green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M7 10l5-5 5 5M7 14l5 5 5-5"></path></svg></div>
+            <div><span>Movimentações hoje</span><strong id="todayMovements">—</strong><small>entradas e saídas confirmadas</small></div>
+          </article>
+        </section>
+
+        <div id="estoqueAlert" class="estoque-alert" role="status" hidden>
+          <span class="estoque-alert-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v10M12 18h.01"></path><path d="m5 20 7-16 7 16z"></path></svg></span>
+          <div><strong>Atenção ao estoque</strong><span id="estoqueAlertText"></span></div>
+        </div>
+
+        <section class="panel estoque-panel">
+          <div class="estoque-toolbar">
+            <label class="estoque-search" for="estoqueSearch">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg>
+              <input id="estoqueSearch" type="search" placeholder="Pesquisar por produto, SKU ou categoria..." autocomplete="off" />
+            </label>
+            <div class="estoque-filter">
+              <label for="estoqueCategory">Categoria</label>
+              <select id="estoqueCategory"><option value="">Carregando categorias...</option></select>
+            </div>
+            <div class="estoque-filter">
+              <label for="estoqueStatus">Status</label>
+              <select id="estoqueStatus">
+                <option value="">Todos</option>
+                <option value="NORMAL">Normal</option>
+                <option value="BAIXO">Estoque baixo</option>
+                <option value="SEM_ESTOQUE">Sem estoque</option>
+              </select>
+            </div>
+            <div class="estoque-filter">
+              <label for="estoqueOrdenacao">Ordenar por</label>
+              <select id="estoqueOrdenacao">
+                <option value="nome">Nome</option>
+                <option value="estoque-menor">Menor estoque</option>
+                <option value="estoque-maior">Maior estoque</option>
+                <option value="movimentacao">Última movimentação</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="estoque-table-heading">
+            <div><span class="section-kicker">POSIÇÃO ATUAL</span><h3>Produtos em estoque</h3></div>
+            <span id="inventoryResultCount" class="result-count">—</span>
+          </div>
+
+          <div class="estoque-table-wrap">
+            <table class="estoque-table">
+              <thead>
+                <tr><th>PRODUTO</th><th>CATEGORIA</th><th>DISPONÍVEL</th><th>MÍNIMO</th><th>STATUS</th><th>ÚLTIMA MOVIMENTAÇÃO</th><th aria-label="Ações"></th></tr>
+              </thead>
+              <tbody id="inventoryBody"></tbody>
+            </table>
+            <div id="inventoryEmpty" class="estoque-empty" hidden>Nenhum produto corresponde aos filtros.</div>
+          </div>
+        </section>
+
+        <section class="panel movimentacoes-panel">
+          <div class="estoque-table-heading">
+            <div><span class="section-kicker">RASTREABILIDADE</span><h3>Movimentações recentes</h3></div>
+            <button id="viewMovementsButton" class="panel-link-button" type="button">Ir para o histórico</button>
+          </div>
+          <div class="movimentacoes-table-wrap">
+            <table class="movimentacoes-table">
+              <thead>
+                <tr><th>DATA</th><th>PRODUTO</th><th>TIPO</th><th>QUANTIDADE</th><th>RESPONSÁVEL</th><th>MOTIVO</th></tr>
+              </thead>
+              <tbody id="movementsBody"></tbody>
+            </table>
+            <div id="movementsEmpty" class="estoque-empty" hidden>Nenhuma movimentação registrada até o momento.</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="movementModal" class="modal-backdrop" hidden>
+    <section class="movement-modal" role="dialog" aria-modal="true" aria-labelledby="movementModalTitle">
+      <button id="closeMovementModal" class="modal-close" type="button" aria-label="Fechar">×</button>
+      <p class="section-kicker">MOVIMENTAÇÃO</p>
+      <h2 id="movementModalTitle">Registrar entrada</h2>
+      <p id="movementModalDescription" class="modal-description">Registre a entrada no lote recebido para atualizar o saldo real.</p>
+
+      <form id="movementForm" novalidate>
+        <input id="movementType" type="hidden" value="ENTRADA" />
+        <label class="modal-field" for="movementProduct">Produto <span>*</span>
+          <select id="movementProduct" required><option value="">Carregando produtos...</option></select>
+        </label>
+        <p id="availableStock" class="available-stock" hidden></p>
+        <label class="modal-field" for="movementQuantity">Quantidade <span>*</span>
+          <input id="movementQuantity" type="number" min="0.001" step="0.001" inputmode="decimal" placeholder="Ex.: 50" required />
+        </label>
+        <label class="modal-field" for="movementReason">Motivo <span>*</span>
+          <select id="movementReason" required></select>
+        </label>
+        <div id="lotFields" class="lot-fields">
+          <label id="movementLotLabel" class="modal-field" for="movementLot">Lote <span>*</span>
+            <input id="movementLot" type="text" maxlength="80" placeholder="Ex.: LOTE-2026-08" />
+          </label>
+          <label class="modal-field" for="movementExpiration">Validade <small>opcional</small>
+            <input id="movementExpiration" type="date" />
+          </label>
+          <label id="movementLocationField" class="modal-field" for="movementLocation">Localização <span>*</span>
+            <select id="movementLocation"><option value="">Carregando localizações...</option></select>
+          </label>
+        </div>
+        <label class="modal-field" for="movementNote">Observação <small>opcional</small>
+          <textarea id="movementNote" maxlength="255" rows="3" placeholder="Descreva alguma informação importante..."></textarea>
+        </label>
+        <p id="movementError" class="movement-error" role="alert" hidden></p>
+        <div class="modal-actions">
+          <button id="cancelMovement" class="modal-button secondary" type="button">Cancelar</button>
+          <button id="submitMovement" class="modal-button primary" type="submit">Registrar entrada</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

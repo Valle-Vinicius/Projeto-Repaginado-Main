@@ -13,7 +13,7 @@ function verificarToken(req, res, next) {
     return res.status(401).json({
       sucesso: false,
       codigo: 'TOKEN_AUSENTE',
-      mensagem: 'Token não informado.'
+      mensagem: 'Token não informado.',
     });
   }
 
@@ -22,35 +22,34 @@ function verificarToken(req, res, next) {
     return res.status(503).json({
       sucesso: false,
       codigo: 'CONFIGURACAO_JWT_AUSENTE',
-      mensagem: 'O serviço de autenticação está temporariamente indisponível.'
+      mensagem: 'O serviço de autenticação está temporariamente indisponível.',
     });
   }
 
   try {
     const dadosToken = jwt.verify(token, process.env.JWT_SECRET, {
-      algorithms: ['HS256']
+      algorithms: ['HS256'],
     });
     req.usuario = dadosToken;
-    req.valor = dadosToken;
     return next();
   } catch (erro) {
     return res.status(401).json({
       sucesso: false,
       codigo: 'TOKEN_INVALIDO',
-      mensagem: 'Token inválido ou expirado.'
+      mensagem: 'Token inválido ou expirado.',
     });
   }
 }
 
 function permitirPerfis(...perfisPermitidos) {
   return (req, res, next) => {
-    const usuario = req.usuario || req.valor;
+    const usuario = req.usuario;
 
     if (!usuario || !perfisPermitidos.includes(usuario.perfil)) {
       return res.status(403).json({
         sucesso: false,
         codigo: 'PERMISSAO_NEGADA',
-        mensagem: 'Você não tem permissão para acessar este recurso.'
+        mensagem: 'Você não tem permissão para acessar este recurso.',
       });
     }
 
@@ -60,5 +59,5 @@ function permitirPerfis(...perfisPermitidos) {
 
 module.exports = {
   verificarToken,
-  permitirPerfis
+  permitirPerfis,
 };

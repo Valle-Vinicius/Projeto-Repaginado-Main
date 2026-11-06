@@ -1,33 +1,31 @@
-const { executarQuery } = require("../config/database");
+const { executarQuery } = require('../config/database');
 
 function filtrosSql(status, busca) {
-  const where = ["p.ativo = 1", "l.ativo = 1", "l.data_validade IS NOT NULL"];
+  const where = ['p.ativo = 1', 'l.ativo = 1', 'l.data_validade IS NOT NULL'];
   const valores = [];
 
-  if (status === "VENCIDOS") {
-    where.push("l.data_validade < CURDATE()");
-  } else if (status === "CRITICO") {
-    where.push("l.data_validade >= CURDATE()");
-    where.push("DATEDIFF(l.data_validade, CURDATE()) <= 7");
-  } else if (status === "ATENCAO") {
-    where.push("l.data_validade >= CURDATE()");
-    where.push("DATEDIFF(l.data_validade, CURDATE()) BETWEEN 8 AND 30");
-  } else if (status === "NORMAL") {
-    where.push("DATEDIFF(l.data_validade, CURDATE()) > 30");
+  if (status === 'VENCIDOS') {
+    where.push('l.data_validade < CURDATE()');
+  } else if (status === 'CRITICO') {
+    where.push('l.data_validade >= CURDATE()');
+    where.push('DATEDIFF(l.data_validade, CURDATE()) <= 7');
+  } else if (status === 'ATENCAO') {
+    where.push('l.data_validade >= CURDATE()');
+    where.push('DATEDIFF(l.data_validade, CURDATE()) BETWEEN 8 AND 30');
+  } else if (status === 'NORMAL') {
+    where.push('DATEDIFF(l.data_validade, CURDATE()) > 30');
   }
 
   if (busca) {
-    where.push(
-      "(p.nome LIKE ? OR p.codigo LIKE ? OR l.numero_lote LIKE ? OR l.fornecedor LIKE ?)",
-    );
+    where.push('(p.nome LIKE ? OR p.codigo LIKE ? OR l.numero_lote LIKE ? OR l.fornecedor LIKE ?)');
     const termo = `%${busca}%`;
     valores.push(termo, termo, termo, termo);
   }
 
-  return { where: where.join(" AND "), valores };
+  return { where: where.join(' AND '), valores };
 }
 
-async function listarValidades({ status = "TODOS", busca = "", limite = 200 }) {
+async function listarValidades({ status = 'TODOS', busca = '', limite = 200 }) {
   const filtros = filtrosSql(status, busca);
   const sql = `
     SELECT

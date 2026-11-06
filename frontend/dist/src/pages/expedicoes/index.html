@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Expedições da Babycare" />
+    <title>Expedições | Babycare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script type="module" crossorigin src="/assets/expedicoes-VE3qlw9W.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
+  <link rel="stylesheet" crossorigin href="/assets/expedicoes-Cj6AQesc.css">
+  <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
+</head>
+<body>
+    <div id="pageLoader" class="page-loader" aria-live="polite">
+        <div class="page-loader-content"><span class="page-loader-mark"></span><span class="page-loader-label">Carregando expedições...</span><span class="page-loader-bar"></span></div>
+    </div>
+    <div class="dashboard-shell">
+        <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
+        <main class="dashboard-main">
+            <header class="topbar">
+                <div class="topbar-left"><button id="openSidebarButton" class="icon-button menu-button" type="button" aria-label="Abrir menu"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+                    <div>
+                        <p class="breadcrumb">Babycare <span>/</span> <strong>Expedições</strong></p>
+                        <h1>Expedições</h1>
+                    </div>
+                </div>
+                <div class="topbar-actions"><label class="topbar-search" for="topbarSearch"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="topbarSearch" type="search" placeholder="Pesquisar no painel" autocomplete="off" /></label>
+                    <div class="topbar-divider"></div>
+                    <div class="topbar-user">
+                        <div class="avatar avatar-small" id="topbarAvatar">U</div>
+                        <div class="user-copy topbar-user-copy"><strong id="topbarUserName">Usuário Babycare</strong><span id="topbarUserRole">Perfil de acesso</span></div>
+                    </div>
+                </div>
+            </header>
+            <div class="dashboard-content expedicoes-content">
+                <section class="expedicoes-heading-row">
+                    <div>
+                        <p class="section-kicker">SAÍDA DE MERCADORIAS</p>
+                        <h2>Expedições</h2>
+                        <p>Registre as saídas e mantenha o destino dos produtos rastreável.</p>
+                    </div><button id="newShipmentButton" class="expedicao-button primary" type="button">Nova expedição</button>
+                </section>
+                <section class="expedicoes-metrics" aria-label="Resumo das expedições">
+                    <article class="expedicao-metric"><span>Expedições hoje</span><strong id="todayShipments">—</strong><small>saídas confirmadas</small></article>
+                    <article class="expedicao-metric"><span>Unidades expedidas</span><strong id="todayUnits">—</strong><small>quantidade baixada hoje</small></article>
+                    <article class="expedicao-metric"><span>Última expedição</span><strong id="lastShipmentDate">—</strong><small id="lastShipmentProduct">aguardando dados</small></article>
+                </section>
+                <section class="panel expedicoes-panel">
+                    <div class="expedicoes-toolbar"><label class="expedicoes-search" for="shipmentSearch"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg><input id="shipmentSearch" type="search" placeholder="Pesquisar produto, destinatário ou destino..." autocomplete="off" /></label><select id="shipmentPeriod"><option value="TODOS">Todos os períodos</option><option value="HOJE">Hoje</option><option value="7D">Últimos 7 dias</option><option value="30D">Últimos 30 dias</option></select></div>
+                    <div class="expedicoes-table-heading">
+                        <div><span class="section-kicker">RASTREABILIDADE</span><h3>Histórico de expedições</h3></div><span id="shipmentCount" class="result-count">—</span>
+                    </div>
+                    <div class="expedicoes-table-wrap">
+                        <table class="expedicoes-table">
+                            <thead>
+                                <tr><th>DATA</th><th>PRODUTO</th><th>LOTE</th><th>QUANTIDADE</th><th>DESTINATÁRIO</th><th>DESTINO</th><th>DOCUMENTO</th><th>RESPONSÁVEL</th></tr>
+                            </thead>
+                            <tbody id="shipmentBody"></tbody>
+                        </table>
+                        <div id="shipmentEmpty" class="expedicoes-empty" hidden>Nenhuma expedição encontrada.</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <div id="shipmentModal" class="modal-backdrop" hidden>
+        <section class="shipment-modal" role="dialog" aria-modal="true" aria-labelledby="shipmentModalTitle"><button id="closeShipmentModal" class="modal-close" type="button" aria-label="Fechar">×</button>
+            <p class="section-kicker">NOVA EXPEDIÇÃO</p>
+            <h2 id="shipmentModalTitle">Registrar saída</h2>
+            <p class="modal-description">A quantidade será baixada automaticamente dos lotes mais antigos pelo FIFO.</p>
+            <form id="shipmentForm" novalidate><label class="modal-field" for="shipmentProduct">Produto <span>*</span><select id="shipmentProduct" required><option value="">Carregando produtos...</option></select></label>
+                <p id="availableStock" class="available-stock" hidden></p>
+                <div class="shipment-grid"><label class="modal-field" for="shipmentQuantity">Quantidade <span>*</span><input id="shipmentQuantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 20" /></label><label class="modal-field" for="shipmentRecipient">Destinatário <span>*</span><input id="shipmentRecipient" type="text" maxlength="150" required placeholder="Quem receberá o material" /></label><label class="modal-field" for="shipmentDestination">Destino <span>*</span><input id="shipmentDestination" type="text" maxlength="150" required placeholder="Setor, unidade ou endereço" /></label><label class="modal-field" for="shipmentDocument">Documento <small>opcional</small><input id="shipmentDocument" type="text" maxlength="80" placeholder="Requisição ou documento" /></label><label class="modal-field" for="shipmentReason">Motivo <span>*</span><select id="shipmentReason"><option value="EXPEDICAO">Expedição</option><option value="PERDA">Perda ou avaria</option><option value="AJUSTE">Ajuste de estoque</option><option value="OUTRO">Outro motivo</option></select></label></div><label class="modal-field" for="shipmentNote">Observação <small>opcional</small><textarea id="shipmentNote" rows="3" maxlength="255" placeholder="Informações adicionais da saída..."></textarea></label>
+                <p id="shipmentError" class="shipment-error" role="alert" hidden></p>
+                <div class="modal-actions"><button id="cancelShipment" class="expedicao-button secondary" type="button">Cancelar</button><button id="submitShipment" class="expedicao-button primary" type="submit">Confirmar expedição</button></div>
+            </form>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const { executarQuery, executarTransacao } = require("../config/database");
+const { executarQuery, executarTransacao } = require('../config/database');
 
 async function buscarProdutosComSaldo() {
   return executarQuery(`
@@ -33,7 +33,7 @@ async function buscarExpedicoes({ limite = 500 } = {}) {
     ORDER BY m.criado_em DESC, m.id DESC
     LIMIT ?
   `,
-    [Number(limite)],
+    [Number(limite)]
   );
 }
 
@@ -55,20 +55,16 @@ async function buscarRecebimentos({ limite = 500 } = {}) {
     ORDER BY m.criado_em DESC, m.id DESC
     LIMIT ?
   `,
-    [Number(limite)],
+    [Number(limite)]
   );
 }
 
 async function buscarCategorias() {
-  return executarQuery(
-    "SELECT id, nome FROM categorias WHERE ativo = TRUE ORDER BY nome ASC",
-  );
+  return executarQuery('SELECT id, nome FROM categorias WHERE ativo = TRUE ORDER BY nome ASC');
 }
 
 async function buscarLocalizacoes() {
-  return executarQuery(
-    "SELECT id, nome FROM localizacoes WHERE ativo = TRUE ORDER BY nome ASC",
-  );
+  return executarQuery('SELECT id, nome FROM localizacoes WHERE ativo = TRUE ORDER BY nome ASC');
 }
 
 async function buscarMovimentacoes({ limite = 200 } = {}) {
@@ -84,16 +80,18 @@ async function buscarMovimentacoes({ limite = 200 } = {}) {
     ORDER BY m.criado_em DESC, m.id DESC
     LIMIT ?
   `,
-    [Number(limite)],
+    [Number(limite)]
   );
 }
 
 async function buscarProdutoComLotes(conexao, produtoId) {
   const [produtos] = await conexao.execute(
-    "SELECT id, nome, codigo, unidade FROM produtos WHERE id = ? AND ativo = TRUE FOR SHARE",
-    [produtoId],
+    'SELECT id, nome, codigo, unidade FROM produtos WHERE id = ? AND ativo = TRUE FOR SHARE',
+    [produtoId]
   );
-  if (!produtos.length) return null;
+  if (!produtos.length) {
+    return null;
+  }
   const [lotes] = await conexao.execute(
     `
     SELECT id, numero_lote, quantidade_atual
@@ -103,7 +101,7 @@ async function buscarProdutoComLotes(conexao, produtoId) {
       data_validade ASC, criado_em ASC, id ASC
     FOR UPDATE
   `,
-    [produtoId],
+    [produtoId]
   );
   return { produto: produtos[0], lotes };
 }
@@ -122,32 +120,32 @@ async function registrarSaida({
   return executarTransacao(async (conexao) => {
     const dados = await buscarProdutoComLotes(conexao, produtoId);
     if (!dados) {
-      const erro = new Error("Produto não encontrado ou inativo.");
+      const erro = new Error('Produto não encontrado ou inativo.');
       erro.statusCode = 404;
-      erro.codigo = "PRODUTO_NAO_ENCONTRADO";
+      erro.codigo = 'PRODUTO_NAO_ENCONTRADO';
       throw erro;
     }
     const saldoTotal = dados.lotes.reduce(
       (total, lote) => total + Number(lote.quantidade_atual),
-      0,
+      0
     );
     if (saldoTotal < quantidade) {
-      const erro = new Error(
-        `Estoque insuficiente. Disponível: ${saldoTotal}.`,
-      );
+      const erro = new Error(`Estoque insuficiente. Disponível: ${saldoTotal}.`);
       erro.statusCode = 422;
-      erro.codigo = "ESTOQUE_INSUFICIENTE";
+      erro.codigo = 'ESTOQUE_INSUFICIENTE';
       throw erro;
     }
 
     let restante = quantidade;
     const movimentacoes = [];
     for (const lote of dados.lotes) {
-      if (restante <= 0) break;
+      if (restante <= 0) {
+        break;
+      }
       const retirada = Math.min(Number(lote.quantidade_atual), restante);
       await conexao.execute(
-        "UPDATE lotes SET quantidade_atual = quantidade_atual - ? WHERE id = ?",
-        [retirada, lote.id],
+        'UPDATE lotes SET quantidade_atual = quantidade_atual - ? WHERE id = ?',
+        [retirada, lote.id]
       );
       const [resultado] = await conexao.execute(
         `
@@ -164,7 +162,7 @@ async function registrarSaida({
           documento || null,
           retirada,
           observacao || motivo || null,
-        ],
+        ]
       );
       movimentacoes.push({
         id: resultado.insertId,
@@ -177,10 +175,10 @@ async function registrarSaida({
 
     const auditoria = await auditoriaRepository.registrarNaConexao(conexao, {
       usuarioId,
-      acao: "EXPEDICAO_CONFIRMADA",
-      entidade: "MOVIMENTACAO",
+      acao: 'EXPEDICAO_CONFIRMADA',
+      entidade: 'MOVIMENTACAO',
       entidadeId: movimentacoes[0].id,
-      resultado: "SUCESSO",
+      resultado: 'SUCESSO',
       detalhes: {
         produtoId,
         produto: dados.produto.nome,
@@ -210,26 +208,26 @@ async function registrarEntrada({
 }) {
   return executarTransacao(async (conexao) => {
     const [produtos] = await conexao.execute(
-      "SELECT id, nome, codigo, unidade FROM produtos WHERE id = ? AND ativo = TRUE FOR SHARE",
-      [produtoId],
+      'SELECT id, nome, codigo, unidade FROM produtos WHERE id = ? AND ativo = TRUE FOR SHARE',
+      [produtoId]
     );
     if (!produtos.length) {
-      const erro = new Error("Produto não encontrado ou inativo.");
+      const erro = new Error('Produto não encontrado ou inativo.');
       erro.statusCode = 404;
-      erro.codigo = "PRODUTO_NAO_ENCONTRADO";
+      erro.codigo = 'PRODUTO_NAO_ENCONTRADO';
       throw erro;
     }
 
     let loteId;
     if (numeroLote) {
       const [existentes] = await conexao.execute(
-        "SELECT id FROM lotes WHERE produto_id = ? AND numero_lote = ? FOR UPDATE",
-        [produtoId, numeroLote],
+        'SELECT id FROM lotes WHERE produto_id = ? AND numero_lote = ? FOR UPDATE',
+        [produtoId, numeroLote]
       );
       if (existentes.length) {
         loteId = existentes[0].id;
         await conexao.execute(
-          `UPDATE lotes SET quantidade_atual = quantidade_atual + ?, fornecedor = COALESCE(?, fornecedor), documento = COALESCE(?, documento), data_validade = COALESCE(?, data_validade), localizacao_id = COALESCE(?, localizacao_id) WHERE id = ?`,
+          'UPDATE lotes SET quantidade_atual = quantidade_atual + ?, fornecedor = COALESCE(?, fornecedor), documento = COALESCE(?, documento), data_validade = COALESCE(?, data_validade), localizacao_id = COALESCE(?, localizacao_id) WHERE id = ?',
           [
             quantidade,
             fornecedor || null,
@@ -237,7 +235,7 @@ async function registrarEntrada({
             dataValidade || null,
             localizacaoId || null,
             loteId,
-          ],
+          ]
         );
       }
     }
@@ -255,7 +253,7 @@ async function registrarEntrada({
           quantidade,
           dataValidade || null,
           localizacaoId || null,
-        ],
+        ]
       );
       loteId = novoLote.insertId;
     }
@@ -265,22 +263,15 @@ async function registrarEntrada({
       INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, documento, tipo, quantidade, status, observacao)
       VALUES (?, ?, ?, ?, 'ENTRADA', ?, 'CONFIRMADA', ?)
     `,
-      [
-        produtoId,
-        loteId,
-        usuarioId || null,
-        documento || null,
-        quantidade,
-        observacao || null,
-      ],
+      [produtoId, loteId, usuarioId || null, documento || null, quantidade, observacao || null]
     );
 
     const auditoria = await auditoriaRepository.registrarNaConexao(conexao, {
       usuarioId,
-      acao: "RECEBIMENTO_CONFIRMADO",
-      entidade: "MOVIMENTACAO",
+      acao: 'RECEBIMENTO_CONFIRMADO',
+      entidade: 'MOVIMENTACAO',
       entidadeId: movimento.insertId,
-      resultado: "SUCESSO",
+      resultado: 'SUCESSO',
       detalhes: {
         produtoId,
         produto: produtos[0].nome,
@@ -301,6 +292,98 @@ async function registrarEntrada({
   });
 }
 
+async function registrarAjuste({
+  produtoId,
+  quantidadeNova,
+  usuarioId,
+  observacao,
+  auditoriaRepository,
+}) {
+  return executarTransacao(async (conexao) => {
+    const dados = await buscarProdutoComLotes(conexao, produtoId);
+    if (!dados) {
+      const erro = new Error('Produto não encontrado ou inativo.');
+      erro.statusCode = 404;
+      erro.codigo = 'PRODUTO_NAO_ENCONTRADO';
+      throw erro;
+    }
+
+    const saldoAtual = dados.lotes.reduce(
+      (total, lote) => total + Number(lote.quantidade_atual),
+      0
+    );
+
+    const diferenca = quantidadeNova - saldoAtual;
+
+    if (diferenca === 0) {
+      return { produto: dados.produto, ajuste: 0, movimentacoes: [] };
+    }
+
+    const movimentacoes = [];
+
+    if (diferenca > 0) {
+      // Criar novo lote com a diferença
+      const [loteResult] = await conexao.execute(
+        `INSERT INTO lotes (produto_id, numero_lote, fornecedor, quantidade_inicial, quantidade_atual, data_validade, localizacao_id, ativo)
+         VALUES (?, ?, 'Ajuste de estoque', ?, ?, NULL, NULL, TRUE)`,
+        [produtoId, `AJUSTE-${Date.now()}`, diferenca, diferenca]
+      );
+      const loteId = loteResult.insertId;
+
+      const [movResult] = await conexao.execute(
+        `INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, tipo, quantidade, status, observacao)
+         VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)`,
+        [produtoId, loteId, usuarioId || null, diferenca, observacao || 'Ajuste de estoque']
+      );
+      movimentacoes.push({ id: movResult.insertId, loteId, quantidade: diferenca });
+    } else {
+      // Remover dos lotes existentes (FIFO)
+      let restante = Math.abs(diferenca);
+      for (const lote of dados.lotes) {
+        if (restante <= 0) {
+          break;
+        }
+        const retirada = Math.min(Number(lote.quantidade_atual), restante);
+        await conexao.execute(
+          'UPDATE lotes SET quantidade_atual = quantidade_atual - ? WHERE id = ?',
+          [retirada, lote.id]
+        );
+        const [movResult] = await conexao.execute(
+          `INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, tipo, quantidade, status, observacao)
+           VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)`,
+          [produtoId, lote.id, usuarioId || null, -retirada, observacao || 'Ajuste de estoque']
+        );
+        movimentacoes.push({ id: movResult.insertId, loteId: lote.id, quantidade: -retirada });
+        restante -= retirada;
+      }
+    }
+
+    await auditoriaRepository.registrarNaConexao(conexao, {
+      usuarioId,
+      acao: 'AJUSTE_ESTOQUE',
+      entidade: 'PRODUTO',
+      entidadeId: produtoId,
+      resultado: 'SUCESSO',
+      detalhes: {
+        produtoId,
+        produto: dados.produto.nome,
+        codigo: dados.produto.codigo,
+        saldoAnterior: saldoAtual,
+        saldoNovo: quantidadeNova,
+        diferenca,
+      },
+    });
+
+    return {
+      produto: dados.produto,
+      saldoAnterior: saldoAtual,
+      saldoNovo: quantidadeNova,
+      diferenca,
+      movimentacoes,
+    };
+  });
+}
+
 module.exports = {
   buscarProdutosComSaldo,
   buscarCategorias,
@@ -310,4 +393,6 @@ module.exports = {
   buscarRecebimentos,
   registrarSaida,
   registrarEntrada,
+  registrarAjuste,
+  buscarProdutoComLotes,
 };

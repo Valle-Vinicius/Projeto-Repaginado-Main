@@ -1,25 +1,18 @@
-const express = require("express");
-const estoqueController = require("../controllers/estoqueController");
-const {
-  verificarToken,
-  permitirPerfis,
-} = require("../middlewares/authMiddleware");
-const { PERFIS_ESTOQUE } = require("../services/estoqueService");
+const express = require('express');
+const estoqueController = require('../controllers/estoqueController');
+const { verificarToken, permitirPerfis } = require('../middlewares/authMiddleware');
+const { PERFIS_ESTOQUE } = require('../services/estoqueService');
 
 const router = express.Router();
 const autorizarEstoque = permitirPerfis(...PERFIS_ESTOQUE);
 
-router.get(
-  "/",
-  verificarToken,
-  autorizarEstoque,
-  estoqueController.listarEstoque,
-);
+router.get('/', verificarToken, autorizarEstoque, estoqueController.listarEstoque);
 router.post(
-  "/movimentacoes",
+  '/movimentacoes',
   verificarToken,
   autorizarEstoque,
-  estoqueController.registrarMovimentacao,
+  estoqueController.registrarMovimentacao
 );
+router.post('/ajuste', verificarToken, autorizarEstoque, estoqueController.ajustarEstoque);
 
 module.exports = router;

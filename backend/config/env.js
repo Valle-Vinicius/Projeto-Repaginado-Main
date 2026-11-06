@@ -2,7 +2,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 dotenv.config({
-  path: path.resolve(__dirname, '..', '.env')
+  path: path.resolve(__dirname, '..', '.env'),
 });
 
 function exigirTexto(nome) {
@@ -32,15 +32,19 @@ const config = Object.freeze({
     port: Number(process.env.DB_PORT || 3306),
     user: exigirTexto('DB_USER'),
     password: process.env.DB_PASSWORD ?? '',
-    name: exigirTexto('DB_NAME')
+    name: exigirTexto('DB_NAME'),
   }),
   jwt: Object.freeze({
     secret: exigirTexto('JWT_SECRET'),
-    expiresIn: process.env.JWT_EXPIRES_IN || '2h'
-  })
+    expiresIn: process.env.JWT_EXPIRES_IN || '2h',
+  }),
 });
 
-if (!Number.isInteger(config.database.port) || config.database.port < 1 || config.database.port > 65535) {
+if (
+  !Number.isInteger(config.database.port) ||
+  config.database.port < 1 ||
+  config.database.port > 65535
+) {
   throw new Error('A variável DB_PORT deve ser um número entre 1 e 65535.');
 }
 

@@ -1,17 +1,10 @@
 const express = require('express');
 const dashboardController = require('../controllers/dashboardController');
-const {
-  verificarToken,
-  permitirPerfis
-} = require('../middlewares/authMiddleware');
+const { verificarToken, permitirPerfis } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-const PERFIS_DASHBOARD = [
-  'OPERADOR_ESTOQUE',
-  'GERENTE',
-  'ADMINISTRADOR'
-];
+const PERFIS_DASHBOARD = ['OPERADOR_ESTOQUE', 'GERENTE', 'ADMINISTRADOR'];
 
 router.get(
   '/',

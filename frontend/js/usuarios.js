@@ -1,57 +1,50 @@
-const API = "/api/usuarios";
+const API = '/api/usuarios';
 const $ = (s) => document.querySelector(s);
+const {
+  lerUsuario: lerUsuarioCore,
+  esc: escCore,
+  perfilExibicao: perfilExibicaoCore,
+  salvarFiltros: salvarFiltrosCore,
+  carregarFiltros: carregarFiltrosCore,
+} = window.BabycareCore;
 let opcoes = { perfis: [], departamentos: [] },
-  editando = null;
+  editando = null,
+  usuariosCache = [];
 function usuarioAtual() {
-  const raw =
-    localStorage.getItem("babycareUsuario") ||
-    sessionStorage.getItem("babycareUsuario") ||
-    localStorage.getItem("babycareUser") ||
-    sessionStorage.getItem("babycareUser");
-  try {
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    return {};
-  }
+  return lerUsuarioCore() || {};
 }
 function temPermissaoGestao() {
-  return ["GERENTE", "ADMINISTRADOR"].includes(
-    String(usuarioAtual().perfil || "").toUpperCase(),
-  );
+  return ['GERENTE', 'ADMINISTRADOR'].includes(String(usuarioAtual().perfil || '').toUpperCase());
 }
 function esc(v) {
-  const d = document.createElement("div");
-  d.textContent = v ?? "";
-  return d.innerHTML;
+  return escCore(v);
 }
+
 function data(v) {
-  if (!v) return "Nunca";
+  if (!v) {
+    return 'Nunca';
+  }
   const d = new Date(v);
   return Number.isNaN(d.getTime())
-    ? "—"
-    : new Intl.DateTimeFormat("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }).format(d);
+    ? '—'
+    : window.BabycareUI.formatarDataHora(v);
 }
+
 function role(v) {
-  return String(v || "")
-    .replace(/_/g, " ")
-    .toLocaleLowerCase("pt-BR")
-    .replace(/(^|\s)\S/g, (x) => x.toLocaleUpperCase("pt-BR"));
+  return perfilExibicaoCore(v);
 }
 async function requisitar(url, opts = {}) {
   const r = await fetch(url, {
     ...opts,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(opts.headers || {}),
     },
-    credentials: "include"
+    credentials: 'include',
   });
   const b = await r.json().catch(() => ({}));
   if (!r.ok) {
-    const e = new Error(b.mensagem || "Não foi possível concluir a operação.");
+    const e = new Error(b.mensagem || 'Não foi possível concluir a operação.');
     e.status = r.status;
     throw e;
   }
@@ -60,122 +53,167 @@ async function requisitar(url, opts = {}) {
 async function carregarOpcoes() {
   const b = await requisitar(`${API}/opcoes`);
   opcoes = { perfis: b.perfis || [], departamentos: b.departamentos || [] };
-  $("#filtroPerfil").innerHTML =
+  $('#filtroPerfil').innerHTML =
     '<option value="">Todos os perfis</option>' +
-    opcoes.perfis
-      .map((x) => `<option value="${x.id}">${esc(role(x.nome))}</option>`)
-      .join("");
-  $("#perfil").innerHTML = opcoes.perfis
-    .map(
-      (x) =>
-        `<option value="${x.id}" data-nome="${esc(x.nome)}">${esc(role(x.nome))}</option>`,
-    )
-    .join("");
-  $("#departamento").innerHTML =
+    opcoes.perfis.map((x) => `<option value="${x.id}">${esc(role(x.nome))}</option>`).join('');
+  $('#perfil').innerHTML = opcoes.perfis
+    .map((x) => `<option value="${x.id}" data-nome="${esc(x.nome)}">${esc(role(x.nome))}</option>`)
+    .join('');
+  $('#departamento').innerHTML =
     '<option value="">Sem departamento</option>' +
-    opcoes.departamentos
-      .map((x) => `<option value="${x.id}">${esc(x.nome)}</option>`)
-      .join("");
+    opcoes.departamentos.map((x) => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
 }
 async function carregar() {
+  // Restaura filtros persistidos.
+  const persistidos = carregarFiltrosCore('usuarios');
+  if (persistidos.busca !== undefined) $('#busca').value = persistidos.busca;
+  if (persistidos.perfilId !== undefined) $('#filtroPerfil').value = persistidos.perfilId;
+  if (persistidos.ativo !== undefined) $('#filtroAtivo').value = persistidos.ativo;
+
   const q = new URLSearchParams({
-    busca: $("#busca").value,
-    perfilId: $("#filtroPerfil").value,
-    ativo: $("#filtroAtivo").value,
+    busca: $('#busca').value,
+    perfilId: $('#filtroPerfil').value,
+    ativo: $('#filtroAtivo').value,
   });
   try {
     const b = await requisitar(`${API}?${q}`);
     render(b.usuarios || []);
   } catch (e) {
     if ([401, 403].includes(e.status)) {
-      location.href = "./login.html";
+      location.href = './login.html';
       return;
     }
-    $("#tabela").innerHTML =
-      `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;
+    $('#tabela').innerHTML = `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;
   }
 }
 function render(items) {
-  $("#contador").textContent =
-    `${items.length} usuário${items.length === 1 ? "" : "s"}`;
-  $("#tabela").innerHTML = items.length
+  usuariosCache = items;
+  $('#contador').textContent = `${items.length} usuário${items.length === 1 ? '' : 's'}`;
+  $('#tabela').innerHTML = items.length
     ? items
         .map(
           (x) =>
-            `<tr><td><strong>${esc(x.nome)}</strong></td><td>${esc(x.email)}</td><td>${esc(role(x.perfil))}</td><td>${esc(x.departamento || "—")}</td><td><span class="status ${x.ativo ? "active" : "inactive"}">${x.ativo ? "Ativo" : "Inativo"}</span></td><td>${esc(data(x.ultimoLoginEm))}</td><td><button class="edit-button" data-edit="${x.id}">Editar</button></td></tr>`,
+            `<tr><td><strong>${esc(x.nome)}</strong></td><td class="email-cell">${esc(x.email)}<button type="button" class="copy-button" data-email="${esc(x.email)}" title="Copiar e-mail" aria-label="Copiar e-mail">📋</button></td><td>${esc(role(x.perfil))}</td><td>${esc(x.departamento || '—')}</td><td><span class="status ${x.ativo ? 'active' : 'inactive'}">${x.ativo ? 'Ativo' : 'Inativo'}</span></td><td>${esc(data(x.ultimoLoginEm))}</td><td><button class="edit-button" data-edit="${x.id}">Editar</button></td></tr>`
         )
-        .join("")
+        .join('')
     : '<tr><td colspan="7" class="empty">Nenhum usuário encontrado.</td></tr>';
   document
-    .querySelectorAll("[data-edit]")
+    .querySelectorAll('[data-edit]')
     .forEach((b) =>
-      b.addEventListener("click", () =>
-        abrir(items.find((x) => String(x.id) === b.dataset.edit)),
-      ),
+      b.addEventListener('click', () => abrir(items.find((x) => String(x.id) === b.dataset.edit)))
     );
+  document.querySelectorAll('.copy-button').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const email = b.dataset.email;
+      const ok = await window.BabycareCore.copiarParaAreaDeTransferencia(email);
+      const textoOriginal = b.textContent;
+      b.textContent = ok ? '✓' : '✗';
+      setTimeout(() => {
+        b.textContent = textoOriginal;
+      }, 1200);
+    });
+  });
+  window.BabycareCore.adicionarContadorCaracteres();
 }
 function abrir(item = null) {
   editando = item;
-  $("#tituloModal").textContent = item ? "Editar usuário" : "Novo usuário";
-  $("#usuarioId").value = item?.id || "";
-  $("#nome").value = item?.nome || "";
-  $("#email").value = item?.email || "";
-  $("#perfil").value = item?.perfilId || opcoes.perfis[0]?.id || "";
-  $("#departamento").value = item?.departamentoId || "";
-  $("#senha").value = "";
-  $("#senha").required = !item;
-  $("#senhaAjuda").textContent = item
-    ? "deixe em branco para manter a senha atual"
-    : "obrigatória no cadastro";
-  $("#ativo").checked = item ? Boolean(item.ativo) : true;
-  $("#erro").hidden = true;
-  $("#modal").hidden = false;
-  $("#nome").focus();
+  $('#tituloModal').textContent = item ? 'Editar usuário' : 'Novo usuário';
+  $('#usuarioId').value = item?.id || '';
+  $('#nome').value = item?.nome || '';
+  $('#email').value = item?.email || '';
+  $('#perfil').value = item?.perfilId || opcoes.perfis[0]?.id || '';
+  $('#departamento').value = item?.departamentoId || '';
+  $('#senha').value = '';
+  $('#senha').required = !item;
+  $('#senhaAjuda').textContent = item
+    ? 'deixe em branco para manter a senha atual'
+    : 'obrigatória no cadastro';
+  $('#ativo').checked = item ? Boolean(item.ativo) : true;
+  $('#erro').hidden = true;
+  $('#modal').hidden = false;
+  $('#nome').focus();
 }
 function fechar() {
-  $("#modal").hidden = true;
+  $('#modal').hidden = true;
   editando = null;
 }
 async function salvar(e) {
   e.preventDefault();
-  const perfilId = $("#perfil").value,
-    perfilNome = $("#perfil option:checked")?.dataset.nome;
+  const perfilId = $('#perfil').value,
+    perfilNome = $('#perfil option:checked')?.dataset.nome;
   const body = {
-    nome: $("#nome").value.trim(),
-    email: $("#email").value.trim(),
+    nome: $('#nome').value.trim(),
+    email: $('#email').value.trim(),
     perfil: perfilNome,
-    departamentoId: $("#departamento").value || null,
-    ativo: $("#ativo").checked,
+    departamentoId: $('#departamento').value || null,
+    ativo: $('#ativo').checked,
   };
-  if ($("#senha").value) body.senha = $("#senha").value;
+  if ($('#senha').value) {
+    body.senha = $('#senha').value;
+  }
   const url = editando ? `${API}/${editando.id}` : API;
+  const btnSalvar = $('#formulario').querySelector('button[type="submit"]');
+  const textoOriginal = btnSalvar?.textContent;
   try {
+    if (btnSalvar) {
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = 'Salvando...';
+    }
     await requisitar(url, {
-      method: editando ? "PATCH" : "POST",
+      method: editando ? 'PATCH' : 'POST',
       body: JSON.stringify(body),
     });
     fechar();
     await carregar();
   } catch (e) {
-    $("#erro").textContent = e.message;
-    $("#erro").hidden = false;
+    $('#erro').textContent = e.message;
+    $('#erro').hidden = false;
+  } finally {
+    if (btnSalvar) {
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = textoOriginal || 'Salvar usuário';
+    }
   }
 }
-$("#novoUsuario").addEventListener("click", () => abrir());
-$("#fechar").addEventListener("click", fechar);
-$("#cancelar").addEventListener("click", fechar);
-$("#formulario").addEventListener("submit", salvar);
-$("#atualizar").addEventListener("click", carregar);
-$("#filtroPerfil").addEventListener("change", carregar);
-$("#filtroAtivo").addEventListener("change", carregar);
-let timer;
-$("#busca").addEventListener("input", () => {
-  clearTimeout(timer);
-  timer = setTimeout(carregar, 300);
+$('#novoUsuario').addEventListener('click', () => abrir());
+$('#fechar').addEventListener('click', fechar);
+$('#cancelar').addEventListener('click', fechar);
+$('#formulario').addEventListener('submit', salvar);
+$('#atualizar').addEventListener('click', carregar);
+$('#filtroPerfil').addEventListener('change', () => {
+  salvarFiltrosCore('usuarios', {
+    busca: $('#busca').value,
+    perfilId: $('#filtroPerfil').value,
+    ativo: $('#filtroAtivo').value,
+  });
+  carregar();
 });
-window.addEventListener("load", async () => {
+$('#filtroAtivo').addEventListener('change', () => {
+  salvarFiltrosCore('usuarios', {
+    busca: $('#busca').value,
+    perfilId: $('#filtroPerfil').value,
+    ativo: $('#filtroAtivo').value,
+  });
+  carregar();
+});
+let timer;
+$('#busca').addEventListener('input', () => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    salvarFiltrosCore('usuarios', {
+      busca: $('#busca').value,
+      perfilId: $('#filtroPerfil').value,
+      ativo: $('#filtroAtivo').value,
+    });
+    carregar();
+  }, 300);
+});
+  window.BabycareUI.conectarBuscaTopbar($('#busca'));
+  window.BabycareCore.tornarBreadcrumbClicavel();
+  window.BabycareCore.adicionarBotaoVoltar('.toolbar', 'Voltar ao dashboard');
+  window.addEventListener('load', async () => {
   if (!temPermissaoGestao()) {
-    location.replace("./dashboard.html");
+    location.replace('./dashboard.html');
     return;
   }
   try {
@@ -183,10 +221,29 @@ window.addEventListener("load", async () => {
     await carregar();
   } catch (e) {
     if ([401, 403].includes(e.status)) {
-      location.replace("./dashboard.html");
+      location.replace('./dashboard.html');
       return;
     }
-    $("#tabela").innerHTML =
-      `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;
+    $('#tabela').innerHTML = `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;
   }
+
+  document.getElementById('usuExportarCsv')?.addEventListener('click', () => {
+    if (!usuariosCache.length) {
+      window.BabycareUI.mostrarToast('Nenhum usuário para exportar.');
+      return;
+    }
+    window.BabycareUI.exportarCSV(
+      usuariosCache.map((x) => ({
+        Nome: x.nome,
+        'E-mail': x.email,
+        Perfil: x.perfil,
+        Departamento: x.departamento || '—',
+        Status: x.ativo ? 'Ativo' : 'Inativo',
+        'Último login': x.ultimoLoginEm || '—',
+      })),
+      ['Nome', 'E-mail', 'Perfil', 'Departamento', 'Status', 'Último login'],
+      'usuarios.csv'
+    );
+  });
+});
 });
