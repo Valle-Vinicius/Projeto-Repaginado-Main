@@ -1,4 +1,5 @@
 import { API_URL } from '../../js/core/api.js';
+import { adicionarContadorCaracteres } from '../../js/core/index.js';
 import {
   mostrarCarregamento,
   esconderCarregamento,
@@ -11,8 +12,6 @@ const PRODUTOS_API_URL = `${API_URL}/produtos`;
 const form = document.querySelector('#productForm');
 const validityField = document.querySelector('#validityField');
 const validityDate = document.querySelector('#dataValidade');
-const description = document.querySelector('#descricao');
-const descriptionCount = document.querySelector('#descriptionCount');
 const formMessage = document.querySelector('#productFormMessage');
 const submitButton = form.querySelector('button[type="submit"]');
 const categorySelect = document.querySelector('#categoria');
@@ -236,10 +235,6 @@ function montarPayload() {
       form.querySelector('input[name="possuiValidade"]:checked')?.value === 'sim',
   };
 }
-
-description.addEventListener('input', () => {
-  descriptionCount.textContent = String(description.value.length);
-});
 
 form.querySelectorAll('input[name="possuiValidade"]').forEach((radio) => {
   radio.addEventListener('change', atualizarCampoValidade);
