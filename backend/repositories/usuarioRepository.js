@@ -4,7 +4,7 @@ async function listar({ busca = '', perfilId = '', ativo = '' } = {}) {
   const filtros = [];
   const valores = [];
   if (busca) {
-    filtros.push('(u.nome LIKE ? OR u.email LIKE ?)');
+    filtros.push('(u.nome ILIKE ? OR u.email ILIKE ?)');
     valores.push(`%${busca}%`, `%${busca}%`);
   }
   if (perfilId) {
@@ -13,7 +13,7 @@ async function listar({ busca = '', perfilId = '', ativo = '' } = {}) {
   }
   if (ativo !== '') {
     filtros.push('u.ativo = ?');
-    valores.push(ativo === true || ativo === 'true' ? 1 : 0);
+    valores.push(ativo === true || ativo === 'true');
   }
   return executarQuery(
     `
@@ -50,7 +50,7 @@ async function buscarPorId(id) {
 
 async function buscarPorEmail(email, excluirId = null) {
   const rows = await executarQuery(
-    'SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?) AND (? IS NULL OR id <> ?)',
+    'SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?) AND (?::integer IS NULL OR id <> ?)',
     [email, excluirId, excluirId]
   );
   return rows[0] || null;
@@ -76,10 +76,11 @@ async function criar({ nome, email, senhaHash, perfilId, departamentoId }) {
     `
     INSERT INTO usuarios (nome, email, senha_hash, perfil_id, departamento_id, ativo)
     VALUES (?, ?, ?, ?, ?, TRUE)
+    RETURNING id
   `,
     [nome, email, senhaHash, perfilId, departamentoId || null]
   );
-  return buscarPorId(resultado.insertId);
+  return buscarPorId(resultado[0].id);
 }
 
 async function atualizar(id, campos) {

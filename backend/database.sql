@@ -1,7 +1,7 @@
 -- ============================================================================
--- BABYCARE - SCHEMA COMPLETO + CARGA DEMONSTRATIVA
--- Execute este arquivo inteiro uma única vez no MySQL Workbench.
--- Os KPIs serão calculados a partir dos registros inseridos no banco.
+-- SCHEMA MYSQL HISTÓRICO + CARGA DEMONSTRATIVA
+-- O backend atual usa PostgreSQL; o schema de runtime fica em
+-- database.postgres.sql. Este arquivo é preservado para os bancos MySQL locais.
 -- ============================================================================
 -- Banco de dados do sistema Babycare
 -- Compatível com MySQL 8.0+
@@ -395,7 +395,7 @@ SELECT COUNT(*) AS lotes_demo FROM lotes WHERE numero_lote LIKE 'DEMO-%';
 SELECT COUNT(*) AS movimentacoes_demo FROM movimentacoes WHERE observacao LIKE '[DEMO] %';
 
 
--- Tokens de recupera��o de senha
+-- Tokens de recupera��o de senha
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
   id INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT NOT NULL,

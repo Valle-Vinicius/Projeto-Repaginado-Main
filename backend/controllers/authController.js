@@ -19,7 +19,7 @@ function responderErro(res, erro, contexto) {
     });
   }
 
-  if (erro.codigo === 'EMAIL_EM_USO' || erro.code === 'ER_DUP_ENTRY') {
+  if (erro.codigo === 'EMAIL_EM_USO' || erro.code === '23505') {
     return res.status(409).json({
       sucesso: false,
       codigo: 'EMAIL_EM_USO',

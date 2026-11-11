@@ -160,10 +160,10 @@ describe("FIFO - empate de validade e consumo total", () => {
 
     // Força criado_em diferentes para quebrar o empate de validade.
     await executar(
-      `UPDATE lotes SET criado_em = DATE_SUB(NOW(), INTERVAL 2 DAY) WHERE numero_lote = 'FIFO-T-A'`,
+      `UPDATE lotes SET criado_em = NOW() - INTERVAL '2 days' WHERE numero_lote = 'FIFO-T-A'`,
     );
     await executar(
-      `UPDATE lotes SET criado_em = NOW() WHERE numero_lote = 'FIFO-T-B'`,
+      `UPDATE lotes SET criado_em = CURRENT_TIMESTAMP WHERE numero_lote = 'FIFO-T-B'`,
     );
 
     const r = await saida(produto.id, 25);

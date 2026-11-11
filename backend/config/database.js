@@ -1,5 +1,8 @@
 const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 const config = require('./env');
+const { normalizarAliases, prepararSql } = require('./sql');
 
 const pool = new Pool({
   host: config.database.host,
@@ -12,80 +15,15 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-/**
- * Converte placeholders "?" do MySQL para "$1", "$2", ... do PostgreSQL.
- * Preserva "?" dentro de strings (aspas simples) para não quebrar textos.
- */
-function converterPlaceholders(sql) {
-  let resultado = '';
-  let indice = 1;
-  let dentroDeAspas = false;
-  for (let i = 0; i < sql.length; i++) {
-    const char = sql[i];
-    const prox = sql[i + 1];
-
-    if (char === "'" && prox !== "'") {
-      dentroDeAspas = !dentroDeAspas;
-      resultado += char;
-      continue;
-    }
-
-    if (char === "'" && prox === "'") {
-      resultado += char + prox;
-      i++;
-      continue;
-    }
-
-    if (char === '?' && !dentroDeAspas) {
-      resultado += `$${indice}`;
-      indice++;
-    } else {
-      resultado += char;
-    }
-  }
-  return resultado;
-}
-
-/**
- * Verifica se o SQL é um INSERT que ainda não tem RETURNING.
- */
-function ehInsertSemReturning(sql) {
-  const sqlTrim = sql.trim();
-  const ehInsert = /^\s*INSERT\s/i.test(sqlTrim);
-  const jaTemReturning = /RETURNING\s/i.test(sqlTrim);
-  return ehInsert && !jaTemReturning;
-}
-
-/**
- * Wrapper de conexão PostgreSQL compatível com a interface do mysql2.
- * O método execute(sql, valores) converte "?" para "$N" e retorna [resultado],
- * onde resultado pode ter insertId (para INSERTs) assim como o mysql2.
- */
+/** Wrapper que mantém o formato de linhas esperado pelas transações. */
 function criarConexaoWrapper(client) {
   return {
     async execute(sql, valores = []) {
-      let sqlPg = converterPlaceholders(sql);
-      const precisaInsertId = ehInsertSemReturning(sqlPg);
-      if (precisaInsertId) {
-        sqlPg = sqlPg.replace(/;\s*$/, '') + ' RETURNING id';
-      }
-      const resultado = await client.query(sqlPg, valores);
-      const linhas = resultado.rows;
-
-      if (precisaInsertId && linhas.length > 0 && linhas[0].id !== undefined) {
-        // Simular resultado compatível com mysql2 (com insertId)
-        const resultadoCompat = {
-          rows: linhas,
-          insertId: linhas[0].id,
-          affectedRows: linhas.length,
-        };
-        return [resultadoCompat];
-      }
-      return [linhas];
+      const resultado = await client.query(prepararSql(sql), valores);
+      return [normalizarAliases(sql, resultado.rows)];
     },
     async query(sql, valores = []) {
-      const sqlPg = converterPlaceholders(sql);
-      return await client.query(sqlPg, valores);
+      return client.query(prepararSql(sql), valores);
     },
     async release() {
       await client.release();
@@ -93,16 +31,20 @@ function criarConexaoWrapper(client) {
   };
 }
 
-/** Executa uma query SQL com parâmetros. Converte "?" para "$N" (PostgreSQL). */
+/** Executa uma query parametrizada e retorna as linhas do PostgreSQL. */
 async function executarQuery(sql, valores = []) {
-  const sqlPg = converterPlaceholders(sql);
-  const resultado = await pool.query(sqlPg, valores);
-  return resultado.rows;
+  const resultado = await pool.query(prepararSql(sql), valores);
+  return normalizarAliases(sql, resultado.rows);
+}
+
+async function inicializarBanco() {
+  const schema = fs.readFileSync(path.join(__dirname, '..', 'database.postgres.sql'), 'utf8');
+  await pool.query(schema);
 }
 
 /**
  * Executa uma transação com múltiplas queries.
- * Passa ao callback uma conexão com método execute compatível com mysql2.
+ * Passa ao callback uma conexão com método execute que retorna [linhas].
  */
 async function executarTransacao(callback) {
   const client = await pool.connect();
@@ -129,4 +71,5 @@ module.exports = {
   pool,
   executarQuery,
   executarTransacao,
+  inicializarBanco,
 };

@@ -110,8 +110,14 @@ async function buscarEstoqueBaixo() {
     LEFT JOIN lotes l ON l.produto_id = p.id
     WHERE p.ativo = TRUE
     GROUP BY p.id, p.codigo, p.nome, p.estoque_minimo
-    HAVING estoqueAtual > 0
-       AND estoqueAtual <= p.estoque_minimo
+    HAVING COALESCE(SUM(CASE
+        WHEN l.ativo = TRUE THEN l.quantidade_atual
+        ELSE 0
+      END), 0) > 0
+       AND COALESCE(SUM(CASE
+        WHEN l.ativo = TRUE THEN l.quantidade_atual
+        ELSE 0
+      END), 0) <= p.estoque_minimo
     ORDER BY estoqueAtual ASC, p.nome ASC
     LIMIT 10
   `);

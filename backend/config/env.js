@@ -25,15 +25,42 @@ function obterPorta() {
   return porta;
 }
 
-const config = Object.freeze({
-  port: obterPorta(),
-  database: Object.freeze({
+function obterConfiguracaoBanco() {
+  if (process.env.DATABASE_URL) {
+    let url;
+    try {
+      url = new URL(process.env.DATABASE_URL);
+    } catch (erro) {
+      throw new Error('A variável DATABASE_URL não contém uma URL válida.');
+    }
+
+    if (!['postgres:', 'postgresql:'].includes(url.protocol)) {
+      throw new Error('A variável DATABASE_URL deve apontar para PostgreSQL.');
+    }
+
+    return {
+      host: url.hostname,
+      port: Number(url.port || 5432),
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      name: decodeURIComponent(url.pathname.replace(/^\//, '')),
+    };
+  }
+
+  return {
     host: exigirTexto('DB_HOST'),
     port: Number(process.env.DB_PORT || 5432),
     user: exigirTexto('DB_USER'),
     password: process.env.DB_PASSWORD ?? '',
     name: exigirTexto('DB_NAME'),
-  }),
+  };
+}
+
+const database = obterConfiguracaoBanco();
+
+const config = Object.freeze({
+  port: obterPorta(),
+  database: Object.freeze(database),
   jwt: Object.freeze({
     secret: exigirTexto('JWT_SECRET'),
     expiresIn: process.env.JWT_EXPIRES_IN || '2h',

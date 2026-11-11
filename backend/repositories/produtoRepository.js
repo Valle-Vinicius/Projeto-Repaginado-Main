@@ -15,7 +15,7 @@ async function buscarProdutos({ busca = '', categoriaId = null, pagina = 1, limi
 
   if (busca) {
     const termo = `%${busca}%`;
-    filtros.push("(p.nome LIKE ? OR p.codigo LIKE ? OR COALESCE(p.descricao, '') LIKE ?)");
+    filtros.push("(p.nome ILIKE ? OR p.codigo ILIKE ? OR COALESCE(p.descricao, '') ILIKE ?)");
     valores.push(termo, termo, termo);
   }
 
@@ -37,7 +37,7 @@ async function buscarProdutos({ busca = '', categoriaId = null, pagina = 1, limi
     valores
   );
 
-  const total = countResult?.total || 0;
+  const total = Number(countResult?.total || 0);
 
   const produtos = await executarQuery(
     `
@@ -119,11 +119,12 @@ async function criarProduto({
       ativo
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)
+    RETURNING id
   `,
     [codigo, nome, descricao, categoriaId, estoqueMinimo, unidade, possuiValidade]
   );
 
-  return resultado.insertId;
+  return resultado[0].id;
 }
 
 async function buscarProdutoPorId(id) {

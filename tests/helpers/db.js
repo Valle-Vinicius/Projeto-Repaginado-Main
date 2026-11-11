@@ -8,35 +8,27 @@
 const path = require("path");
 const { config } = require("./env");
 
-// mysql2 instalado dentro de backend/node_modules
-const mysql = require(path.join(
-  config.BACKEND,
-  "node_modules",
-  "mysql2",
-  "promise",
-));
+const { Pool } = require(path.join(config.BACKEND, "node_modules", "pg"));
+const { normalizarAliases, prepararSql } = require(path.join(config.BACKEND, "config", "sql"));
 
-const pool = mysql.createPool({
+const pool = new Pool({
   host: config.DB_HOST,
   port: Number(config.DB_PORT),
   user: config.DB_USER,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
-  connectionLimit: 5,
-  waitForConnections: true,
-  decimalNumbers: true,
-  charset: "utf8mb4",
-  multipleStatements: true,
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
 async function consultar(sql, valores = []) {
-  const [linhas] = await pool.execute(sql, valores);
-  return linhas;
+  const resultado = await pool.query(prepararSql(sql), valores);
+  return normalizarAliases(sql, resultado.rows);
 }
 
 async function executar(sql, valores = []) {
-  const [resultado] = await pool.execute(sql, valores);
-  return resultado;
+  return pool.query(prepararSql(sql), valores);
 }
 
 async function fechar() {

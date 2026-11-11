@@ -44,7 +44,9 @@ app.use((req, res, next) => {
 // === SEGURANÇA: CORS restrito ===
 const ORIGENS_PERMITIDAS = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  : [process.env.RENDER_EXTERNAL_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'].filter(
+      Boolean
+    );
 
 app.use(
   cors({
@@ -163,7 +165,7 @@ if (IS_PRODUCAO) {
   );
 }
 
-const { pool } = require('./config/database');
+const { pool, inicializarBanco } = require('./config/database');
 
 app.get('/api/health', async (req, res) => {
   try {
@@ -262,9 +264,20 @@ app.use((erro, req, res, next) => {
   });
 });
 
-const servidor = app.listen(PORT, () => {
-  console.log(`Servidor Babycare rodando em http://localhost:${PORT}`);
-});
+let servidor;
+inicializarBanco()
+  .then(() => {
+    servidor = app.listen(PORT, () => {
+      console.log(`Servidor Babycare rodando em http://localhost:${PORT}`);
+    });
+  })
+  .catch((erro) => {
+    console.error('[Servidor] Falha ao inicializar o banco:', {
+      mensagem: erro.message,
+      codigo: erro.code,
+    });
+    process.exit(1);
+  });
 
 // Graceful shutdown
 function encerrarServidor(sinal) {

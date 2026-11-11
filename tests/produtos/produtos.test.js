@@ -152,6 +152,13 @@ describe("Produtos - listagem e filtros", () => {
   });
 
   test("busca filtra por nome ou SKU", async () => {
+    const criado = await criarProdutoViaApi(token, {
+      codigo: `TESTE-PROD-FRALDA-${sufixo()}`,
+      nome: "Fralda Babycare de teste",
+      categoriaId: await categoriaValida(),
+    });
+    expect(criado.status).toBe(201);
+
     const resultado = await requisitar("/api/produtos?busca=Fralda Babycare", { token });
     expect(resultado.status).toBe(200);
     expect(resultado.corpo.produtos.length).toBeGreaterThan(0);

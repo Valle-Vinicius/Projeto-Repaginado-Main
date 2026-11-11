@@ -152,6 +152,7 @@ async function registrarSaida({
         INSERT INTO movimentacoes
           (produto_id, lote_id, usuario_id, destinatario, destino, documento, tipo, quantidade, status, observacao)
         VALUES (?, ?, ?, ?, ?, ?, 'SAIDA', ?, 'CONFIRMADA', ?)
+        RETURNING id
       `,
         [
           produtoId,
@@ -165,7 +166,7 @@ async function registrarSaida({
         ]
       );
       movimentacoes.push({
-        id: resultado.insertId,
+        id: resultado[0].id,
         loteId: lote.id,
         numeroLote: lote.numero_lote,
         quantidade: retirada,
@@ -244,6 +245,7 @@ async function registrarEntrada({
         `
         INSERT INTO lotes (produto_id, numero_lote, fornecedor, documento, quantidade_atual, data_validade, localizacao_id)
         VALUES (?, ?, ?, ?, ?, ?, ?)
+        RETURNING id
       `,
         [
           produtoId,
@@ -255,13 +257,14 @@ async function registrarEntrada({
           localizacaoId || null,
         ]
       );
-      loteId = novoLote.insertId;
+      loteId = novoLote[0].id;
     }
 
     const [movimento] = await conexao.execute(
       `
       INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, documento, tipo, quantidade, status, observacao)
       VALUES (?, ?, ?, ?, 'ENTRADA', ?, 'CONFIRMADA', ?)
+      RETURNING id
     `,
       [produtoId, loteId, usuarioId || null, documento || null, quantidade, observacao || null]
     );
@@ -270,7 +273,7 @@ async function registrarEntrada({
       usuarioId,
       acao: 'RECEBIMENTO_CONFIRMADO',
       entidade: 'MOVIMENTACAO',
-      entidadeId: movimento.insertId,
+      entidadeId: movimento[0].id,
       resultado: 'SUCESSO',
       detalhes: {
         produtoId,
@@ -286,7 +289,7 @@ async function registrarEntrada({
       produto: produtos[0],
       quantidade,
       loteId,
-      movimentacaoId: movimento.insertId,
+      movimentacaoId: movimento[0].id,
       auditoria,
     };
   });
@@ -325,17 +328,19 @@ async function registrarAjuste({
       // Criar novo lote com a diferença
       const [loteResult] = await conexao.execute(
         `INSERT INTO lotes (produto_id, numero_lote, fornecedor, quantidade_inicial, quantidade_atual, data_validade, localizacao_id, ativo)
-         VALUES (?, ?, 'Ajuste de estoque', ?, ?, NULL, NULL, TRUE)`,
+         VALUES (?, ?, 'Ajuste de estoque', ?, ?, NULL, NULL, TRUE)
+         RETURNING id`,
         [produtoId, `AJUSTE-${Date.now()}`, diferenca, diferenca]
       );
-      const loteId = loteResult.insertId;
+      const loteId = loteResult[0].id;
 
       const [movResult] = await conexao.execute(
         `INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, tipo, quantidade, status, observacao)
-         VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)`,
+         VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)
+         RETURNING id`,
         [produtoId, loteId, usuarioId || null, diferenca, observacao || 'Ajuste de estoque']
       );
-      movimentacoes.push({ id: movResult.insertId, loteId, quantidade: diferenca });
+      movimentacoes.push({ id: movResult[0].id, loteId, quantidade: diferenca });
     } else {
       // Remover dos lotes existentes (FIFO)
       let restante = Math.abs(diferenca);
@@ -350,10 +355,11 @@ async function registrarAjuste({
         );
         const [movResult] = await conexao.execute(
           `INSERT INTO movimentacoes (produto_id, lote_id, usuario_id, tipo, quantidade, status, observacao)
-           VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)`,
+           VALUES (?, ?, ?, 'AJUSTE', ?, 'CONFIRMADA', ?)
+           RETURNING id`,
           [produtoId, lote.id, usuarioId || null, -retirada, observacao || 'Ajuste de estoque']
         );
-        movimentacoes.push({ id: movResult.insertId, loteId: lote.id, quantidade: -retirada });
+        movimentacoes.push({ id: movResult[0].id, loteId: lote.id, quantidade: -retirada });
         restante -= retirada;
       }
     }

@@ -1,86 +1,56 @@
 "use strict";
 /**
- * PREPARA O BANCO DE TESTES (babycare_test).
+ * PREPARA O BANCO POSTGRESQL DE TESTES (babycare_test).
  *
  * O QUE FAZ:
- *   1. DROP DATABASE IF EXISTS babycare_test;    (reset total)
- *   2. Executa o database.sql OFICIAL (raiz) modificado apenas nos pontos
- *      "CREATE DATABASE ... babycare" e "USE babycare", apontando para
- *      babycare_test. NENHUM arquivo de produção é alterado.
+ *   1. Recria somente o banco PostgreSQL babycare_test.
+ *   2. Aplica o schema PostgreSQL, sem acessar ou alterar bancos MySQL.
  *   3. Cria os usuários de teste com hash bcrypt (mesma técnica do
  *      backend/database/criarUsuario.js).
  *
- * Datas de validade dos dados DEMO são relativas a CURDATE(), então a cada
- * reset o cenário fica sempre "fresco".
  */
 const path = require("path");
 const fs = require("fs");
-const { config, lerEnvBackend } = require("../helpers/env");
-
-const mysql = require(path.join(
-  config.BACKEND,
-  "node_modules",
-  "mysql2",
-  "promise",
-));
+const { config } = require("../helpers/env");
+const { Pool } = require(path.join(config.BACKEND, "node_modules", "pg"));
 const bcrypt = require(path.join(
   config.BACKEND,
   "node_modules",
   "bcryptjs",
 ));
 
-const SQL_OFICIAL = path.join(config.BACKEND, "database.sql");
+const SQL_SCHEMA = path.join(config.BACKEND, "database.postgres.sql");
 
-function transformarParaBancoDeTeste(sql) {
-  let texto = sql;
-  texto = texto.replace(
-    /CREATE DATABASE IF NOT EXISTS babycare/gi,
-    `CREATE DATABASE IF NOT EXISTS ${config.DB_NAME}`,
-  );
-  texto = texto.replace(
-    /USE\s+babycare\s*;/gi,
-    `USE ${config.DB_NAME};`,
-  );
-  if (texto.includes(`USE ${config.DB_NAME}`) === false) {
-    throw new Error("Transformação do SQL não encontrou os pontos de troca de banco.");
-  }
-  return texto;
-}
-
-async function executarScript(conexao, sql) {
-  await conexao.query({ sql, multipleStatements: true });
-}
-
-async function semearUsuarios(conexao) {
+async function semearUsuarios(pool) {
   const SALT_ROUNDS = 10;
   const usuarios = [
-    { nome: "Operador de Teste", email: config.USUARIO_OPERADOR.email, senha: config.USUARIO_OPERADOR.senha, perfil: "OPERADOR_ESTOQUE", ativo: 1 },
-    { nome: "Gerente de Teste", email: config.USUARIO_GERENTE.email, senha: config.USUARIO_GERENTE.senha, perfil: "GERENTE", ativo: 1 },
-    { nome: "Administrador de Teste", email: config.USUARIO_ADMIN.email, senha: config.USUARIO_ADMIN.senha, perfil: "ADMINISTRADOR", ativo: 1 },
-    { nome: "Usuário Inativo de Teste", email: config.USUARIO_INATIVO.email, senha: config.USUARIO_INATIVO.senha, perfil: "OPERADOR_ESTOQUE", ativo: 0 },
-    { nome: "Usuário de Bloqueio de Teste", email: config.USUARIO_BLOQUEIO.email, senha: config.USUARIO_BLOQUEIO.senha, perfil: "OPERADOR_ESTOQUE", ativo: 1 },
+    { nome: "Operador de Teste", email: config.USUARIO_OPERADOR.email, senha: config.USUARIO_OPERADOR.senha, perfil: "OPERADOR_ESTOQUE", ativo: true },
+    { nome: "Gerente de Teste", email: config.USUARIO_GERENTE.email, senha: config.USUARIO_GERENTE.senha, perfil: "GERENTE", ativo: true },
+    { nome: "Administrador de Teste", email: config.USUARIO_ADMIN.email, senha: config.USUARIO_ADMIN.senha, perfil: "ADMINISTRADOR", ativo: true },
+    { nome: "Usuário Inativo de Teste", email: config.USUARIO_INATIVO.email, senha: config.USUARIO_INATIVO.senha, perfil: "OPERADOR_ESTOQUE", ativo: false },
+    { nome: "Usuário de Bloqueio de Teste", email: config.USUARIO_BLOQUEIO.email, senha: config.USUARIO_BLOQUEIO.senha, perfil: "OPERADOR_ESTOQUE", ativo: true },
   ];
 
   for (const usuario of usuarios) {
     const senhaHash = await bcrypt.hash(usuario.senha, SALT_ROUNDS);
-    const [perfil] = await conexao.execute(
-      "SELECT id FROM perfis WHERE nome = ?",
+    const perfil = await pool.query(
+      "SELECT id FROM perfis WHERE nome = $1",
       [usuario.perfil],
     );
-    if (!perfil.length) throw new Error(`Perfil não encontrado: ${usuario.perfil}`);
-    const [dep] = await conexao.execute(
+    if (!perfil.rowCount) throw new Error(`Perfil não encontrado: ${usuario.perfil}`);
+    const dep = await pool.query(
       "SELECT id FROM departamentos WHERE nome = 'Estoque' LIMIT 1",
     );
-    await conexao.execute(
+    await pool.query(
       `INSERT INTO usuarios
          (nome, email, senha_hash, perfil_id, departamento_id, ativo)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         usuario.nome,
         usuario.email,
         senhaHash,
-        perfil[0].id,
-        dep.length ? dep[0].id : null,
+        perfil.rows[0].id,
+        dep.rowCount ? dep.rows[0].id : null,
         usuario.ativo,
       ],
     );
@@ -88,38 +58,43 @@ async function semearUsuarios(conexao) {
 }
 
 async function main() {
-  const env = lerEnvBackend();
-  const conexao = await mysql.createConnection({
-    host: env.DB_HOST || config.DB_HOST,
-    port: Number(env.DB_PORT || config.DB_PORT),
-    user: env.DB_USER || config.DB_USER,
-    password: env.DB_PASSWORD || config.DB_PASSWORD,
-    multipleStatements: true,
-  });
+  if (config.DB_NAME !== "babycare_test") {
+    throw new Error("O setup só pode recriar o banco babycare_test.");
+  }
+  if (!["localhost", "127.0.0.1", "::1"].includes(config.DB_HOST)) {
+    throw new Error("O setup de testes só pode recriar um banco PostgreSQL local.");
+  }
 
-  console.log(`[setup] Removendo banco ${config.DB_NAME} (se existir)...`);
-  await conexao.query(`DROP DATABASE IF EXISTS ${config.DB_NAME}`);
-  await conexao.query(
-    `CREATE DATABASE ${config.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
-  );
+  const opcoesConexao = {
+    host: config.DB_HOST,
+    port: Number(config.DB_PORT),
+    user: config.DB_USER,
+    password: config.DB_PASSWORD,
+  };
+  const admin = new Pool({ ...opcoesConexao, database: "postgres" });
+  let pool;
 
-  console.log(`[setup] Executando ${path.basename(SQL_OFICIAL)} em ${config.DB_NAME}...`);
-  const sqlOficial = fs.readFileSync(SQL_OFICIAL, "utf8");
-  const sqlTeste = transformarParaBancoDeTeste(sqlOficial);
-  await conexao.query(`USE ${config.DB_NAME}`);
-  await executarScript(conexao, sqlTeste);
+  try {
+    console.log(`[setup] Recriando banco PostgreSQL ${config.DB_NAME}...`);
+    await admin.query(`DROP DATABASE IF EXISTS ${config.DB_NAME} WITH (FORCE)`);
+    await admin.query(`CREATE DATABASE ${config.DB_NAME}`);
 
-  console.log("[setup] Criando usuários de teste...");
-  await conexao.query(`USE ${config.DB_NAME}`);
-  await semearUsuarios(conexao);
+    pool = new Pool({ ...opcoesConexao, database: config.DB_NAME });
+    console.log(`[setup] Aplicando ${path.basename(SQL_SCHEMA)}...`);
+    await pool.query(fs.readFileSync(SQL_SCHEMA, "utf8"));
 
-  const [contagem] = await conexao.query(
-    "SELECT (SELECT COUNT(*) FROM usuarios) AS usuarios, (SELECT COUNT(*) FROM produtos) AS produtos, (SELECT COUNT(*) FROM lotes) AS lotes",
-  );
-  console.log("[setup] Banco de testes pronto:", contagem[0]);
+    console.log("[setup] Criando usuários de teste...");
+    await semearUsuarios(pool);
 
-  await conexao.end();
-  console.log("[setup] OK");
+    const contagem = await pool.query(
+      "SELECT (SELECT COUNT(*) FROM usuarios) AS usuarios, (SELECT COUNT(*) FROM produtos) AS produtos, (SELECT COUNT(*) FROM lotes) AS lotes",
+    );
+    console.log("[setup] Banco de testes pronto:", contagem.rows[0]);
+    console.log("[setup] OK");
+  } finally {
+    await pool?.end();
+    await admin.end();
+  }
 }
 
 main().catch((erro) => {

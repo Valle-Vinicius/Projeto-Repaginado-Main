@@ -17,7 +17,7 @@ function filtrosSql(status, busca) {
   }
 
   if (busca) {
-    where.push('(p.nome LIKE ? OR p.codigo LIKE ? OR l.numero_lote LIKE ? OR l.fornecedor LIKE ?)');
+    where.push('(p.nome ILIKE ? OR p.codigo ILIKE ? OR l.numero_lote ILIKE ? OR l.fornecedor ILIKE ?)');
     const termo = `%${busca}%`;
     valores.push(termo, termo, termo, termo);
   }

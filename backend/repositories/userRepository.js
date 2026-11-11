@@ -52,11 +52,12 @@ async function inserir({ nome, email, senhaHash, perfilId, departamentoId }) {
   const resultado = await executarQuery(
     `INSERT INTO usuarios
       (nome, email, senha_hash, perfil_id, departamento_id)
-     VALUES (?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?)
+    RETURNING id`,
     [nome, email, senhaHash, perfilId, departamentoId || null]
   );
 
-  return buscarPorId(resultado.insertId);
+  return buscarPorId(resultado[0].id);
 }
 
 async function registrarFalhaLogin(id, limiteTentativas, minutosBloqueio) {

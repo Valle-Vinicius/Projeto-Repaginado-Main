@@ -37,11 +37,12 @@ async function registrarNaConexao(conexao, dados = {}) {
   const valores = normalizarDados(dados);
   const [resultadoInsert] = await conexao.execute(
     `INSERT INTO auditorias (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?)
+      RETURNING id`,
     valores
   );
   return {
-    id: resultadoInsert.insertId,
+    id: resultadoInsert[0].id,
     acao: valores[1],
     resultado: valores[4],
   };
@@ -51,11 +52,12 @@ async function registrar(dados = {}) {
   const valores = normalizarDados(dados);
   const resultadoInsert = await executarQuery(
     `INSERT INTO auditorias (usuario_id, acao, entidade, entidade_id, resultado, detalhes)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?)
+      RETURNING id`,
     valores
   );
   return {
-    id: resultadoInsert.insertId,
+    id: resultadoInsert[0].id,
     acao: valores[1],
     resultado: valores[4],
   };
@@ -88,7 +90,7 @@ async function buscarAuditorias({
     valores.push(acao);
   }
   if (busca) {
-    where.push('(a.acao LIKE ? OR a.entidade LIKE ? OR u.nome LIKE ? OR a.detalhes LIKE ?)');
+    where.push('(a.acao ILIKE ? OR a.entidade ILIKE ? OR u.nome ILIKE ? OR a.detalhes::text ILIKE ?)');
     const termo = `%${busca}%`;
     valores.push(termo, termo, termo, termo);
   }

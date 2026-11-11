@@ -6,13 +6,11 @@ function erroDeConexao(erro) {
     'ECONNRESET',
     'ETIMEDOUT',
     'ENETUNREACH',
-    'PROTOCOL_CONNECTION_LOST',
-    'ER_CON_COUNT_ERROR',
-  ].includes(erro.codigo);
+  ].includes(erro.code || erro.codigo);
 }
 
 function responderErro(res, erro) {
-  if (erro.codigo === 'ER_DUP_ENTRY') {
+  if (erro.code === '23505') {
     return res.status(409).json({
       sucesso: false,
       codigo: 'PRODUTO_DUPLICADO',

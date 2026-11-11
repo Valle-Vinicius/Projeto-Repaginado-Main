@@ -41,9 +41,7 @@ function ehErroDeConexao(erro) {
     'ECONNRESET',
     'ETIMEDOUT',
     'ENETUNREACH',
-    'PROTOCOL_CONNECTION_LOST',
-    'ER_CON_COUNT_ERROR',
-  ].includes(erro.codigo);
+  ].includes(erro.code || erro.codigo);
 }
 
 async function obterDashboard(req, res) {

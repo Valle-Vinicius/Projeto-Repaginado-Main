@@ -2,18 +2,23 @@ version: '3.8'
 
 services:
   database:
-    image: mysql:8.0
-    container_name: babycare-mysql
-    restart: always
+    image: postgres:16-alpine
+    container_name: babycare-postgres
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: babycare
+      POSTGRES_USER: babycare
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-babycare_local_dev_only}
+      POSTGRES_DB: babycare
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./backend/database.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      - pg_data:/var/lib/postgresql/data
+      - ./backend/database.postgres.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U babycare -d babycare"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -25,14 +30,15 @@ services:
     environment:
       PORT: 3000
       DB_HOST: database
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: root
+      DB_PORT: 5432
+      DB_USER: babycare
+      DB_PASSWORD: ${DB_PASSWORD:-babycare_local_dev_only}
       DB_NAME: babycare
       JWT_SECRET: chave_secreta_padrao_desenvolvimento_babycare_2026
       JWT_EXPIRES_IN: 2h
     depends_on:
-      - database
+      database:
+        condition: service_healthy
 
 volumes:
-  db_data:
+  pg_data:
