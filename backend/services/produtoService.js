@@ -14,7 +14,7 @@ function erroComStatus(mensagem, statusCode = 400, codigo = 'VALIDATION_ERROR', 
 }
 
 function validarBusca(busca) {
-  if (busca === null || busca === '') {
+  if (busca === undefined || busca === null || busca === '') {
     return '';
   }
   if (typeof busca !== 'string') {
@@ -34,7 +34,7 @@ function validarBusca(busca) {
 }
 
 function validarCategoriaFiltro(categoriaId) {
-  if (categoriaId === null || categoriaId === '') {
+  if (categoriaId === undefined || categoriaId === null || categoriaId === '') {
     return null;
   }
   if (typeof categoriaId !== 'string' && typeof categoriaId !== 'number') {
