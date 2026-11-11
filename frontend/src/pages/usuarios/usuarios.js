@@ -13,6 +13,7 @@ import {
   conectarBuscaTopbar,
   exportarCSV,
   esconderCarregamento,
+  atualizarUsuario,
 } from '../../js/core/ui.js';
 
 const USUARIOS_API_URL = `${API_URL}/usuarios`;
@@ -250,6 +251,7 @@ window.BabycareCore.adicionarBotaoVoltar('.toolbar', 'Voltar ao dashboard');
 
 window.addEventListener('load', async () => {
   try {
+    await atualizarUsuario();
     if (!temPermissaoGestao()) {
       location.replace('./dashboard.html');
       return;

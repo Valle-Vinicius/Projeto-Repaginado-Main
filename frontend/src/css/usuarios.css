@@ -16,6 +16,16 @@ body {
   min-height: 100vh;
 }
 
+.usuarios-page .topbar {
+  background: #fff;
+  border-bottom: 1px solid #e6ebf3;
+}
+
+.usuarios-page .topbar-user-copy {
+  display: flex;
+  flex-direction: column;
+}
+
 .eyebrow {
   display: block;
   margin-bottom: 6px;
@@ -402,6 +412,20 @@ body {
 
   .modal-card {
     padding: 18px;
+  }
+
+  .usuarios-page .topbar-user-copy {
+    max-width: 105px;
+  }
+
+  .usuarios-page .topbar-user-copy strong {
+    display: none;
+  }
+
+  .usuarios-page .topbar-user-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
