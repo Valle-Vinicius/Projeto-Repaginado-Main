@@ -25,8 +25,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_PRODUCAO = process.env.NODE_ENV === 'production';
 const CAMINHO_FRONTEND = path.join(__dirname, '..', 'frontend', IS_PRODUCAO ? 'dist' : '');
-const CAMINHO_LOGIN = path.join(CAMINHO_FRONTEND, IS_PRODUCAO ? 'login' : 'pages', 'index.html');
-const CAMINHO_ERRO_404 = path.join(CAMINHO_FRONTEND, IS_PRODUCAO ? 'erro404' : 'pages', 'index.html');
+const CAMINHO_PAGINAS = path.join(CAMINHO_FRONTEND, 'src', 'pages');
+const CAMINHO_LOGIN = path.join(CAMINHO_PAGINAS, 'login', 'index.html');
+const CAMINHO_ERRO_404 = path.join(CAMINHO_PAGINAS, 'erro404', 'index.html');
 
 // Trust proxy for correct IP detection behind reverse proxies
 app.set('trust proxy', 1);
@@ -124,7 +125,7 @@ if (IS_PRODUCAO) {
   ];
 
   paginasVite.forEach((pagina) => {
-    const caminhoPagina = path.join(CAMINHO_FRONTEND, pagina, 'index.html');
+    const caminhoPagina = path.join(CAMINHO_PAGINAS, pagina, 'index.html');
     app.get(`/${pagina}`, (req, res) => {
       res.sendFile(caminhoPagina);
     });
