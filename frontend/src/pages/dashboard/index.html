@@ -8,9 +8,14 @@
     <link rel="stylesheet" href="../../css/dashboard.css" />
   </head>
   <body data-dashboard-state="loading">
-    <div id="pageLoader" class="page-loader" aria-live="polite">
-      <div class="loader-mark" aria-hidden="true"></div>
-      <span>Carregando painel...</span>
+    <div id="pageLoader" class="page-loader" role="status" aria-live="polite">
+      <div class="page-loader-content">
+        <img class="page-loader-logo" src="../../assets/images/babycare-logo.png" alt="Babycare" />
+        <div class="loader-mark" aria-hidden="true"></div>
+        <strong class="page-loader-title">Preparando seu painel</strong>
+        <span class="page-loader-description">Consolidando catálogo, estoque e movimentações.</span>
+        <div class="page-loader-progress" aria-hidden="true"><span></span></div>
+      </div>
     </div>
 
     <div
@@ -133,7 +138,7 @@
                 <span class="metric-label">ESTOQUE ATUAL</span>
                 <strong id="metricStock" class="metric-value">—</strong>
                 <small>unidades registradas</small>
-                <svg class="metric-sparkline" viewBox="0 0 96 24" role="img" aria-label="Entradas e saídas por dia no período">
+                <svg id="stockSparkline" class="metric-sparkline" viewBox="0 0 96 24" role="img" aria-label="Entradas e saídas por dia no período">
                   <polyline id="stockEntrySparkline" class="sparkline-entry" points=""></polyline>
                   <polyline id="stockExitSparkline" class="sparkline-exit" points=""></polyline>
                 </svg>

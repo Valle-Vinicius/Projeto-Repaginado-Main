@@ -288,11 +288,15 @@ function normalizarResposta(payload) {
 }
 
 function renderizarMiniGrafico(movimentacoes) {
+  const container = elementos.stockSparkline;
   const entradas = elementos.stockEntrySparkline;
   const saidas = elementos.stockExitSparkline;
   const grafico = obterLista(movimentacoes).slice(-14);
+  if (!container) {
+    return;
+  }
   if (!entradas || !saidas || grafico.length === 0) {
-    if (elementos.stockSparkline) elementos.stockSparkline.hidden = true;
+    container.hidden = true;
     return;
   }
 
@@ -309,7 +313,7 @@ function renderizarMiniGrafico(movimentacoes) {
 
   entradas.setAttribute('points', pontos('entradas'));
   saidas.setAttribute('points', pontos('saidas'));
-  elementos.stockSparkline.hidden = false;
+  container.hidden = false;
 }
 
 function atualizarIndicadores(resumo, grafico) {
