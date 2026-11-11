@@ -132,6 +132,12 @@ if (IS_PRODUCAO) {
     });
   });
 
+  paginasVite.forEach((pagina) => {
+    app.get(`/${pagina}.html`, (req, res) => {
+      res.redirect(302, `/${pagina}`);
+    });
+  });
+
   // Redireciona raiz para login em produção
   app.get('/', (req, res) => {
     res.redirect(302, '/login');
