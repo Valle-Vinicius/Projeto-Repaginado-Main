@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const path = require('path');
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
@@ -266,7 +267,62 @@ app.use((erro, req, res, next) => {
 });
 
 let servidor;
+async function criarAdministradorInicial() {
+  const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase();
+  const senha = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+
+  if (!email && !senha) {
+    return;
+  }
+  if (!email || !senha || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || senha.length < 12) {
+    throw new Error('BOOTSTRAP_ADMIN_EMAIL inválido ou senha com menos de 12 caracteres.');
+  }
+
+  const administradorExistente = await pool.query(
+    `SELECT u.id
+       FROM usuarios u
+       INNER JOIN perfis p ON p.id = u.perfil_id
+      WHERE p.nome = 'ADMINISTRADOR'
+      LIMIT 1`
+  );
+  if (administradorExistente.rowCount > 0) {
+    console.log('[Servidor] Bootstrap ignorado: já existe um administrador.');
+    delete process.env.BOOTSTRAP_ADMIN_EMAIL;
+    delete process.env.BOOTSTRAP_ADMIN_PASSWORD;
+    return;
+  }
+
+  const perfil = await pool.query(
+    "SELECT id FROM perfis WHERE nome = 'ADMINISTRADOR' AND ativo = TRUE LIMIT 1"
+  );
+  if (!perfil.rowCount) {
+    throw new Error('Perfil ADMINISTRADOR não encontrado no banco.');
+  }
+
+  const departamento = await pool.query(
+    "SELECT id FROM departamentos WHERE nome = 'Administração' AND ativo = TRUE LIMIT 1"
+  );
+  const senhaHash = await bcrypt.hash(senha, 12);
+  await pool.query(
+    `INSERT INTO usuarios (nome, email, senha_hash, perfil_id, departamento_id, ativo)
+     VALUES ($1, $2, $3, $4, $5, TRUE)`,
+    [
+      process.env.BOOTSTRAP_ADMIN_NAME?.trim() || 'Administrador Babycare',
+      email,
+      senhaHash,
+      perfil.rows[0].id,
+      departamento.rows[0]?.id || null,
+    ]
+  );
+
+  delete process.env.BOOTSTRAP_ADMIN_EMAIL;
+  delete process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  delete process.env.BOOTSTRAP_ADMIN_NAME;
+  console.log('[Servidor] Administrador inicial criado.');
+}
+
 inicializarBanco()
+  .then(criarAdministradorInicial)
   .then(() => {
     servidor = app.listen(PORT, () => {
       console.log(`Servidor Babycare rodando em http://localhost:${PORT}`);
