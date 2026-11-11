@@ -8,6 +8,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copia só o frontend para build
+COPY vite.config.js ./
 COPY frontend ./frontend
 RUN npm run build
 
