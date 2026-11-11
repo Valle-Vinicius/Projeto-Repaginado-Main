@@ -32,10 +32,22 @@ function selecionarElementos() {
     'metricLowStock',
     'metricMovements',
     'movementPeriodLabel',
+    'movementComparison',
+    'stockMovementDetail',
+    'stockSparkline',
+    'stockEntrySparkline',
+    'stockExitSparkline',
     'categoryList',
     'categoryTotal',
     'activityBody',
     'historyButton',
+    'criticalStockTotal',
+    'criticalStockList',
+    'expiringProductsTotal',
+    'expiryWithin7',
+    'expiryWithin30',
+    'expiryOver30',
+    'expiringProductList',
     'dashboardToast',
     'topbarAvatar',
     'topbarUserName',
@@ -235,10 +247,35 @@ function normalizarResposta(payload) {
         ['estoqueBaixo', 'produtosEstoqueBaixo', 'estoque_baixo'],
         'estoqueBaixo'
       ),
+      semEstoque: obterNumero(resumo, ['semEstoque', 'produtosSemEstoque'], 'semEstoque'),
       movimentacoesPeriodo: obterNumero(
         resumo,
         ['movimentacoesPeriodo', 'totalMovimentacoes', 'movimentacoes_periodo'],
         'movimentacoesPeriodo'
+      ),
+      entradasPeriodo: obterNumero(resumo, ['entradasPeriodo'], 'entradasPeriodo'),
+      saidasPeriodo: obterNumero(resumo, ['saidasPeriodo'], 'saidasPeriodo'),
+      movimentacoesPeriodoAnterior: obterNumero(
+        resumo,
+        ['movimentacoesPeriodoAnterior'],
+        'movimentacoesPeriodoAnterior'
+      ),
+      variacaoMovimentacoesPercentual:
+        resumo.variacaoMovimentacoesPercentual === null ||
+        resumo.variacaoMovimentacoesPercentual === undefined
+          ? null
+          : Number(resumo.variacaoMovimentacoesPercentual),
+    },
+    resumoValidades: {
+      ate7Dias: obterNumero(dados.resumoValidades, ['ate7Dias'], 'validade.ate7Dias'),
+      ate30Dias: obterNumero(dados.resumoValidades, ['ate30Dias'], 'validade.ate30Dias'),
+      de8a30Dias: obterNumero(dados.resumoValidades, ['de8a30Dias'], 'validade.de8a30Dias'),
+      acima30Dias: obterNumero(dados.resumoValidades, ['acima30Dias'], 'validade.acima30Dias'),
+      vencidos: obterNumero(dados.resumoValidades, ['vencidos'], 'validade.vencidos'),
+      produtosPendentes: obterNumero(
+        dados.resumoValidades,
+        ['produtosPendentes'],
+        'validade.produtosPendentes'
       ),
     },
     grafico: dados.grafico || dados.movimentacoesGrafico || dados.serieMovimentacoes || null,
@@ -250,7 +287,32 @@ function normalizarResposta(payload) {
   };
 }
 
-function atualizarIndicadores(resumo) {
+function renderizarMiniGrafico(movimentacoes) {
+  const entradas = elementos.stockEntrySparkline;
+  const saidas = elementos.stockExitSparkline;
+  const grafico = obterLista(movimentacoes).slice(-14);
+  if (!entradas || !saidas || grafico.length === 0) {
+    if (elementos.stockSparkline) elementos.stockSparkline.hidden = true;
+    return;
+  }
+
+  const maximo = Math.max(1, ...grafico.flatMap((item) => [Number(item.entradas) || 0, Number(item.saidas) || 0]));
+  const pontos = (chave) =>
+    grafico
+      .map((item, indice) => {
+        const x = grafico.length === 1 ? 48 : (indice / (grafico.length - 1)) * 96;
+        const valor = Math.max(0, Number(item[chave]) || 0);
+        const y = 22 - (valor / maximo) * 18;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+
+  entradas.setAttribute('points', pontos('entradas'));
+  saidas.setAttribute('points', pontos('saidas'));
+  elementos.stockSparkline.hidden = false;
+}
+
+function atualizarIndicadores(resumo, grafico) {
   if (elementos.metricProducts) {
     elementos.metricProducts.textContent = formatarNumero(resumo.totalProdutos);
   }
@@ -264,8 +326,26 @@ function atualizarIndicadores(resumo) {
     elementos.metricMovements.textContent = formatarNumero(resumo.movimentacoesPeriodo);
   }
   if (elementos.movementPeriodLabel) {
-    elementos.movementPeriodLabel.textContent = `no período selecionado (${dashboardState.periodo})`;
+    const periodo = {
+      hoje: 'hoje',
+      '7d': 'nos últimos 7 dias',
+      '30d': 'nos últimos 30 dias',
+      mes: 'neste mês',
+    }[dashboardState.periodo];
+    elementos.movementPeriodLabel.textContent = periodo;
   }
+  if (elementos.stockMovementDetail) {
+    elementos.stockMovementDetail.textContent =
+      `No período: ${formatarQuantidade(resumo.entradasPeriodo)} entradas · ${formatarQuantidade(resumo.saidasPeriodo)} saídas`;
+  }
+  if (elementos.movementComparison) {
+    const variacao = resumo.variacaoMovimentacoesPercentual;
+    elementos.movementComparison.textContent =
+      variacao === null
+        ? 'Sem histórico anterior para comparar'
+        : `${variacao > 0 ? '+' : ''}${formatarNumero(variacao, 1)}% vs período anterior`;
+  }
+  renderizarMiniGrafico(grafico);
 }
 
 function criarEstadoVazio(titulo, detalhe) {
@@ -281,7 +361,7 @@ function criarEstadoVazio(titulo, detalhe) {
   return estado;
 }
 
-function renderizarCategorias(categorias) {
+function renderizarCategorias(categorias, totalProdutos) {
   if (elementos.categoryList) {
     elementos.categoryList.dataset.state = 'ready';
   }
@@ -297,7 +377,7 @@ function renderizarCategorias(categorias) {
   const valores = categorias.map((item) =>
     Number(item.total ?? item.quantidade ?? item.valor ?? 0)
   );
-  const maiorValor = Math.max(...valores, 1);
+  const totalProdutosNumerico = Math.max(0, Number(totalProdutos) || 0);
   const total = valores.reduce(
     (soma, valor) => soma + (Number.isFinite(valor) && valor >= 0 ? valor : 0),
     0
@@ -318,15 +398,16 @@ function renderizarCategorias(categorias) {
     cabecalho.className = 'category-row-header';
     const nome = document.createElement('span');
     const quantidade = document.createElement('strong');
+    const percentual = totalProdutosNumerico > 0 ? Math.round((valor / totalProdutosNumerico) * 100) : 0;
     nome.textContent = String(categoria.nome || categoria.categoria || 'Sem categoria');
-    quantidade.textContent = formatarNumero(valor);
+    quantidade.textContent = `${formatarNumero(valor)} · ${percentual}%`;
     cabecalho.append(nome, quantidade);
 
     const trilho = document.createElement('div');
     trilho.className = 'category-track';
     const barra = document.createElement('div');
     barra.className = 'category-bar';
-    barra.style.width = `${Math.max((valor / maiorValor) * 100, valor > 0 ? 4 : 0)}%`;
+    barra.style.width = `${Math.max(percentual, valor > 0 ? 3 : 0)}%`;
     trilho.appendChild(barra);
     linha.append(cabecalho, trilho);
     elementos.categoryList?.appendChild(linha);
@@ -373,6 +454,98 @@ function renderizarAtividades(atividades) {
   });
 }
 
+function renderizarEstoqueCritico(alertas, resumo) {
+  if (!elementos.criticalStockList || !elementos.criticalStockTotal) {
+    return;
+  }
+
+  const total = resumo.estoqueBaixo + resumo.semEstoque;
+  elementos.criticalStockTotal.textContent = formatarNumero(total);
+  elementos.criticalStockList.replaceChildren();
+  const produtos = [
+    ...alertas.semEstoque.map((produto) => ({ ...produto, status: 'SEM_ESTOQUE' })),
+    ...alertas.estoqueBaixo,
+  ].slice(0, 6);
+
+  if (produtos.length === 0) {
+    elementos.criticalStockList.appendChild(
+      criarEstadoVazio('Nenhum produto crítico', 'Os produtos ativos estão acima do estoque mínimo.')
+    );
+    return;
+  }
+
+  produtos.forEach((produto) => {
+    const semEstoque = produto.status === 'SEM_ESTOQUE';
+    const linha = document.createElement('div');
+    linha.className = `operational-row ${semEstoque ? 'operational-row-critical' : 'operational-row-warning'}`;
+    const texto = document.createElement('div');
+    texto.className = 'operational-row-copy';
+    const nome = document.createElement('strong');
+    const detalhe = document.createElement('span');
+    nome.textContent = produto.nome;
+    detalhe.textContent = `Atual ${formatarQuantidade(produto.estoqueAtual)} · mínimo ${formatarQuantidade(produto.estoqueMinimo)}`;
+    texto.append(nome, detalhe);
+
+    const status = document.createElement('span');
+    status.className = 'operational-status';
+    status.textContent = semEstoque ? 'Sem estoque' : 'Baixo';
+    linha.append(texto, status);
+    elementos.criticalStockList.appendChild(linha);
+  });
+}
+
+function renderizarValidades(resumo, alertas) {
+  if (elementos.expiringProductsTotal) {
+    elementos.expiringProductsTotal.textContent = formatarNumero(resumo.ate30Dias);
+  }
+  if (elementos.expiryWithin7) {
+    elementos.expiryWithin7.textContent = formatarNumero(resumo.ate7Dias);
+  }
+  if (elementos.expiryWithin30) {
+    elementos.expiryWithin30.textContent = formatarNumero(resumo.de8a30Dias);
+  }
+  if (elementos.expiryOver30) {
+    elementos.expiryOver30.textContent = formatarNumero(resumo.acima30Dias);
+  }
+  if (!elementos.expiringProductList) {
+    return;
+  }
+
+  elementos.expiringProductList.replaceChildren();
+  const lotes = [...alertas.produtosVencidos, ...alertas.produtosProximosDaValidade]
+    .sort((a, b) => a.diasParaVencer - b.diasParaVencer)
+    .slice(0, 4);
+
+  if (lotes.length === 0) {
+    elementos.expiringProductList.appendChild(
+      criarEstadoVazio('Nenhum lote vencido ou próximo', 'Não há lotes ativos com validade nos próximos 30 dias.')
+    );
+    return;
+  }
+
+  lotes.forEach((lote) => {
+    const linha = document.createElement('div');
+    const vencido = lote.diasParaVencer < 0;
+    const critico = !vencido && lote.diasParaVencer <= 7;
+    linha.className = `operational-row ${vencido || critico ? 'operational-row-critical' : 'operational-row-warning'}`;
+    const texto = document.createElement('div');
+    texto.className = 'operational-row-copy';
+    const nome = document.createElement('strong');
+    const detalhe = document.createElement('span');
+    nome.textContent = lote.nome;
+    detalhe.textContent = vencido
+      ? `Vencido · lote ${lote.numeroLote} · ${lote.dataValidade}`
+      : `${formatarNumero(lote.diasParaVencer)} dia(s) · lote ${lote.numeroLote}`;
+    texto.append(nome, detalhe);
+
+    const status = document.createElement('span');
+    status.className = 'operational-status';
+    status.textContent = vencido ? 'Vencido' : critico ? 'Crítico' : 'Atenção';
+    linha.append(texto, status);
+    elementos.expiringProductList.appendChild(linha);
+  });
+}
+
 function removerErroDashboard() {
   document.getElementById('dashboardError')?.remove();
 }
@@ -400,9 +573,11 @@ function mostrarToast(mensagem) {
 }
 
 function atualizarInterface(dados) {
-  atualizarIndicadores(dados.resumo);
-  renderizarCategorias(dados.categorias);
+  atualizarIndicadores(dados.resumo, dados.grafico);
+  renderizarCategorias(dados.categorias, dados.resumo.totalProdutos);
   renderizarAtividades(dados.atividadesRecentes);
+  renderizarEstoqueCritico(dados.alertas, dados.resumo);
+  renderizarValidades(dados.resumoValidades, dados.alertas);
 }
 
 async function requisitarDashboard() {
@@ -497,10 +672,6 @@ function configurarNavegacao() {
     botao.addEventListener('click', () =>
       mostrarToast(`${botao.dataset.comingSoon} será implementado nas próximas etapas.`)
     );
-  });
-
-  elementos.historyButton?.addEventListener('click', () => {
-    mostrarToast('O histórico completo será implementado na etapa de Movimentações.');
   });
 
   elementos.topbarSearch?.addEventListener('search', () => {

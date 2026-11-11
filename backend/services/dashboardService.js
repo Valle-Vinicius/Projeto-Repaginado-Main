@@ -66,6 +66,10 @@ function normalizarResumo(resumo, resumoMovimentacoes) {
   );
   const entradasPeriodo = numeroNaoNegativo(resumoMovimentacoes.entradasPeriodo, 'entradasPeriodo');
   const saidasPeriodo = numeroNaoNegativo(resumoMovimentacoes.saidasPeriodo, 'saidasPeriodo');
+  const movimentacoesPeriodoAnterior = numeroNaoNegativo(
+    resumoMovimentacoes.movimentacoesPeriodoAnterior,
+    'movimentacoesPeriodoAnterior'
+  );
 
   if (
     produtosAtivos > totalProdutos ||
@@ -88,6 +92,26 @@ function normalizarResumo(resumo, resumoMovimentacoes) {
     movimentacoesPeriodo,
     entradasPeriodo,
     saidasPeriodo,
+    movimentacoesPeriodoAnterior,
+    variacaoMovimentacoesPercentual:
+      movimentacoesPeriodoAnterior > 0
+        ? ((movimentacoesPeriodo - movimentacoesPeriodoAnterior) / movimentacoesPeriodoAnterior) *
+          100
+        : null,
+  };
+}
+
+function normalizarResumoValidades(resumo = {}) {
+  return {
+    ate7Dias: numeroNaoNegativo(resumo.ate7Dias, 'validades.ate7Dias'),
+    ate30Dias: numeroNaoNegativo(resumo.ate30Dias, 'validades.ate30Dias'),
+    de8a30Dias: numeroNaoNegativo(resumo.de8a30Dias, 'validades.de8a30Dias'),
+    acima30Dias: numeroNaoNegativo(resumo.acima30Dias, 'validades.acima30Dias'),
+    vencidos: numeroNaoNegativo(resumo.vencidos, 'validades.vencidos'),
+    produtosPendentes: numeroNaoNegativo(
+      resumo.produtosPendentes,
+      'validades.produtosPendentes'
+    ),
   };
 }
 
@@ -134,7 +158,10 @@ function normalizarCategorias(categorias) {
 function normalizarAtividade(atividade) {
   const tipo = String(atividade.tipo || 'MOVIMENTACAO');
   const produto = String(atividade.produto || 'Produto não informado');
-  const quantidade = numeroNaoNegativo(atividade.quantidade, 'atividades.quantidade');
+  const quantidade =
+    tipo === 'AJUSTE'
+      ? numeroFinito(atividade.quantidade, 'atividades.quantidade')
+      : numeroNaoNegativo(atividade.quantidade, 'atividades.quantidade');
   const status = String(atividade.status || 'CONFIRMADA');
 
   return {
@@ -161,6 +188,7 @@ async function obterDashboard({ periodo = '30d' } = {}) {
   const [
     resumo,
     resumoMovimentacoes,
+    resumoValidades,
     estoqueBaixo,
     semEstoque,
     validadesProximas,
@@ -171,18 +199,20 @@ async function obterDashboard({ periodo = '30d' } = {}) {
   ] = await Promise.all([
     dashboardRepository.buscarResumo(),
     dashboardRepository.buscarResumoMovimentacoes(periodo),
+    dashboardRepository.buscarResumoValidades(),
     dashboardRepository.buscarEstoqueBaixo(),
     dashboardRepository.buscarSemEstoque(),
     dashboardRepository.buscarValidadesProximas(30),
     dashboardRepository.buscarVencidos(),
     dashboardRepository.buscarMovimentacoes(periodo),
     dashboardRepository.buscarCategorias(5),
-    dashboardRepository.buscarAtividadesRecentes(LIMITE_ATIVIDADES),
+    dashboardRepository.buscarAtividadesRecentes(periodo, LIMITE_ATIVIDADES),
   ]);
 
   return {
     periodo,
     resumo: normalizarResumo(resumo || {}, resumoMovimentacoes || {}),
+    resumoValidades: normalizarResumoValidades(resumoValidades),
     grafico: normalizarGrafico(movimentacoes),
     alertas: {
       estoqueBaixo: listaOuVazia(estoqueBaixo)

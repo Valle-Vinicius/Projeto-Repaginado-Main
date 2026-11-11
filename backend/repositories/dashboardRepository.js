@@ -32,6 +32,21 @@ function obterIntervaloPeriodo(periodo) {
   return { inicio, fim };
 }
 
+function obterIntervaloAnterior(periodo) {
+  const atual = obterIntervaloPeriodo(periodo);
+  if (periodo === 'mes') {
+    const inicio = new Date(atual.inicio.getTime());
+    inicio.setMonth(inicio.getMonth() - 1);
+    return { inicio, fim: atual.inicio };
+  }
+
+  const duracao = atual.fim.getTime() - atual.inicio.getTime();
+  return {
+    inicio: new Date(atual.inicio.getTime() - duracao),
+    fim: atual.inicio,
+  };
+}
+
 async function buscarResumo() {
   const [resumo] = await executarQuery(`
     SELECT
@@ -70,19 +85,32 @@ async function buscarResumo() {
 }
 
 async function buscarResumoMovimentacoes(periodo) {
-  const { inicio, fim } = obterIntervaloPeriodo(periodo);
+  const atual = obterIntervaloPeriodo(periodo);
+  const anterior = obterIntervaloAnterior(periodo);
   const [resumo] = await executarQuery(
     `
     SELECT
-      COUNT(*) AS movimentacoesPeriodo,
-      COALESCE(SUM(CASE WHEN tipo = 'ENTRADA' THEN quantidade ELSE 0 END), 0) AS entradasPeriodo,
-      COALESCE(SUM(CASE WHEN tipo = 'SAIDA' THEN quantidade ELSE 0 END), 0) AS saidasPeriodo
+      COUNT(*) FILTER (WHERE criado_em >= ? AND criado_em < ?) AS movimentacoesPeriodo,
+      COALESCE(SUM(quantidade) FILTER (WHERE tipo = 'ENTRADA' AND criado_em >= ? AND criado_em < ?), 0) AS entradasPeriodo,
+      COALESCE(SUM(quantidade) FILTER (WHERE tipo = 'SAIDA' AND criado_em >= ? AND criado_em < ?), 0) AS saidasPeriodo,
+      COUNT(*) FILTER (WHERE criado_em >= ? AND criado_em < ?) AS movimentacoesPeriodoAnterior
     FROM movimentacoes
     WHERE status = 'CONFIRMADA'
       AND criado_em >= ?
       AND criado_em < ?
   `,
-    [inicio, fim]
+    [
+      atual.inicio,
+      atual.fim,
+      atual.inicio,
+      atual.fim,
+      atual.inicio,
+      atual.fim,
+      anterior.inicio,
+      anterior.fim,
+      anterior.inicio,
+      atual.fim,
+    ]
   );
 
   return (
@@ -90,8 +118,51 @@ async function buscarResumoMovimentacoes(periodo) {
       movimentacoesPeriodo: 0,
       entradasPeriodo: 0,
       saidasPeriodo: 0,
+      movimentacoesPeriodoAnterior: 0,
     }
   );
+}
+
+async function buscarResumoValidades() {
+  const [resumo] = await executarQuery(`
+    SELECT
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade >= CURRENT_DATE
+          AND l.data_validade <= CURRENT_DATE + 7
+      ) AS ate7Dias,
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade >= CURRENT_DATE
+          AND l.data_validade <= CURRENT_DATE + 30
+      ) AS ate30Dias,
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade > CURRENT_DATE + 7
+          AND l.data_validade <= CURRENT_DATE + 30
+      ) AS de8a30Dias,
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade > CURRENT_DATE + 30
+      ) AS acima30Dias,
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade < CURRENT_DATE
+      ) AS vencidos,
+      COUNT(DISTINCT p.id) FILTER (
+        WHERE l.data_validade <= CURRENT_DATE + 30
+      ) AS produtosPendentes
+    FROM lotes l
+    INNER JOIN produtos p ON p.id = l.produto_id
+    WHERE l.ativo = TRUE
+      AND p.ativo = TRUE
+      AND l.quantidade_atual > 0
+      AND l.data_validade IS NOT NULL
+  `);
+
+  return resumo || {
+    ate7Dias: 0,
+    ate30Dias: 0,
+    de8a30Dias: 0,
+    acima30Dias: 0,
+    vencidos: 0,
+    produtosPendentes: 0,
+  };
 }
 
 async function buscarEstoqueBaixo() {
@@ -241,7 +312,8 @@ async function buscarCategorias(limite = 5) {
   );
 }
 
-async function buscarAtividadesRecentes(limite = 8) {
+async function buscarAtividadesRecentes(periodo, limite = 8) {
+  const { inicio, fim } = obterIntervaloPeriodo(periodo);
   return executarQuery(
     `
     SELECT
@@ -259,16 +331,19 @@ async function buscarAtividadesRecentes(limite = 8) {
     INNER JOIN produtos p ON p.id = m.produto_id
     LEFT JOIN usuarios u ON u.id = m.usuario_id
     WHERE m.status = 'CONFIRMADA'
+      AND m.criado_em >= ?
+      AND m.criado_em < ?
     ORDER BY m.criado_em DESC, m.id DESC
     LIMIT ?
   `,
-    [limite]
+    [inicio, fim, limite]
   );
 }
 
 module.exports = {
   buscarResumo,
   buscarResumoMovimentacoes,
+  buscarResumoValidades,
   buscarEstoqueBaixo,
   buscarSemEstoque,
   buscarValidadesProximas,
@@ -277,4 +352,5 @@ module.exports = {
   buscarCategorias,
   buscarAtividadesRecentes,
   obterIntervaloPeriodo,
+  obterIntervaloAnterior,
 };

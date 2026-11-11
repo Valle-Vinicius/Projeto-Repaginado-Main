@@ -79,6 +79,7 @@
               <p id="currentDate">
                 Acompanhe a operação da Babycare em um só lugar.
               </p>
+              <small class="period-scope">O período filtra movimentações, gráfico e atividades. Catálogo e estoque mostram a posição atual.</small>
             </div>
             <div class="intro-actions">
               <label class="period-control" for="periodSelect">
@@ -118,6 +119,7 @@
                 <span class="metric-label">PRODUTOS ATIVOS</span>
                 <strong id="metricProducts" class="metric-value">—</strong>
                 <small>itens no catálogo</small>
+                <a class="metric-link" href="./produtos.html">Ver catálogo <span aria-hidden="true">→</span></a>
               </div>
             </article>
             <article class="metric-card" data-metric="estoqueTotal">
@@ -131,6 +133,12 @@
                 <span class="metric-label">ESTOQUE ATUAL</span>
                 <strong id="metricStock" class="metric-value">—</strong>
                 <small>unidades registradas</small>
+                <svg class="metric-sparkline" viewBox="0 0 96 24" role="img" aria-label="Entradas e saídas por dia no período">
+                  <polyline id="stockEntrySparkline" class="sparkline-entry" points=""></polyline>
+                  <polyline id="stockExitSparkline" class="sparkline-exit" points=""></polyline>
+                </svg>
+                <small id="stockMovementDetail">Entradas e saídas no período</small>
+                <a class="metric-link" href="./estoque.html">Ver movimentações <span aria-hidden="true">→</span></a>
               </div>
             </article>
             <article class="metric-card" data-metric="estoqueBaixo">
@@ -144,6 +152,7 @@
                 <span class="metric-label">ESTOQUE BAIXO</span>
                 <strong id="metricLowStock" class="metric-value">—</strong>
                 <small>produtos abaixo do mínimo</small>
+                <a class="metric-link" href="./estoque.html">Ver produtos <span aria-hidden="true">→</span></a>
               </div>
             </article>
             <article class="metric-card" data-metric="movimentacoesPeriodo">
@@ -156,6 +165,8 @@
                 <span class="metric-label">MOVIMENTAÇÕES</span>
                 <strong id="metricMovements" class="metric-value">—</strong>
                 <small id="movementPeriodLabel">no período selecionado</small>
+                <small id="movementComparison">Comparação indisponível</small>
+                <a class="metric-link" href="./estoque.html">Ver movimentações <span aria-hidden="true">→</span></a>
               </div>
             </article>
           </section>
@@ -182,13 +193,13 @@
                   <span class="section-kicker">HISTÓRICO</span>
                   <h3>Atividades recentes</h3>
                 </div>
-                <button
+                <a
                   id="historyButton"
                   class="text-button compact-button"
-                  type="button"
+                  href="./estoque.html"
                 >
                   Ver histórico <span aria-hidden="true">→</span>
-                </button>
+                </a>
               </div>
               <div class="activity-table-wrap">
                 <table class="activity-table">
@@ -209,6 +220,39 @@
                   </tbody>
                 </table>
               </div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid dashboard-grid-secondary dashboard-grid-pendencias" aria-label="Pendências de estoque e validade">
+            <article class="panel operational-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="section-kicker">REPOSIÇÃO</span>
+                  <h3>Estoque crítico</h3>
+                </div>
+                <span id="criticalStockTotal" class="panel-count">—</span>
+              </div>
+              <div id="criticalStockList" class="operational-list" aria-live="polite">
+                <div class="panel-skeleton"><span></span><span></span><span></span></div>
+              </div>
+              <a class="text-button panel-footer-link" href="./estoque.html">Ver estoque <span aria-hidden="true">→</span></a>
+            </article>
+
+            <article class="panel operational-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="section-kicker">VALIDADE</span>
+                  <h3>Produtos próximos do vencimento</h3>
+                </div>
+                <span id="expiringProductsTotal" class="panel-count">—</span>
+              </div>
+              <div class="expiry-range-grid" aria-label="Produtos por faixa de validade">
+                <div><strong id="expiryWithin7">—</strong><span>Até 7 dias</span></div>
+                <div><strong id="expiryWithin30">—</strong><span>8–30 dias</span></div>
+                <div><strong id="expiryOver30">—</strong><span>Mais de 30 dias</span></div>
+              </div>
+              <div id="expiringProductList" class="operational-list compact-operational-list" aria-live="polite"></div>
+              <a class="text-button panel-footer-link" href="./validade.html">Ver validades <span aria-hidden="true">→</span></a>
             </article>
           </section>
         </div>

@@ -32,6 +32,8 @@ export function montarSidebar() {
       'estoque.html',
       'Estoque',
       '<path d="M4 7h16M4 12h16M4 17h10"></path><circle cx="18" cy="17" r="2"></circle>',
+      false,
+      'estoque',
     ],
     [
       'recebimentos.html',
@@ -43,6 +45,8 @@ export function montarSidebar() {
       'validade.html',
       'Validade',
       '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path>',
+      false,
+      'validade',
     ],
     ['relatorios.html', 'Relatórios', '<path d="M5 19V9M12 19V5M19 19v-7"></path>'],
     [
@@ -85,12 +89,15 @@ export function montarSidebar() {
     <p class="nav-heading">MENU PRINCIPAL</p>
     <nav class="main-nav" aria-label="Navegação principal">
       ${links
-        .map(([href, label, icon, somenteGestao]) => {
+        .map(([href, label, icon, somenteGestao, tipoBadge]) => {
           if (somenteGestao && !podeGerenciarUsuarios) {
             return '';
           }
           const ativo = href === paginaAtual ? ' active' : '';
-          return `<a class="nav-link${ativo}" href="./${href}"${href === paginaAtual ? ' aria-current="page"' : ''}><svg aria-hidden="true" viewBox="0 0 24 24">${icon}</svg><span>${label}</span></a>`;
+          const badge = tipoBadge
+            ? `<span class="sidebar-badge sidebar-badge-${tipoBadge}" data-sidebar-badge="${tipoBadge}" hidden></span>`
+            : '';
+          return `<a class="nav-link${ativo}" href="./${href}"${href === paginaAtual ? ' aria-current="page"' : ''}><svg aria-hidden="true" viewBox="0 0 24 24">${icon}</svg><span>${label}</span>${badge}</a>`;
         })
         .join('')}
     </nav>
@@ -104,6 +111,8 @@ export function montarSidebar() {
       <div class="user-copy"><strong id="sidebarUserName">${esc(nome)}</strong><span id="sidebarUserRole">${esc(perfilTexto)}</span></div>
       <button id="logoutButton" class="logout-button" type="button" aria-label="Sair da conta"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"></path></svg></button>
     </div>`;
+
+  atualizarBadgesSidebar(sidebar);
 
   const abrir = document.querySelector('#openSidebarButton');
   const fechar = document.querySelector('#closeSidebarButton');
@@ -143,6 +152,41 @@ export function montarSidebar() {
         )
       )
     );
+}
+
+async function atualizarBadgesSidebar(sidebar) {
+  const elementos = sidebar.querySelectorAll('[data-sidebar-badge]');
+  if (!elementos.length) {
+    return;
+  }
+
+  try {
+    const resposta = await fetch('/api/dashboard?periodo=30d', {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+    if (!resposta.ok) {
+      return;
+    }
+
+    const dados = await resposta.json();
+    const resumo = dados.resumo || {};
+    const resumoValidades = dados.resumoValidades || {};
+    const contagens = {
+      estoque: Number(resumo.estoqueBaixo || 0) + Number(resumo.semEstoque || 0),
+      validade: Number(resumoValidades.produtosPendentes || 0),
+    };
+
+    elementos.forEach((elemento) => {
+      const quantidade = contagens[elemento.dataset.sidebarBadge] || 0;
+      elemento.textContent = quantidade > 99 ? '99+' : String(quantidade);
+      elemento.hidden = quantidade <= 0;
+      elemento.setAttribute('aria-label', `${quantidade} pendência(s)`);
+    });
+  } catch (erro) {
+    console.warn('[Sidebar] Não foi possível atualizar os contadores.');
+  }
 }
 
 export default montarSidebar;
