@@ -10,9 +10,10 @@ const pool = new Pool({
   user: config.database.user,
   password: config.database.password,
   database: config.database.name,
+  ssl: config.database.ssl,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
 });
 
 /** Wrapper que mantém o formato de linhas esperado pelas transações. */

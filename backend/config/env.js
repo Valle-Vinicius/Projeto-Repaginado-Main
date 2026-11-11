@@ -44,6 +44,10 @@ function obterConfiguracaoBanco() {
       user: decodeURIComponent(url.username),
       password: decodeURIComponent(url.password),
       name: decodeURIComponent(url.pathname.replace(/^\//, '')),
+      ssl:
+        url.searchParams.get('sslmode') === 'require' || url.hostname.endsWith('.render.com')
+          ? {}
+          : undefined,
     };
   }
 
