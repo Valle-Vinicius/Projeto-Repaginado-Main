@@ -1,4 +1,5 @@
 import { montarSidebar } from './sidebar.js';
+import { configurarTabelasResponsivas } from './responsive-tables.js';
 
 const CHAVES_USUARIO = ['babycareUsuario', 'babycareUser'];
 
@@ -313,3 +314,5 @@ window.BabycareCore = {
 if (document.querySelector('#sidebar')) {
   montarSidebar();
 }
+
+configurarTabelasResponsivas();

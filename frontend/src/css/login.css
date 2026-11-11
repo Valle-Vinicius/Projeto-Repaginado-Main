@@ -14,10 +14,9 @@
 html,
 body {
   width: 100%;
-  min-width: 320px;
+  min-width: 0;
   min-height: 100%;
   margin: 0;
-  overflow-x: hidden;
 }
 
 body {
@@ -48,7 +47,6 @@ a:hover {
 .login-screen {
   position: relative;
   min-height: 100dvh;
-  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -343,28 +341,41 @@ h1 {
     background-position: 19% center;
   }
 
+  .login-screen {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 24px 0;
+  }
+
   .login-area {
-    top: 7vh;
-    left: 7vw;
-    width: min(370px, 82vw);
-    padding: 28px;
+    position: relative;
+    top: auto;
+    left: auto;
+    width: min(420px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: clamp(22px, 6vw, 32px);
     background: rgba(255, 255, 255, 0.92);
     border-radius: 10px;
   }
 
   .welcome-copy {
-    margin-top: 38px;
+    margin-top: 24px;
   }
 
   .about-area {
+    position: relative;
     top: auto;
-    right: 7vw;
-    bottom: 6vh;
-    width: 42vw;
+    right: auto;
+    bottom: auto;
+    width: min(420px, calc(100% - 32px));
+    margin: 0 auto;
   }
 
   .about-area h2 {
-    font-size: 21px;
+    font-size: clamp(19px, 5vw, 21px);
   }
 
   .about-area p:last-child {
@@ -378,15 +389,167 @@ h1 {
   }
 
   .login-area {
-    top: 4vh;
-    left: 5vw;
-    width: 90vw;
-    padding: 24px;
+    width: min(420px, calc(100% - 24px));
+    padding: 22px;
   }
 
   .about-area {
-    display: none;
+    width: min(420px, calc(100% - 24px));
+    padding: 18px 20px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
   }
+
+  .about-area .about-kicker,
+  .about-area p:last-child {
+    color: var(--muted);
+  }
+
+  .about-area h2 {
+    margin-bottom: 8px;
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 720px) and (max-height: 650px) {
+  .login-screen {
+    justify-content: flex-start;
+    padding: 12px 0;
+  }
+
+  .login-area {
+    padding: 16px;
+  }
+
+  .brand-logo {
+    top: 0;
+    left: 0;
+    width: 180px;
+    height: 56px;
+  }
+
+  .welcome-copy {
+    margin-top: 8px;
+  }
+
+  .welcome-copy .eyebrow {
+    margin-bottom: 6px;
+  }
+
+  .welcome-copy h1 {
+    margin-bottom: 7px;
+    font-size: 25px;
+  }
+
+  .welcome-copy > p:last-child {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .login-form {
+    margin-top: 18px;
+  }
+
+  .form-field + .form-field {
+    margin-top: 11px;
+  }
+
+  .form-field input {
+    height: 42px;
+  }
+
+  .form-options {
+    margin-top: 9px;
+  }
+
+  .primary-button {
+    height: 42px;
+    margin-top: 15px;
+  }
+
+  .access-request {
+    margin-top: 12px;
+  }
+}
+
+.login-shell {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: clamp(16px, 4vw, 32px);
+}
+
+.login-card {
+  width: min(440px, 100%);
+  padding: clamp(24px, 5vw, 40px);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(223, 229, 239, 0.9);
+  border-radius: 14px;
+  box-shadow: 0 20px 55px rgba(23, 35, 63, 0.14);
+}
+
+.login-logo {
+  display: block;
+  width: min(180px, 65%);
+  max-height: 56px;
+  margin-bottom: 22px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.login-header h1 {
+  margin-bottom: 7px;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: clamp(23px, 5vw, 29px);
+  line-height: 1.2;
+}
+
+.login-header p {
+  margin-bottom: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-shell .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0;
+}
+
+.login-shell .login-form[hidden] {
+  display: none;
+}
+
+.login-shell .login-form label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+  color: #59647d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.login-shell .login-form input:not([type="hidden"]) {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 13px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.login-shell .login-form .primary-button {
+  margin-top: 2px;
+}
+
+.login-shell .access-request {
+  margin-top: 18px;
 }
 
 /* Curtains: Wipe ao sair do login e abrir o dashboard. */

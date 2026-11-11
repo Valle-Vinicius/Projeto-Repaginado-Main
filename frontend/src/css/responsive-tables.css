@@ -1,0 +1,77 @@
+table.responsive-table .responsive-table-label {
+  display: none;
+}
+
+@media (max-width: 1400px) {
+  .responsive-table-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: visible !important;
+  }
+
+  table.responsive-table {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    border-collapse: separate;
+    table-layout: auto;
+  }
+
+  table.responsive-table thead {
+    display: none;
+  }
+
+  table.responsive-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  table.responsive-table tbody tr:not(.responsive-table-empty) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    min-width: 0;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #e6eaf1;
+    border-radius: 10px;
+  }
+
+  table.responsive-table tbody td {
+    display: block;
+    min-width: 0;
+    padding: 0 !important;
+    border: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+  }
+
+  table.responsive-table .responsive-table-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #8490a3;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  table.responsive-table tbody tr.responsive-table-empty {
+    display: block;
+  }
+
+  table.responsive-table
+    tbody
+    tr.responsive-table-empty
+    .responsive-table-label {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  table.responsive-table tbody tr:not(.responsive-table-empty) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

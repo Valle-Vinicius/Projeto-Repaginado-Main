@@ -468,7 +468,16 @@ body.modal-open {
     }
 
     .expedicoes-metrics {
-        grid-template-columns: 1fr
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+
+    .expedicao-metric {
+        min-height: 88px;
+        padding: 13px 12px
+    }
+
+    .expedicao-metric strong {
+        font-size: 20px
     }
 
     .expedicoes-panel {

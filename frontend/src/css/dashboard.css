@@ -29,13 +29,13 @@
 }
 
 html {
-  min-width: 320px;
+  min-width: 0;
   min-height: 100%;
   background: var(--surface);
 }
 
 body {
-  min-width: 320px;
+  min-width: 0;
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
@@ -1517,22 +1517,22 @@ body[data-dashboard-state="error"] .page-loader {
 
 .dashboard-curtain-left {
   left: 0;
+  transform-origin: left center;
   animation: curtain-open-left 820ms 70ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
 .dashboard-curtain-right {
   right: 0;
+  transform-origin: right center;
   animation: curtain-open-right 820ms 70ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
 @keyframes curtain-open-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-102%); }
+  to { transform: scaleX(0); }
 }
 
 @keyframes curtain-open-right {
-  from { transform: translateX(0); }
-  to { transform: translateX(102%); }
+  to { transform: scaleX(0); }
 }
 
 @keyframes content-rise {

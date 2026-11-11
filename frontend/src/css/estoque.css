@@ -911,7 +911,17 @@ body.modal-open {
 
 @media (max-width: 480px) {
   .estoque-metrics {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .estoque-metric {
+    min-height: 92px;
+    padding: 13px 11px;
+  }
+
+  .estoque-metric strong {
+    font-size: 20px;
   }
 
   .estoque-action-group,
@@ -935,6 +945,12 @@ body.modal-open {
 
   #movementLocationField {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 300px) {
+  .estoque-metrics {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -18,7 +18,7 @@
 
 html,
 body {
-  min-width: 320px;
+  min-width: 0;
   min-height: 100%;
   margin: 0;
 }
@@ -353,16 +353,16 @@ button {
   }
 
   .error-content {
-    min-height: 570px;
-    padding: 30px clamp(24px, 7vw, 55px);
+    min-height: 0;
+    padding: 24px clamp(24px, 7vw, 55px);
   }
 
   .error-copy {
-    padding: 42px 0;
+    padding: clamp(18px, 4dvh, 36px) 0;
   }
 
   .error-illustration {
-    min-height: 330px;
+    min-height: clamp(170px, 34dvh, 280px);
   }
 
   .illustration-number {
@@ -372,11 +372,11 @@ button {
 
 @media (max-width: 500px) {
   .error-content {
-    min-height: 540px;
+    padding: 20px clamp(20px, 6vw, 28px);
   }
 
   .error-copy h1 {
-    font-size: 43px;
+    font-size: clamp(36px, 11vw, 43px);
   }
 
   .error-description {
@@ -384,15 +384,17 @@ button {
   }
 
   .error-actions {
-    flex-direction: column;
+    flex-direction: row;
   }
 
   .button {
-    width: 100%;
+    width: auto;
+    flex: 1 1 130px;
+    padding: 0 12px;
   }
 
   .error-illustration {
-    min-height: 245px;
+    min-height: clamp(150px, 28dvh, 210px);
   }
 
   .illustration-card {
@@ -417,6 +419,122 @@ button {
   .card-bottom {
     bottom: 14%;
     left: 8%;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 700px) {
+  .error-page {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .error-content {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .error-copy {
+    padding: 12px 0;
+  }
+
+  .error-description {
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .error-actions {
+    margin-top: 18px;
+  }
+
+  .error-illustration {
+    min-height: 120px;
+  }
+
+  .illustration-number {
+    font-size: clamp(88px, 20vw, 135px);
+  }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+  .error-page {
+    min-height: calc(100vh - 32px);
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .error-content {
+    padding: clamp(24px, 3vw, 48px);
+  }
+
+  .error-copy {
+    padding: 20px 0;
+  }
+
+  .error-copy h1 {
+    font-size: clamp(34px, 4vw, 56px);
+  }
+
+  .error-description {
+    margin-top: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .error-actions {
+    margin-top: 20px;
+  }
+
+  .error-illustration {
+    min-height: min(65vh, 420px);
+  }
+}
+
+@media (max-height: 650px) {
+  .error-page {
+    min-height: 0;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .error-content {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .error-copy {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .error-copy h1 {
+    font-size: clamp(30px, 9.5vw, 38px);
+  }
+
+  .error-copy .eyebrow {
+    margin-bottom: 9px;
+  }
+
+  .error-description {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .error-actions {
+    margin-top: 12px;
+  }
+
+  .error-actions .button {
+    min-height: 38px;
+  }
+
+  .error-illustration {
+    min-height: 96px;
+  }
+
+  .illustration-number {
+    font-size: clamp(72px, 22vw, 100px);
   }
 }
 
