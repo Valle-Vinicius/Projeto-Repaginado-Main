@@ -163,6 +163,20 @@ describe("Produtos - listagem e filtros", () => {
     expect(resultado.status).toBe(200);
     expect(resultado.corpo.produtos.length).toBeGreaterThan(0);
   });
+
+  test("produto recém-criado aparece no início da primeira página", async () => {
+    const codigo = `TESTE-PROD-NOVO-${sufixo()}`;
+    const criado = await criarProdutoViaApi(token, {
+      codigo,
+      nome: "Produto recém-cadastrado",
+      categoriaId: await categoriaValida(),
+    });
+    expect(criado.status).toBe(201);
+
+    const resultado = await requisitar("/api/produtos?pagina=1&limite=20", { token });
+    expect(resultado.status).toBe(200);
+    expect(resultado.corpo.dados[0].sku).toBe(codigo);
+  });
 });
 
 describe("Produtos - cobertura ausente (registro de lacuna)", () => {

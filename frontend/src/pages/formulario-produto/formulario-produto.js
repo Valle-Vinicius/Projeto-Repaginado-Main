@@ -1,5 +1,8 @@
 import { API_URL } from '../../js/core/api.js';
-import { adicionarContadorCaracteres } from '../../js/core/index.js';
+import {
+  adicionarContadorCaracteres,
+  salvarFiltros as salvarFiltrosCore,
+} from '../../js/core/index.js';
 import {
   mostrarCarregamento,
   esconderCarregamento,
@@ -260,6 +263,13 @@ form.addEventListener('submit', async (evento) => {
       body: JSON.stringify(montarPayload()),
     });
 
+    salvarFiltrosCore('produtos', {
+      busca: '',
+      categoriaId: '',
+      status: 'ATIVO',
+      stock: '',
+      pagina: 1,
+    });
     formMessage.textContent = 'Produto cadastrado com sucesso no banco de dados.';
     formMessage.className = 'form-message success';
     window.setTimeout(() => window.BabycareUI.transicionarPara('./produtos.html'), 550);

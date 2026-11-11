@@ -74,7 +74,7 @@ async function buscarProdutos({ busca = '', categoriaId = null, pagina = 1, limi
     GROUP BY p.id, p.codigo, p.nome, p.descricao, p.categoria_id, c.nome,
       p.estoque_minimo, p.unidade, p.possui_validade, p.criado_em, p.atualizado_em,
       m.ultimaMovimentacao
-    ORDER BY p.nome ASC
+    ORDER BY p.criado_em DESC, p.id DESC
     LIMIT ? OFFSET ?
   `,
     [...valores, Number(limite), Number(offset)]
