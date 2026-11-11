@@ -307,3 +307,9 @@ window.BabycareCore = {
   tornarBreadcrumbClicavel,
   CHAVES_USUARIO,
 };
+
+if (document.querySelector('#sidebar')) {
+  import('./sidebar.js')
+    .then(({ montarSidebar }) => montarSidebar())
+    .catch((erro) => console.error('[Sidebar]', erro));
+}

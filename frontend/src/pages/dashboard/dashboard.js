@@ -1,3 +1,4 @@
+import '../../js/core/index.js';
 import { API_URL } from '../../js/core/api.js';
 import {
   esconderCarregamento,
@@ -405,7 +406,7 @@ function atualizarInterface(dados) {
 }
 
 async function requisitarDashboard() {
-  const url = new URL(`${API_URL}/dashboard`);
+  const url = new URL(`${API_URL}/dashboard`, window.location.origin);
   url.searchParams.set('periodo', dashboardState.periodo);
   const resposta = await fetch(url, {
     method: 'GET',
