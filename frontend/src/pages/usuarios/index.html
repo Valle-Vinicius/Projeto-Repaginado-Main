@@ -52,8 +52,9 @@
               <option value="">Todos os status</option>
               <option value="true">Ativos</option>
               <option value="false">Inativos</option></select
-            ><button id="atualizar" class="secondary-button">Atualizar</button>
+            ><button id="atualizar" class="secondary-button" type="button">Atualizar</button>
             <button id="usuExportarCsv" type="button" class="export-button">Exportar CSV</button>
+            <button id="novoUsuario" class="primary-button" type="button">Novo usuário</button>
           </section>
           <section class="panel">
             <div class="panel-title">
@@ -87,8 +88,6 @@
         </div>
       </main>
     </div>
-
-    <div id="novoUsuario" style="position:fixed;bottom:24px;right:24px;z-index:1000"></div>
 
     <div id="modal" class="modal" hidden>
       <div class="modal-card">
@@ -133,7 +132,6 @@
               autocomplete="new-password" /></label
           ><label class="check"
             ><input id="ativo" type="checkbox" checked /> Usuário ativo</label
-          >
           >
           <p id="erro" class="form-error" hidden></p>
           <div class="modal-actions">

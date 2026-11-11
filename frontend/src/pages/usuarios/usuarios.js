@@ -25,8 +25,25 @@ function usuarioAtual() {
   return lerUsuarioCore() || {};
 }
 
+function normalizarPerfil(usuario = {}) {
+  const valor =
+    usuario.perfilCodigo ||
+    usuario.perfil ||
+    usuario.cargoCodigo ||
+    usuario.cargo ||
+    usuario.role ||
+    '';
+
+  return String(valor)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase()
+    .replace(/[ -]+/g, '_');
+}
+
 function temPermissaoGestao() {
-  return ['GERENTE', 'ADMINISTRADOR'].includes(String(usuarioAtual().perfil || '').toUpperCase());
+  return ['GERENTE', 'ADMINISTRADOR'].includes(normalizarPerfil(usuarioAtual()));
 }
 
 function esc(v) {
