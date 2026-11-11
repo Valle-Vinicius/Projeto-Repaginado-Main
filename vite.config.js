@@ -39,8 +39,9 @@ function mpaMiddleware() {
         }
 
         // Servir assets estáticos: /css/*, /assets/*
-        if (url.startsWith('/css/') || url.startsWith('/assets/')) {
-          const caminhoArquivo = path.resolve(srcRoot, url.slice(1));
+        const caminhoUrl = url.split('?')[0].split('#')[0];
+        if (caminhoUrl.startsWith('/css/') || caminhoUrl.startsWith('/assets/')) {
+          const caminhoArquivo = path.resolve(srcRoot, caminhoUrl.slice(1));
           if (fs.existsSync(caminhoArquivo)) {
             const ext = path.extname(caminhoArquivo).toLowerCase();
             const mimeTypes = {
@@ -67,14 +68,23 @@ function mpaMiddleware() {
         }
 
         // Extrair o nome da rota (ex: /login -> login)
-        const caminho = url.split('?')[0].split('#')[0];
+        const caminho = caminhoUrl;
         const partes = caminho.split('/').filter(Boolean);
-        const rota = partes[0] || 'login';
+        const rota = (partes[0] || 'login').replace(/\.js$/, '');
 
         // Se a rota corresponde a uma página MPA conhecida
         if (PAGINAS_MPA[rota]) {
+          const arquivoModulo = path.resolve(srcRoot, 'pages', rota, `${rota}.js`);
+          if (caminho === `/${rota}.js` && fs.existsSync(arquivoModulo)) {
+            req.url = `/src/pages/${rota}/${rota}.js${url.slice(caminho.length)}`;
+            return next();
+          }
+
           const arquivoHtml = path.resolve(frontendRoot, PAGINAS_MPA[rota]);
-          if (fs.existsSync(arquivoHtml)) {
+          if (
+            fs.existsSync(arquivoHtml) &&
+            (caminho === `/${rota}` || caminho === `/${rota}/`)
+          ) {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');
             res.end(fs.readFileSync(arquivoHtml));

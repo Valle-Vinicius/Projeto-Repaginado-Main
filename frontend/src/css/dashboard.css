@@ -863,14 +863,19 @@ body[data-dashboard-state="error"] .page-loader {
   margin-top: 18px;
 }
 
-.dashboard-grid-secondary {
+.dashboard-panels-layout {
+  display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: start;
+  gap: 17px;
   margin-top: 17px;
 }
 
-.dashboard-grid-pendencias {
-  margin-top: 17px;
+.dashboard-panel-column {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 17px;
 }
 
 .panel {
@@ -1695,9 +1700,16 @@ body[data-dashboard-state="error"] .page-loader {
     width: min(220px, 28vw);
   }
 
-  .dashboard-grid-primary,
-  .dashboard-grid-secondary {
+  .dashboard-grid-primary {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-panels-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-panel-column {
+    display: contents;
   }
 }
 

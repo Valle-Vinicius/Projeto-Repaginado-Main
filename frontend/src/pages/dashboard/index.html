@@ -176,89 +176,91 @@
             </article>
           </section>
 
-          <section class="dashboard-grid dashboard-grid-secondary">
-            <article class="panel category-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">INVENTÁRIO</span>
-                  <h3>Produtos por categoria</h3>
+          <section class="dashboard-panels-layout" aria-label="Resumo operacional">
+            <div class="dashboard-panel-column">
+              <article class="panel category-panel">
+                <div class="panel-header">
+                  <div>
+                    <span class="section-kicker">INVENTÁRIO</span>
+                    <h3>Produtos por categoria</h3>
+                  </div>
+                  <span id="categoryTotal" class="panel-count">—</span>
                 </div>
-                <span id="categoryTotal" class="panel-count">—</span>
-              </div>
-              <div id="categoryList" class="category-list" aria-live="polite">
-                <div class="panel-skeleton">
-                  <span></span><span></span><span></span><span></span>
+                <div id="categoryList" class="category-list" aria-live="polite">
+                  <div class="panel-skeleton">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
 
-            <article class="panel operational-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">REPOSIÇÃO</span>
-                  <h3>Estoque crítico</h3>
+              <article class="panel activity-panel">
+                <div class="panel-header">
+                  <div>
+                    <span class="section-kicker">HISTÓRICO</span>
+                    <h3>Atividades recentes</h3>
+                  </div>
+                  <a
+                    id="historyButton"
+                    class="text-button compact-button"
+                    href="./estoque.html"
+                  >
+                    Ver histórico <span aria-hidden="true">→</span>
+                  </a>
                 </div>
-                <span id="criticalStockTotal" class="panel-count">—</span>
-              </div>
-              <div id="criticalStockList" class="operational-list" aria-live="polite">
-                <div class="panel-skeleton"><span></span><span></span><span></span></div>
-              </div>
-              <a class="text-button panel-footer-link" href="./estoque.html">Ver estoque <span aria-hidden="true">→</span></a>
-            </article>
-          </section>
+                <div class="activity-table-wrap">
+                  <table class="activity-table">
+                    <thead>
+                      <tr>
+                        <th>ATIVIDADE</th>
+                        <th>RESPONSÁVEL</th>
+                        <th>DATA</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="activityBody">
+                      <tr>
+                        <td colspan="4" class="table-empty">
+                          Carregando atividades...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
 
-          <section class="dashboard-grid dashboard-grid-secondary dashboard-grid-pendencias" aria-label="Pendências de estoque e validade">
-            <article class="panel activity-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">HISTÓRICO</span>
-                  <h3>Atividades recentes</h3>
+            <div class="dashboard-panel-column">
+              <article class="panel operational-panel">
+                <div class="panel-header">
+                  <div>
+                    <span class="section-kicker">REPOSIÇÃO</span>
+                    <h3>Estoque crítico</h3>
+                  </div>
+                  <span id="criticalStockTotal" class="panel-count">—</span>
                 </div>
-                <a
-                  id="historyButton"
-                  class="text-button compact-button"
-                  href="./estoque.html"
-                >
-                  Ver histórico <span aria-hidden="true">→</span>
-                </a>
-              </div>
-              <div class="activity-table-wrap">
-                <table class="activity-table">
-                  <thead>
-                    <tr>
-                      <th>ATIVIDADE</th>
-                      <th>RESPONSÁVEL</th>
-                      <th>DATA</th>
-                      <th>STATUS</th>
-                    </tr>
-                  </thead>
-                  <tbody id="activityBody">
-                    <tr>
-                      <td colspan="4" class="table-empty">
-                        Carregando atividades...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </article>
+                <div id="criticalStockList" class="operational-list" aria-live="polite">
+                  <div class="panel-skeleton"><span></span><span></span><span></span></div>
+                </div>
+                <a class="text-button panel-footer-link" href="./estoque.html">Ver estoque <span aria-hidden="true">→</span></a>
+              </article>
 
-            <article class="panel operational-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="section-kicker">VALIDADE</span>
-                  <h3>Produtos próximos do vencimento</h3>
+              <article class="panel operational-panel">
+                <div class="panel-header">
+                  <div>
+                    <span class="section-kicker">VALIDADE</span>
+                    <h3>Produtos próximos do vencimento</h3>
+                  </div>
+                  <span id="expiringProductsTotal" class="panel-count">—</span>
                 </div>
-                <span id="expiringProductsTotal" class="panel-count">—</span>
-              </div>
-              <div class="expiry-range-grid" aria-label="Produtos por faixa de validade">
-                <div><strong id="expiryWithin7">—</strong><span>Até 7 dias</span></div>
-                <div><strong id="expiryWithin30">—</strong><span>8–30 dias</span></div>
-                <div><strong id="expiryOver30">—</strong><span>Mais de 30 dias</span></div>
-              </div>
-              <div id="expiringProductList" class="operational-list compact-operational-list" aria-live="polite"></div>
-              <a class="text-button panel-footer-link" href="./validade.html">Ver validades <span aria-hidden="true">→</span></a>
-            </article>
+                <div class="expiry-range-grid" aria-label="Produtos por faixa de validade">
+                  <div><strong id="expiryWithin7">—</strong><span>Até 7 dias</span></div>
+                  <div><strong id="expiryWithin30">—</strong><span>8–30 dias</span></div>
+                  <div><strong id="expiryOver30">—</strong><span>Mais de 30 dias</span></div>
+                </div>
+                <div id="expiringProductList" class="operational-list compact-operational-list" aria-live="polite"></div>
+                <a class="text-button panel-footer-link" href="./validade.html">Ver validades <span aria-hidden="true">→</span></a>
+              </article>
+            </div>
           </section>
         </div>
       </main>

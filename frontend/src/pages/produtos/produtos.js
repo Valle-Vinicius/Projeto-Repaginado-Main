@@ -64,7 +64,7 @@ function limparSessao() {
 
 function configurarUsuario() {
   const usuario = obterUsuario();
-  const nome = usuario?.nome || 'UsuÃ¡rio Babycare';
+  const nome = usuario?.nome || 'Usuário Babycare';
   const perfil = (usuario?.perfil || 'OPERADOR_ESTOQUE')
     .replaceAll('_', ' ')
     .toLowerCase()
@@ -100,11 +100,11 @@ async function requisitarAPI(caminho, opcoes = {}) {
   if (resposta.status === 401) {
     limparSessao();
     window.location.replace('./login.html');
-    throw new Error('SessÃ£o expirada. FaÃ§a login novamente.');
+    throw new Error('Sessão expirada. Faça login novamente.');
   }
 
   if (!resposta.ok) {
-    throw new Error(corpo.mensagem || 'NÃ£o foi possÃvel consultar os produtos.');
+    throw new Error(corpo.mensagem || 'Não foi possível consultar os produtos.');
   }
 
   return corpo;
@@ -149,24 +149,24 @@ function textoStatus(estado) {
 function criarCelula(texto, classe = '') {
   const celula = document.createElement('td');
   celula.className = classe;
-  celula.textContent = texto ?? 'â€”';
+  celula.textContent = texto ?? '—';
   return celula;
 }
 
 function criarCelulaSKU(sku) {
   const celula = document.createElement('td');
   celula.className = 'sku-cell';
-  celula.textContent = sku ?? 'â€”';
+  celula.textContent = sku ?? '—';
   const botao = document.createElement('button');
   botao.type = 'button';
   botao.className = 'copy-button';
   botao.title = 'Copiar SKU';
   botao.setAttribute('aria-label', 'Copiar SKU');
-  botao.textContent = 'ðŸ“‹';
+  botao.textContent = '⧉';
   botao.addEventListener('click', async () => {
     const ok = await copiarParaAreaDeTransferencia(sku);
     const textoOriginal = botao.textContent;
-    botao.textContent = ok ? 'âœ“' : 'âœ—';
+    botao.textContent = ok ? '✓' : '×';
     setTimeout(() => {
       botao.textContent = textoOriginal;
     }, 1200);
@@ -204,7 +204,7 @@ function criarLinha(produto) {
   produtoNome.className = 'product-name';
   produtoNome.textContent = produto.nome;
   descricao.className = 'product-description';
-  descricao.textContent = produto.descricao || 'Sem descriÃ§Ã£o cadastrada';
+  descricao.textContent = produto.descricao || 'Sem descrição cadastrada';
   produtoText.append(produtoNome, descricao);
   produtoMain.append(avatar, produtoText);
   produtoCell.appendChild(produtoMain);
@@ -212,7 +212,7 @@ function criarLinha(produto) {
   estoque.className = 'stock-value';
   estoque.textContent = formatarNumero(produto.estoque);
   minimo.className = 'stock-minimum';
-  minimo.textContent = `mÃn. ${formatarNumero(produto.estoqueMinimo)}`;
+  minimo.textContent = `mín. ${formatarNumero(produto.estoqueMinimo)}`;
   estoqueCell.append(estoque, minimo);
 
   statusCell.appendChild(criarBadge(produto.statusProduto || 'ATIVO', 'table-status'));
@@ -229,10 +229,10 @@ function criarLinha(produto) {
   visualizar.type = 'button';
   visualizar.title = `Visualizar ${produto.nome}`;
   visualizar.setAttribute('aria-label', `Visualizar ${produto.nome}`);
-  visualizar.textContent = 'â‹®';
+  visualizar.textContent = '⋮';
   visualizar.addEventListener('click', () => {
     mostrarToast(
-      `Detalhes de ${produto.nome} serÃ£o desenvolvidos na prÃ³xima etapa.`
+      `Detalhes de ${produto.nome} serão desenvolvidos na próxima etapa.`
     );
   });
   acoesCell.appendChild(visualizar);
@@ -288,10 +288,10 @@ function mostrarErro(erro) {
   productElements.body.replaceChildren();
   productElements.empty.hidden = false;
   productElements.empty.textContent =
-    erro.message || 'NÃ£o foi possÃvel carregar os produtos reais.';
+    erro.message || 'Não foi possível carregar os produtos reais.';
   productElements.count.textContent = 'Nenhum resultado';
   atualizarResumo();
-  mostrarToast(erro.message || 'NÃ£o foi possÃvel carregar os produtos.', 'error');
+  mostrarToast(erro.message || 'Não foi possível carregar os produtos.', 'error');
 }
 
 async function carregarProdutos() {
@@ -387,11 +387,11 @@ function configurarEventos() {
         Nome: p.nome,
         Categoria: p.categoria,
         Estoque: p.estoque,
-        MÃnimo: p.estoqueMinimo,
+        Mínimo: p.estoqueMinimo,
         Status: p.statusProduto,
         Atualizado: p.atualizadoEm,
       })),
-      ['SKU', 'Nome', 'Categoria', 'Estoque', 'MÃnimo', 'Status', 'Atualizado'],
+      ['SKU', 'Nome', 'Categoria', 'Estoque', 'Mínimo', 'Status', 'Atualizado'],
       'produtos.csv'
     );
   });
@@ -418,7 +418,7 @@ function configurarEventos() {
     link.addEventListener('click', (evento) => {
       evento.preventDefault();
       mostrarToast(
-        `O mÃ³dulo ${link.dataset.comingSoon} serÃ¡ desenvolvido na prÃ³xima etapa.`
+        `O módulo ${link.dataset.comingSoon} será desenvolvido na próxima etapa.`
       );
     });
   });
