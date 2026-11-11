@@ -170,55 +170,24 @@ function obterLista(valor) {
 }
 
 function normalizarAlertas(alertas) {
-  if (alertas === null) {
-    return [];
+  if (alertas === null || alertas === undefined) {
+    return {
+      estoqueBaixo: [],
+      semEstoque: [],
+      produtosProximosDaValidade: [],
+      produtosVencidos: [],
+    };
   }
-  if (Array.isArray(alertas)) {
-    return alertas;
-  }
-  if (typeof alertas !== 'object') {
+  if (typeof alertas !== 'object' || Array.isArray(alertas)) {
     throw new Error('Os alertas da resposta possuem uma estrutura inválida.');
   }
 
-  const lista = [];
-  const estoqueBaixo = obterLista(alertas.estoqueBaixo);
-  const semEstoque = obterLista(alertas.semEstoque);
-  const proximosDaValidade = obterLista(alertas.produtosProximosDaValidade);
-  const vencidos = obterLista(alertas.produtosVencidos);
-
-  estoqueBaixo.forEach((produto) => {
-    lista.push({
-      tipo: 'warning',
-      titulo: `${produto.nome || 'Produto'} está abaixo do mínimo`,
-      detalhe: `${formatarNumero(produto.estoqueAtual)} disponíveis · mínimo ${formatarNumero(produto.estoqueMinimo)}`,
-    });
-  });
-
-  semEstoque.forEach((produto) => {
-    lista.push({
-      tipo: 'danger',
-      titulo: `${produto.nome || 'Produto'} sem estoque`,
-      detalhe: 'Produto precisa de reposição.',
-    });
-  });
-
-  proximosDaValidade.forEach((lote) => {
-    lista.push({
-      tipo: 'attention',
-      titulo: `${lote.nome || 'Produto'} próximo do vencimento`,
-      detalhe: `${formatarNumero(lote.diasParaVencer)} dias restantes · lote ${lote.numeroLote || 'não informado'}`,
-    });
-  });
-
-  vencidos.forEach((lote) => {
-    lista.push({
-      tipo: 'danger',
-      titulo: `${lote.nome || 'Produto'} possui lote vencido`,
-      detalhe: `Lote ${lote.numeroLote || 'não informado'} · validade ${lote.dataValidade || 'não informada'}`,
-    });
-  });
-
-  return lista;
+  return {
+    estoqueBaixo: obterLista(alertas.estoqueBaixo),
+    semEstoque: obterLista(alertas.semEstoque),
+    produtosProximosDaValidade: obterLista(alertas.produtosProximosDaValidade),
+    produtosVencidos: obterLista(alertas.produtosVencidos),
+  };
 }
 
 function normalizarResposta(payload) {
