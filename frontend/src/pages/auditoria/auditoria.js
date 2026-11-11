@@ -14,6 +14,7 @@ import {
   formatarDataHora,
   mostrarToast,
   conectarBuscaTopbar,
+  fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
 const AUDIT_API = `${API_URL}/auditorias`;
@@ -210,13 +211,7 @@ function setupAudit() {
       x.hidden = Boolean(term) && !x.textContent.toLocaleLowerCase('pt-BR').includes(term);
     });
   });
-  auditEl.logout?.addEventListener('click', () => {
-    localStorage.removeItem('babycareToken');
-    sessionStorage.removeItem('babycareToken');
-    localStorage.removeItem('babycareUsuario');
-    sessionStorage.removeItem('babycareUsuario');
-    location.href = './login.html';
-  });
+  auditEl.logout?.addEventListener('click', fazerLogoutCore);
   window.BabycareCore.configurarAtalhos({
     onBuscaGlobal: () => {
       auditEl.search?.focus();

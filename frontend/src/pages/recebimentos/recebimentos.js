@@ -12,6 +12,7 @@ import {
   formatarDataHora,
   mostrarToast,
   conectarBuscaTopbar,
+  fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
 const RECEBIMENTOS_API_URL = `${API_URL}/recebimentos`;
@@ -68,7 +69,7 @@ function obterUsuarioSessao() {
           return usuario;
         }
       } catch (erro) {
-        /* sessÃ£o antiga invÃ¡lida */
+        /* sessão antiga inválida */
       }
     }
   }
@@ -97,7 +98,7 @@ function atualizarUsuario() {
   const nome =
     typeof usuario.nome === 'string' && usuario.nome.trim()
       ? usuario.nome.trim()
-      : 'UsuÃ¡rio Babycare';
+      : 'Usuário Babycare';
   const perfil = perfilExibicao(usuario.perfil);
   const avatar = iniciais(nome);
   ['sidebarUserName', 'topbarUserName'].forEach((id) => {
@@ -133,7 +134,7 @@ function numero(valor) {
 }
 
 function data(valor) {
-  return valor ? formatarDataHora(valor) : 'â€”';
+  return valor ? formatarDataHora(valor) : '—';
 }
 
 async function requisitar(url, opcoes = {}) {
@@ -144,7 +145,7 @@ async function requisitar(url, opcoes = {}) {
   });
   const corpo = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
-    const erro = new Error(corpo.mensagem || 'NÃ£o foi possÃ­vel concluir a operaÃ§Ã£o.');
+    const erro = new Error(corpo.mensagem || 'Não foi possível concluir a operação.');
     erro.status = resposta.status;
     throw erro;
   }
@@ -154,11 +155,11 @@ async function requisitar(url, opcoes = {}) {
 function preencherProdutos() {
   el.produto.replaceChildren(new Option('Selecione um produto', ''));
   produtos.forEach((produto) =>
-    el.produto.appendChild(new Option(`${produto.nome} â€” ${produto.codigo}`, produto.id))
+    el.produto.appendChild(new Option(`${produto.nome} — ${produto.codigo}`, produto.id))
   );
 }
 function preencherLocalizacoes() {
-  el.localizacao.replaceChildren(new Option('Selecione uma localizaÃ§Ã£o', ''));
+  el.localizacao.replaceChildren(new Option('Selecione uma localização', ''));
   localizacoes.forEach((localizacao) =>
     el.localizacao.appendChild(new Option(localizacao.nome, localizacao.id))
   );
@@ -202,7 +203,7 @@ function renderizarResumo() {
   el.unidades.textContent = numero(
     entradasHoje.reduce((soma, item) => soma + Number(item.quantidade || 0), 0)
   );
-  el.ultimaData.textContent = recebimentos[0] ? data(recebimentos[0].criadoEm).split(',')[0] : 'â€”';
+  el.ultimaData.textContent = recebimentos[0] ? data(recebimentos[0].criadoEm).split(',')[0] : '—';
   el.ultimoProduto.textContent = recebimentos[0]?.produto || 'Nenhum recebimento registrado';
 }
 
@@ -213,7 +214,7 @@ function renderizarTabela() {
   el.vazio.hidden = lista.length > 0;
   lista.forEach((item) => {
     const linha = document.createElement('tr');
-    linha.innerHTML = `<td>${escapar(data(item.criadoEm))}</td><td class="recebimento-produto"><strong>${escapar(item.produto)}</strong><small>${escapar(item.codigo)}</small></td><td>${escapar(item.numeroLote || 'â€”')}</td><td>${escapar(item.fornecedor || 'NÃ£o informado')}</td><td class="recebimento-quantidade">+${escapar(numero(item.quantidade))}</td><td>${escapar(item.dataValidade ? formatarData(item.dataValidade) : 'Sem validade')}</td><td>${escapar(item.localizacao || 'NÃ£o informada')}</td><td>${escapar(item.responsavel)}</td>`;
+    linha.innerHTML = `<td>${escapar(data(item.criadoEm))}</td><td class="recebimento-produto"><strong>${escapar(item.produto)}</strong><small>${escapar(item.codigo)}</small></td><td>${escapar(item.numeroLote || '—')}</td><td>${escapar(item.fornecedor || 'Não informado')}</td><td class="recebimento-quantidade">+${escapar(numero(item.quantidade))}</td><td>${escapar(item.dataValidade ? formatarData(item.dataValidade) : 'Sem validade')}</td><td>${escapar(item.localizacao || 'Não informada')}</td><td>${escapar(item.responsavel)}</td>`;
     el.corpo.appendChild(linha);
   });
 }
@@ -278,10 +279,10 @@ async function enviar(evento) {
     return mostrarErro('Selecione um produto.');
   }
   if (!el.lote.value.trim()) {
-    return mostrarErro('Informe o nÃºmero do lote.');
+    return mostrarErro('Informe o número do lote.');
   }
   if (!el.localizacao.value) {
-    return mostrarErro('Selecione a localizaÃ§Ã£o do lote.');
+    return mostrarErro('Selecione a localização do lote.');
   }
   if (produto.possuiValidade && !el.validade.value) {
     return mostrarErro('Informe a validade deste produto.');
@@ -363,11 +364,7 @@ function configurar() {
   });
   adicionarContadorCaracteres();
   conectarBuscaTopbar(el.busca);
-  el.logout?.addEventListener('click', () => {
-    localStorage.removeItem('babycareToken');
-    sessionStorage.removeItem('babycareToken');
-    window.location.href = './login.html';
-  });
+  el.logout?.addEventListener('click', fazerLogoutCore);
 }
 
 window.addEventListener('load', () => {

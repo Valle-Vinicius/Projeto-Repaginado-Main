@@ -8,6 +8,7 @@ import {
   esconderCarregamento,
   conectarBuscaTopbar,
   mostrarToast,
+  fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
 const PRODUTOS_API_URL = `${API_URL}/produtos`;
@@ -34,9 +35,7 @@ function obterUsuarioDoFormulario() {
 }
 
 function limparSessaoLocal() {
-  localStorage.removeItem('babycareToken');
   localStorage.removeItem('babycareUsuario');
-  sessionStorage.removeItem('babycareToken');
   sessionStorage.removeItem('babycareUsuario');
 }
 
@@ -216,14 +215,7 @@ function configurarNavegacao() {
     });
   });
 
-  document.querySelector('#logoutButton').addEventListener('click', () => {
-    if (window.BabycareUI?.fazerLogout) {
-      window.BabycareUI.fazerLogout();
-    } else {
-      limparSessao();
-      window.BabycareUI.transicionarPara('./login.html');
-    }
-  });
+  document.querySelector('#logoutButton').addEventListener('click', fazerLogoutCore);
 }
 
 function montarPayload() {

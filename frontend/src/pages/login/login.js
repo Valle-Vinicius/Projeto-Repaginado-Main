@@ -43,9 +43,7 @@ async function salvarSessao(resultado) {
   const armazenamento = lembrarInput.checked ? localStorage : sessionStorage;
   const outroArmazenamento = lembrarInput.checked ? sessionStorage : localStorage;
 
-  outroArmazenamento.removeItem('babycareToken');
   outroArmazenamento.removeItem('babycareUsuario');
-  armazenamento.removeItem('babycareToken');
   armazenamento.setItem('babycareUsuario', JSON.stringify(resultado.usuario));
 }
 
@@ -156,13 +154,19 @@ requestAccess.addEventListener('click', (event) => {
 
 loginForm.addEventListener('submit', fazerLogin);
 
-// Se já estiver autenticado, redireciona para o dashboard
-window.addEventListener('load', () => {
-  const token =
-    localStorage.getItem('babycareToken') || sessionStorage.getItem('babycareToken');
-  const usuario =
-    localStorage.getItem('babycareUsuario') || sessionStorage.getItem('babycareUsuario');
-  if (token && usuario) {
-    window.location.replace('./dashboard.html');
+// Se já houver uma sessão no cookie HttpOnly, redireciona para o dashboard.
+window.addEventListener('load', async () => {
+  try {
+    const resposta = await fetch(`${API_URL}/perfil`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (resposta.ok) {
+      window.location.replace('./dashboard.html');
+    } else if (resposta.status !== 401) {
+      mostrarMensagem('Não foi possível verificar sua sessão. Você ainda pode tentar entrar.', 'error');
+    }
+  } catch {
+    mostrarMensagem('Não foi possível verificar sua sessão. Você ainda pode tentar entrar.', 'error');
   }
 });

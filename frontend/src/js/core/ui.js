@@ -41,7 +41,7 @@ export async function fazerLogout() {
   } catch (erro) {
     // Prossegue com a limpeza local mesmo se o servidor estiver inacessível
   } finally {
-    ['babycareToken', 'babycareUsuario', 'babycareUser'].forEach((chave) => {
+    ['babycareUsuario', 'babycareUser'].forEach((chave) => {
       localStorage.removeItem(chave);
       sessionStorage.removeItem(chave);
     });

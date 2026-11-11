@@ -37,7 +37,7 @@ function data(v) {
     return 'Nunca';
   }
   const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? 'â€”' : window.BabycareUI.formatarDataHora(v);
+  return Number.isNaN(d.getTime()) ? '—' : window.BabycareUI.formatarDataHora(v);
 }
 
 function role(v) {
@@ -55,7 +55,7 @@ async function requisitar(url, opts = {}) {
   });
   const b = await r.json().catch(() => ({}));
   if (!r.ok) {
-    const e = new Error(b.mensagem || 'NÃ£o foi possÃ­vel concluir a operaÃ§Ã£o.');
+    const e = new Error(b.mensagem || 'Não foi possível concluir a operação.');
     e.status = r.status;
     throw e;
   }
@@ -102,15 +102,15 @@ async function carregar() {
 
 function render(items) {
   usuariosCache = items;
-  $('#contador').textContent = `${items.length} usuÃ¡rio${items.length === 1 ? '' : 's'}`;
+  $('#contador').textContent = `${items.length} usuário${items.length === 1 ? '' : 's'}`;
   $('#tabela').innerHTML = items.length
     ? items
         .map(
           (x) =>
-            `<tr><td><strong>${esc(x.nome)}</strong></td><td class="email-cell">${esc(x.email)}<button type="button" class="copy-button" data-email="${esc(x.email)}" title="Copiar e-mail" aria-label="Copiar e-mail">ðŸ“‹</button></td><td>${esc(role(x.perfil))}</td><td>${esc(x.departamento || 'â€”')}</td><td><span class="status ${x.ativo ? 'active' : 'inactive'}">${x.ativo ? 'Ativo' : 'Inativo'}</span></td><td>${esc(data(x.ultimoLoginEm))}</td><td><button class="edit-button" data-edit="${x.id}">Editar</button></td></tr>`
+            `<tr><td><strong>${esc(x.nome)}</strong></td><td class="email-cell">${esc(x.email)}<button type="button" class="copy-button" data-email="${esc(x.email)}" title="Copiar e-mail" aria-label="Copiar e-mail">📋</button></td><td>${esc(role(x.perfil))}</td><td>${esc(x.departamento || '—')}</td><td><span class="status ${x.ativo ? 'active' : 'inactive'}">${x.ativo ? 'Ativo' : 'Inativo'}</span></td><td>${esc(data(x.ultimoLoginEm))}</td><td><button class="edit-button" data-edit="${x.id}">Editar</button></td></tr>`
         )
         .join('')
-    : '<tr><td colspan="7" class="empty">Nenhum usuÃ¡rio encontrado.</td></tr>';
+    : '<tr><td colspan="7" class="empty">Nenhum usuário encontrado.</td></tr>';
   document
     .querySelectorAll('[data-edit]')
     .forEach((b) =>
@@ -121,7 +121,7 @@ function render(items) {
       const email = b.dataset.email;
       const ok = await copiarParaAreaDeTransferencia(email);
       const textoOriginal = b.textContent;
-      b.textContent = ok ? 'âœ“' : 'âœ—';
+      b.textContent = ok ? '✓' : '✗';
       setTimeout(() => {
         b.textContent = textoOriginal;
       }, 1200);
@@ -132,7 +132,7 @@ function render(items) {
 
 function abrir(item = null) {
   editando = item;
-  $('#tituloModal').textContent = item ? 'Editar usuÃ¡rio' : 'Novo usuÃ¡rio';
+  $('#tituloModal').textContent = item ? 'Editar usuário' : 'Novo usuário';
   $('#usuarioId').value = item?.id || '';
   $('#nome').value = item?.nome || '';
   $('#email').value = item?.email || '';
@@ -142,7 +142,7 @@ function abrir(item = null) {
   $('#senha').required = !item;
   $('#senhaAjuda').textContent = item
     ? 'deixe em branco para manter a senha atual'
-    : 'obrigatÃ³ria no cadastro';
+    : 'obrigatória no cadastro';
   $('#ativo').checked = item ? Boolean(item.ativo) : true;
   $('#erro').hidden = true;
   $('#modal').hidden = false;
@@ -188,7 +188,7 @@ async function salvar(e) {
   } finally {
     if (btnSalvar) {
       btnSalvar.disabled = false;
-      btnSalvar.textContent = textoOriginal || 'Salvar usuÃ¡rio';
+      btnSalvar.textContent = textoOriginal || 'Salvar usuário';
     }
   }
 }
@@ -248,7 +248,7 @@ window.addEventListener('load', async () => {
 
   document.getElementById('usuExportarCsv')?.addEventListener('click', () => {
     if (!usuariosCache.length) {
-      mostrarToast('Nenhum usuÃ¡rio para exportar.');
+      mostrarToast('Nenhum usuário para exportar.');
       return;
     }
     exportarCSV(
@@ -256,11 +256,11 @@ window.addEventListener('load', async () => {
         Nome: x.nome,
         'E-mail': x.email,
         Perfil: x.perfil,
-        Departamento: x.departamento || 'â€”',
+        Departamento: x.departamento || '—',
         Status: x.ativo ? 'Ativo' : 'Inativo',
-        'Ãšltimo login': x.ultimoLoginEm || 'â€”',
+        'Último login': x.ultimoLoginEm || '—',
       })),
-      ['Nome', 'E-mail', 'Perfil', 'Departamento', 'Status', 'Ãšltimo login'],
+      ['Nome', 'E-mail', 'Perfil', 'Departamento', 'Status', 'Último login'],
       'usuarios.csv'
     );
   });

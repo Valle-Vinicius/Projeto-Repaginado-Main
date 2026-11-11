@@ -140,7 +140,7 @@ export function montarSidebar() {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch {}
-    ['babycareToken', 'babycareUsuario', 'babycareUser'].forEach((chave) => {
+    ['babycareUsuario', 'babycareUser'].forEach((chave) => {
       localStorage.removeItem(chave);
       sessionStorage.removeItem(chave);
     });

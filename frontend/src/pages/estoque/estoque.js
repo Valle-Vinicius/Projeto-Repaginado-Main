@@ -10,6 +10,7 @@ import {
   formatarDataHora,
   mostrarToast,
   conectarBuscaTopbar,
+  fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
 const ESTOQUE_API_URL = `${API_URL}/estoque`;
@@ -76,13 +77,6 @@ function obterUsuario() {
   } catch (erro) {
     return null;
   }
-}
-
-function limparSessao() {
-  localStorage.removeItem('babycareToken');
-  localStorage.removeItem('babycareUsuario');
-  sessionStorage.removeItem('babycareToken');
-  sessionStorage.removeItem('babycareUsuario');
 }
 
 function configurarUsuario() {
@@ -551,14 +545,7 @@ function configurarEventos() {
     }
   });
 
-  estoqueElementos.logout.addEventListener('click', () => {
-    if (window.BabycareUI?.fazerLogout) {
-      window.BabycareUI.fazerLogout();
-    } else {
-      limparSessao();
-      window.BabycareUI.transicionarPara('./login.html');
-    }
-  });
+  estoqueElementos.logout.addEventListener('click', fazerLogoutCore);
 }
 
 async function inicializarEstoque() {

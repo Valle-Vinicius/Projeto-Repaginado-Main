@@ -15,6 +15,7 @@ import {
   formatarDataHora,
   mostrarToast,
   conectarBuscaTopbar,
+  fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
 const EXPEDICOES_API_URL = `${API_URL}/expedicoes`;
@@ -62,7 +63,7 @@ function atualizarUsuario() {
   const nome =
     typeof usuario.nome === 'string' && usuario.nome.trim()
       ? usuario.nome.trim()
-      : 'UsuÃ¡rio Babycare';
+      : 'Usuário Babycare';
   const perfil = perfilExibicao(usuario.perfil);
   const avatar = iniciais(nome);
   ['sidebarUserName', 'topbarUserName'].forEach((id) => {
@@ -92,7 +93,7 @@ function num(v) {
 }
 
 function date(v) {
-  return v ? formatarDataHora(v) : 'â€”';
+  return v ? formatarDataHora(v) : '—';
 }
 
 async function api(url, options = {}) {
@@ -103,7 +104,7 @@ async function api(url, options = {}) {
   });
   const b = await r.json().catch(() => ({}));
   if (!r.ok) {
-    const x = new Error(b.mensagem || 'NÃ£o foi possÃ­vel concluir a operaÃ§Ã£o.');
+    const x = new Error(b.mensagem || 'Não foi possível concluir a operação.');
     x.status = r.status;
     throw x;
   }
@@ -114,7 +115,7 @@ function preencherProdutos() {
   el.product.replaceChildren(new Option('Selecione um produto', ''));
   products.forEach((p) =>
     el.product.appendChild(
-      new Option(`${p.nome} â€” ${p.codigo} | saldo: ${num(p.estoqueAtual)}`, p.id)
+      new Option(`${p.nome} — ${p.codigo} | saldo: ${num(p.estoqueAtual)}`, p.id)
     )
   );
 }
@@ -123,7 +124,7 @@ function atualizarSaldo() {
   const p = products.find((x) => String(x.id) === el.product.value);
   el.available.hidden = !p;
   if (p) {
-    el.available.textContent = `Saldo disponÃ­vel: ${num(p.estoqueAtual)} ${p.unidade || 'unidade(s)'}`;
+    el.available.textContent = `Saldo disponível: ${num(p.estoqueAtual)} ${p.unidade || 'unidade(s)'}`;
   }
 }
 
@@ -147,8 +148,8 @@ function resumo() {
   const hoje = rows.filter((x) => new Date(x.criadoEm) >= d);
   el.today.textContent = formatarNumero(hoje.length);
   el.units.textContent = num(hoje.reduce((s, x) => s + Number(x.quantidade || 0), 0));
-  el.lastDate.textContent = rows[0] ? date(rows[0].criadoEm).split(',')[0] : 'â€”';
-  el.lastProduct.textContent = rows[0]?.produto || 'Nenhuma expediÃ§Ã£o registrada';
+  el.lastDate.textContent = rows[0] ? date(rows[0].criadoEm).split(',')[0] : '—';
+  el.lastProduct.textContent = rows[0]?.produto || 'Nenhuma expedição registrada';
 }
 
 function render() {
@@ -158,7 +159,7 @@ function render() {
   el.empty.hidden = list.length > 0;
   list.forEach((x) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${esc(date(x.criadoEm))}</td><td class="expedicao-produto"><strong>${esc(x.produto)}</strong><small>${esc(x.codigo)}</small></td><td>${esc(x.numeroLote || 'â€”')}</td><td class="expedicao-quantidade">âˆ’${esc(num(x.quantidade))}</td><td>${esc(x.destinatario)}</td><td>${esc(x.destino)}</td><td>${esc(x.documento || 'NÃ£o informado')}</td><td>${esc(x.responsavel)}</td>`;
+    tr.innerHTML = `<td>${esc(date(x.criadoEm))}</td><td class="expedicao-produto"><strong>${esc(x.produto)}</strong><small>${esc(x.codigo)}</small></td><td>${esc(x.numeroLote || '—')}</td><td class="expedicao-quantidade">−${esc(num(x.quantidade))}</td><td>${esc(x.destinatario)}</td><td>${esc(x.destino)}</td><td>${esc(x.documento || 'Não informado')}</td><td>${esc(x.responsavel)}</td>`;
     el.body.appendChild(tr);
   });
 }
@@ -190,7 +191,7 @@ async function carregar() {
   if (persistidos.busca !== undefined) el.search.value = persistidos.busca;
   if (persistidos.periodo !== undefined) el.period.value = persistidos.periodo;
 
-  mostrarCarregamento('Carregando expediÃ§Ãµes...');
+  mostrarCarregamento('Carregando expedições...');
   try {
     const [h, s] = await Promise.all([api(EXPEDICOES_API_URL), api(ESTOQUE_API_URL)]);
     rows = Array.isArray(h.expedicoes) ? h.expedicoes : [];
@@ -223,13 +224,13 @@ async function enviar(ev) {
     return erro('Informe uma quantidade maior que zero.');
   }
   if (!el.recipient.value.trim()) {
-    return erro('Informe o destinatÃ¡rio.');
+    return erro('Informe o destinatário.');
   }
   if (!el.destination.value.trim()) {
     return erro('Informe o destino.');
   }
   if (Number(p.estoqueAtual) < quantidade) {
-    return erro(`Estoque insuficiente. DisponÃ­vel: ${num(p.estoqueAtual)}.`);
+    return erro(`Estoque insuficiente. Disponível: ${num(p.estoqueAtual)}.`);
   }
   el.submit.disabled = true;
   erro('');
@@ -248,7 +249,7 @@ async function enviar(ev) {
       }),
     });
     fechar();
-    mostrarToast('ExpediÃ§Ã£o registrada e estoque atualizado.');
+    mostrarToast('Expedição registrada e estoque atualizado.');
     await carregar();
   } catch (x) {
     erro(x.message);
@@ -294,11 +295,7 @@ function configurar() {
       x.hidden = Boolean(t) && !x.textContent.toLocaleLowerCase('pt-BR').includes(t);
     });
   });
-  el.logout?.addEventListener('click', () => {
-    localStorage.removeItem('babycareToken');
-    sessionStorage.removeItem('babycareToken');
-    location.href = './login.html';
-  });
+  el.logout?.addEventListener('click', fazerLogoutCore);
   window.BabycareCore.configurarAtalhos({
     onBuscaGlobal: () => {
       el.search?.focus();
