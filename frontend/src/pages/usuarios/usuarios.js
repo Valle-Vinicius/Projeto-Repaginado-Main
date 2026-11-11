@@ -12,6 +12,7 @@ import {
   mostrarToast,
   conectarBuscaTopbar,
   exportarCSV,
+  esconderCarregamento,
 } from '../../js/core/ui.js';
 
 const USUARIOS_API_URL = `${API_URL}/usuarios`;
@@ -231,11 +232,11 @@ window.BabycareCore.tornarBreadcrumbClicavel();
 window.BabycareCore.adicionarBotaoVoltar('.toolbar', 'Voltar ao dashboard');
 
 window.addEventListener('load', async () => {
-  if (!temPermissaoGestao()) {
-    location.replace('./dashboard.html');
-    return;
-  }
   try {
+    if (!temPermissaoGestao()) {
+      location.replace('./dashboard.html');
+      return;
+    }
     await carregarOpcoes();
     await carregar();
   } catch (e) {
@@ -244,6 +245,8 @@ window.addEventListener('load', async () => {
       return;
     }
     $('#tabela').innerHTML = `<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;
+  } finally {
+    esconderCarregamento();
   }
 
   document.getElementById('usuExportarCsv')?.addEventListener('click', () => {
