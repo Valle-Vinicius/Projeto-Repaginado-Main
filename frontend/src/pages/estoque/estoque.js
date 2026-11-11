@@ -87,7 +87,7 @@ function limparSessao() {
 
 function configurarUsuario() {
   const usuario = obterUsuario();
-  const nome = usuario?.nome || 'UsuÃ¡rio Babycare';
+  const nome = usuario?.nome || 'Usuário Babycare';
   const perfil = (usuario?.perfil || 'OPERADOR_ESTOQUE')
     .replaceAll('_', ' ')
     .toLowerCase()
@@ -123,11 +123,11 @@ async function requisitarAPI(caminho, opcoes = {}) {
   if (resposta.status === 401) {
     limparSessao();
     window.location.replace('./login.html');
-    throw new Error('SessÃ£o expirada. FaÃ§a login novamente.');
+    throw new Error('Sessão expirada. Faça login novamente.');
   }
 
   if (!resposta.ok) {
-    throw new Error(corpo.mensagem || 'NÃ£o foi possÃ­vel consultar o estoque.');
+    throw new Error(corpo.mensagem || 'Não foi possível consultar o estoque.');
   }
 
   return corpo;
@@ -157,8 +157,8 @@ function classeStatus(estado) {
   return (
     {
       NORMAL: 'normal',
-      BAIXO: 'low',
-      SEM_ESTOQUE: 'empty',
+      BAIXO: 'baixo',
+      SEM_ESTOQUE: 'sem-estoque',
     }[estado] || 'normal'
   );
 }
@@ -176,8 +176,82 @@ function textoStatus(estado) {
 function criarCelula(texto, classe = '') {
   const celula = document.createElement('td');
   celula.className = classe;
-  celula.textContent = texto ?? 'â€”';
+  celula.textContent = texto ?? '—';
   return celula;
+}
+
+function criarLinhaProduto(produto) {
+  const linha = document.createElement('tr');
+  const produtoCell = document.createElement('td');
+  const avatar = document.createElement('span');
+  const textoProduto = document.createElement('div');
+  const nome = document.createElement('strong');
+  const codigo = document.createElement('small');
+  const statusCell = document.createElement('td');
+  const status = document.createElement('span');
+  const estado = estadoEstoque(produto);
+
+  produtoCell.className = 'estoque-produto-cell';
+  avatar.className = 'estoque-produto-avatar';
+  avatar.textContent = String(produto.nome || '?').trim().charAt(0).toLocaleUpperCase('pt-BR');
+  textoProduto.className = 'estoque-produto-texto';
+  nome.className = 'estoque-produto-nome';
+  nome.textContent = produto.nome || 'Produto sem nome';
+  codigo.className = 'estoque-produto-sku';
+  codigo.textContent = produto.codigo || 'Sem código';
+  textoProduto.append(nome, codigo);
+  produtoCell.append(avatar, textoProduto);
+
+  statusCell.className = 'estoque-status-cell';
+  status.className = `estoque-status ${classeStatus(estado)}`;
+  status.textContent = textoStatus(estado);
+  statusCell.appendChild(status);
+
+  linha.append(
+    produtoCell,
+    criarCelula(produto.categoria || 'Sem categoria'),
+    criarCelula(formatarNumero(produto.estoqueAtual), 'estoque-quantidade'),
+    criarCelula(formatarNumero(produto.estoqueMinimo), 'estoque-minimo'),
+    statusCell,
+    criarCelula(
+      produto.ultimaMovimentacao ? formatarDataHora(produto.ultimaMovimentacao) : '—',
+      'estoque-movimentacao-data'
+    ),
+    criarCelula('')
+  );
+
+  return linha;
+}
+
+function criarLinhaMovimentacao(movimentacao) {
+  const linha = document.createElement('tr');
+  const tipo = String(movimentacao.tipo || '').toUpperCase();
+  const tipoClasse = tipo === 'ENTRADA' ? 'entrada' : 'saida';
+  const tipoLabel = tipo === 'ENTRADA' ? 'Entrada' : tipo === 'SAIDA' ? 'Saída' : tipo;
+  const tipoCell = document.createElement('td');
+  const tipoBadge = document.createElement('span');
+  const quantidadeCell = document.createElement('td');
+  const quantidade = formatarNumero(movimentacao.quantidade);
+
+  tipoCell.className = 'movimentacao-tipo-cell';
+  tipoBadge.className = `movimentacao-tipo ${tipoClasse}`;
+  tipoBadge.textContent = tipoLabel || '—';
+  tipoCell.appendChild(tipoBadge);
+
+  quantidadeCell.className = `movimentacao-quantidade ${tipoClasse}`;
+  quantidadeCell.textContent =
+    tipo === 'ENTRADA' ? `+${quantidade}` : tipo === 'SAIDA' ? `−${quantidade}` : quantidade;
+
+  linha.append(
+    criarCelula(formatarDataHora(movimentacao.criadoEm), 'movimentacao-data'),
+    criarCelula(movimentacao.produto || 'Produto não identificado', 'movimentacao-produto'),
+    tipoCell,
+    quantidadeCell,
+    criarCelula(movimentacao.responsavel || '—', 'movimentacao-responsavel'),
+    criarCelula(movimentacao.motivo || '—', 'movimentacao-motivo')
+  );
+
+  return linha;
 }
 
 function renderizarTabela() {
@@ -203,24 +277,9 @@ function renderizarTabela() {
     filtrados.sort((a, b) => Number(b.estoqueAtual || 0) - Number(a.estoqueAtual || 0));
   }
 
-  estoqueElementos.corpoTabela.replaceChildren();
   estoqueElementos.tabelaVazia.hidden = filtrados.length > 0;
   estoqueElementos.quantidadeResultados.textContent = `${filtrados.length} resultado(s)`;
-
-  filtrados.forEach((produto) => {
-    const linha = document.createElement('tr');
-    const estado = estadoEstoque(produto);
-    linha.innerHTML = `
-      <td><strong>${produto.nome}</strong><small>${produto.codigo}</small></td>
-      <td>${produto.categoria}</td>
-      <td class="estoque-valor">${formatarNumero(produto.estoqueAtual)}</td>
-      <td>${formatarNumero(produto.estoqueMinimo)}</td>
-      <td><span class="status-${classeStatus(estado)}">${textoStatus(estado)}</span></td>
-      <td>${produto.ultimaMovimentacao ? formatarDataHora(produto.ultimaMovimentacao) : 'â€”'}</td>
-      <td></td>
-    `;
-    estoqueElementos.corpoTabela.appendChild(linha);
-  });
+  estoqueElementos.corpoTabela.replaceChildren(...filtrados.map(criarLinhaProduto));
 }
 
 function preencherCategorias(categorias) {
@@ -231,7 +290,7 @@ function preencherCategorias(categorias) {
 }
 
 function preencherLocalizacoes(localizacoes) {
-  estoqueElementos.localizacao.replaceChildren(new Option('Selecione uma localizaÃ§Ã£o', ''));
+  estoqueElementos.localizacao.replaceChildren(new Option('Selecione uma localização', ''));
   localizacoes.forEach((localizacao) => {
     estoqueElementos.localizacao.appendChild(new Option(localizacao.nome, localizacao.id));
   });
@@ -244,7 +303,7 @@ function preencherProdutosModal() {
   estoqueElementos.produto.replaceChildren(new Option('Selecione um produto', ''));
   produtosAtivos.forEach((produto) => {
     estoqueElementos.produto.appendChild(
-      new Option(`${produto.nome} â€” ${produto.codigo}`, produto.id)
+      new Option(`${produto.nome} — ${produto.codigo}`, produto.id)
     );
   });
 }
@@ -254,12 +313,12 @@ function preencherMotivos(tipo) {
     tipo === 'ENTRADA'
       ? [
           ['RECEBIMENTO', 'Recebimento de fornecedor'],
-          ['DEVOLUCAO', 'DevoluÃ§Ã£o'],
+          ['DEVOLUCAO', 'Devolução'],
           ['AJUSTE', 'Ajuste de estoque'],
           ['OUTRO', 'Outro motivo'],
         ]
       : [
-          ['EXPEDICAO', 'ExpediÃ§Ã£o'],
+          ['EXPEDICAO', 'Expedição'],
           ['PERDA', 'Perda ou avaria'],
           ['AJUSTE', 'Ajuste de estoque'],
           ['OUTRO', 'Outro motivo'],
@@ -281,7 +340,7 @@ function atualizarInformacaoProduto() {
   }
 
   estoqueElementos.estoqueDisponivel.hidden = false;
-  estoqueElementos.estoqueDisponivel.textContent = `Saldo disponÃ­vel: ${formatarNumero(produto.estoqueAtual)} ${produto.unidade || 'unidade(s)'}`;
+  estoqueElementos.estoqueDisponivel.textContent = `Saldo disponível: ${formatarNumero(produto.estoqueAtual)} ${produto.unidade || 'unidade(s)'}`;
 
   const exigeValidade = Boolean(produto.possuiValidade);
   estoqueElementos.validadeCampo.hidden = !exigeValidade;
@@ -295,11 +354,11 @@ function atualizarInformacaoProduto() {
 function abrirModal(tipo) {
   estoqueElementos.tipo.value = tipo;
   estoqueElementos.modalTitulo.textContent =
-    tipo === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saÃ­da';
+    tipo === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saída';
   estoqueElementos.modalDescricao.textContent =
     tipo === 'ENTRADA'
       ? 'Registre a entrada no lote recebido para atualizar o saldo real.'
-      : 'Registre a saÃ­da do produto para atualizar o saldo real.';
+      : 'Registre a saída do produto para atualizar o saldo real.';
   estoqueElementos.formulario.reset();
   estoqueElementos.erro.hidden = true;
   estoqueElementos.estoqueDisponivel.hidden = true;
@@ -364,13 +423,13 @@ async function registrarMovimentacao(evento) {
     });
     fecharModal();
     await carregarEstoque();
-    mostrarToast('MovimentaÃ§Ã£o registrada no estoque real.', 'success');
+    mostrarToast('Movimentação registrada no estoque real.', 'success');
   } catch (erroMovimentacao) {
-    mostrarErro(erroMovimentacao.message || 'NÃ£o foi possÃ­vel registrar a movimentaÃ§Ã£o.');
+    mostrarErro(erroMovimentacao.message || 'Não foi possível registrar a movimentação.');
   } finally {
     estoqueElementos.enviar.disabled = false;
     estoqueElementos.enviar.textContent =
-      tipo === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saÃ­da';
+      tipo === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saída';
   }
 }
 
@@ -400,20 +459,10 @@ async function carregarEstoque() {
     renderizarTabela();
 
     const movimentacoesRecentes = estoqueDados.movimentacoes.slice(0, 5);
-    estoqueElementos.corpoMovimentacoes.replaceChildren();
     estoqueElementos.movimentacoesVazias.hidden = movimentacoesRecentes.length > 0;
-    movimentacoesRecentes.forEach((mov) => {
-      const linha = document.createElement('tr');
-      linha.innerHTML = `
-        <td>${formatarDataHora(mov.criadoEm)}</td>
-        <td>${mov.produto}</td>
-        <td>${mov.tipo}</td>
-        <td>${formatarNumero(mov.quantidade)}</td>
-        <td>${mov.responsavel}</td>
-        <td>${mov.motivo}</td>
-      `;
-      estoqueElementos.corpoMovimentacoes.appendChild(linha);
-    });
+    estoqueElementos.corpoMovimentacoes.replaceChildren(
+      ...movimentacoesRecentes.map(criarLinhaMovimentacao)
+    );
 
     estoqueElementos.alerta.hidden = true;
   } catch (erro) {
@@ -432,8 +481,8 @@ async function carregarEstoque() {
     estoqueElementos.quantidadeResultados.textContent = 'Nenhum resultado';
     estoqueElementos.alerta.hidden = false;
     estoqueElementos.alertaTexto.textContent =
-      erro.message || 'NÃ£o foi possÃ­vel carregar os dados reais do estoque.';
-    mostrarToast(erro.message || 'NÃ£o foi possÃ­vel carregar o estoque.', 'error');
+      erro.message || 'Não foi possível carregar os dados reais do estoque.';
+    mostrarToast(erro.message || 'Não foi possível carregar o estoque.', 'error');
   } finally {
     esconderCarregamento();
   }
