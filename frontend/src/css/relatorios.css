@@ -136,6 +136,20 @@
   display: block;
   overflow: visible;
 }
+.report-chart-wrap svg[hidden],
+.report-chart-labels[hidden] {
+  display: none;
+}
+.report-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  color: #963b46;
+  background: #fff3f4;
+  border: 1px solid #f2d9dc;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1.45;
+}
 .report-line {
   fill: none;
   stroke-width: 2.5;
@@ -181,6 +195,14 @@
   padding: 14px 18px;
   max-height: 225px;
   overflow: auto;
+}
+.report-category-item,
+.report-product-item {
+  overflow: hidden;
+  color: #43516a;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .report-category-row,
 .report-product-row {
