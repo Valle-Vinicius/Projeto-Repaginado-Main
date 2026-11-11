@@ -16,7 +16,10 @@ export function montarSidebar() {
     .toUpperCase()
     .replace(/[ -]+/g, '_');
   const podeGerenciarUsuarios = ['GERENTE', 'ADMINISTRADOR'].includes(perfil);
-  const paginaAtual = window.location.pathname.split('/').pop() || 'dashboard.html';
+  const paginaAtual = (window.location.pathname.split('/').pop() || 'dashboard').replace(
+    /\.html$/,
+    ''
+  );
   const links = [
     [
       'dashboard.html',
@@ -93,11 +96,11 @@ export function montarSidebar() {
           if (somenteGestao && !podeGerenciarUsuarios) {
             return '';
           }
-          const ativo = href === paginaAtual ? ' active' : '';
+          const ativo = href.replace(/\.html$/, '') === paginaAtual;
           const badge = tipoBadge
             ? `<span class="sidebar-badge sidebar-badge-${tipoBadge}" data-sidebar-badge="${tipoBadge}" hidden></span>`
             : '';
-          return `<a class="nav-link${ativo}" href="./${href}"${href === paginaAtual ? ' aria-current="page"' : ''}><svg aria-hidden="true" viewBox="0 0 24 24">${icon}</svg><span>${label}</span>${badge}</a>`;
+          return `<a class="nav-link${ativo ? ' active' : ''}" href="./${href}"${ativo ? ' aria-current="page"' : ''}><svg aria-hidden="true" viewBox="0 0 24 24">${icon}</svg><span>${label}</span>${badge}</a>`;
         })
         .join('')}
     </nav>

@@ -70,7 +70,7 @@ function mpaMiddleware() {
         // Extrair o nome da rota (ex: /login -> login)
         const caminho = caminhoUrl;
         const partes = caminho.split('/').filter(Boolean);
-        const rota = (partes[0] || 'login').replace(/\.js$/, '');
+        const rota = (partes[0] || 'login').replace(/\.(?:js|html)$/, '');
 
         // Se a rota corresponde a uma página MPA conhecida
         if (PAGINAS_MPA[rota]) {
@@ -83,7 +83,9 @@ function mpaMiddleware() {
           const arquivoHtml = path.resolve(frontendRoot, PAGINAS_MPA[rota]);
           if (
             fs.existsSync(arquivoHtml) &&
-            (caminho === `/${rota}` || caminho === `/${rota}/`)
+            (caminho === `/${rota}` ||
+              caminho === `/${rota}/` ||
+              caminho === `/${rota}.html`)
           ) {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'text/html; charset=UTF-8');

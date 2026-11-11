@@ -954,6 +954,239 @@ body.modal-open {
   }
 }
 
+@media (min-width: 1024px) and (min-height: 600px) {
+  html:has(.estoque-content),
+  body.estoque-page {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body.estoque-page .dashboard-shell {
+    height: 100vh;
+    min-height: 0;
+  }
+
+  body.estoque-page .dashboard-main {
+    display: flex;
+    height: 100vh;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body.estoque-page .topbar {
+    flex: 0 0 88px;
+  }
+
+  body.estoque-page .estoque-content {
+    display: grid;
+    height: auto;
+    min-height: 0;
+    flex: 1 1 0;
+    grid-template-areas:
+      "heading heading"
+      "metrics metrics"
+      "alert alert"
+      "inventory movements";
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    gap: 12px;
+    margin: 0 auto;
+    padding: clamp(12px, 2vh, 20px) clamp(20px, 3vw, 44px);
+  }
+
+  .estoque-heading-row {
+    grid-area: heading;
+    min-height: 0;
+    margin: 0;
+    padding: 17px 22px;
+  }
+
+  .estoque-heading-row h2 {
+    margin: 5px 0;
+    font-size: clamp(22px, 1.8vw, 27px);
+  }
+
+  .estoque-metrics {
+    grid-area: metrics;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+  }
+
+  .estoque-metric-card {
+    min-height: 78px;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .estoque-metric-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .estoque-metric-card strong {
+    margin: 5px 0 2px;
+    font-size: 21px;
+  }
+
+  .estoque-alert {
+    grid-area: alert;
+    margin: 0;
+    padding: 9px 12px;
+  }
+
+  .estoque-panel,
+  .movimentacoes-panel {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 0;
+    padding: 14px 16px;
+  }
+
+  .estoque-panel {
+    grid-area: inventory;
+  }
+
+  .movimentacoes-panel {
+    grid-area: movements;
+  }
+
+  .estoque-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    flex: 0 0 auto;
+    padding-bottom: 12px;
+  }
+
+  .estoque-search {
+    grid-column: 1 / -1;
+    height: 36px;
+  }
+
+  .estoque-filter select {
+    height: 36px;
+    padding: 0 7px;
+  }
+
+  .estoque-table-heading {
+    flex: 0 0 auto;
+    padding: 13px 0 10px;
+  }
+
+  .estoque-table-wrap,
+  .movimentacoes-table-wrap {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 600px) and (max-height: 700px) {
+  body.estoque-page .topbar {
+    min-height: 72px;
+    flex-basis: 72px;
+    padding-block: 10px;
+  }
+
+  body.estoque-page .estoque-content {
+    gap: 8px;
+    padding-block: 10px;
+  }
+
+  .estoque-heading-row {
+    padding: 10px 16px;
+  }
+
+  .estoque-heading-row h2 {
+    margin: 3px 0;
+    font-size: 21px;
+  }
+
+  .estoque-heading-row > div:first-child > p:last-child {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .estoque-action-group {
+    gap: 6px;
+  }
+
+  .estoque-action,
+  .estoque-action-group > .voltar-button {
+    min-height: 34px;
+    padding-inline: 9px;
+    font-size: 9px;
+  }
+
+  .estoque-metric-card {
+    min-height: 70px;
+    gap: 7px;
+    padding: 8px 10px;
+  }
+
+  .estoque-metric-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .estoque-metric-card strong {
+    font-size: 19px;
+  }
+
+  .estoque-alert {
+    gap: 8px;
+    padding: 6px 10px;
+  }
+
+  .estoque-alert-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .estoque-alert strong {
+    font-size: 10px;
+  }
+
+  .estoque-alert span:last-child {
+    font-size: 9px;
+  }
+
+  .estoque-panel,
+  .movimentacoes-panel {
+    padding: 10px 12px;
+  }
+
+  .estoque-toolbar {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+
+  .estoque-search,
+  .estoque-filter select {
+    height: 32px;
+  }
+
+  .estoque-filter {
+    gap: 4px;
+  }
+
+  .estoque-filter label {
+    font-size: 8px;
+  }
+
+  .estoque-table-heading {
+    padding: 9px 0 7px;
+  }
+
+  .estoque-table-heading h3 {
+    font-size: 14px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .estoque-heading-row,
   .estoque-metric-card,
