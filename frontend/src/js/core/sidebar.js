@@ -1,5 +1,4 @@
-import { lerUsuario } from './index.js';
-import { esc } from './index.js';
+import logoUrl from '../../assets/images/babycare-logo.png';
 
 export function montarSidebar() {
   const sidebar = document.querySelector('#sidebar');
@@ -7,6 +6,7 @@ export function montarSidebar() {
     return;
   }
 
+  const { lerUsuario, esc } = window.BabycareCore;
   const usuario = lerUsuario();
   const perfil = String(
     usuario.perfilCodigo || usuario.perfil || usuario.cargo || usuario.role || ''
@@ -73,7 +73,7 @@ export function montarSidebar() {
   sidebar.innerHTML = `
     <div class="sidebar-top">
       <a class="brand" href="./dashboard.html" aria-label="Babycare - Dashboard">
-        <img src="../../assets/images/babycare-logo.png" alt="Babycare">
+        <img src="${logoUrl}" alt="Babycare">
       </a>
       <button id="closeSidebarButton" class="icon-button sidebar-close" type="button" aria-label="Fechar menu">×</button>
     </div>

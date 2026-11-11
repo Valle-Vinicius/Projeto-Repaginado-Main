@@ -1,3 +1,5 @@
+import { montarSidebar } from './sidebar.js';
+
 const CHAVES_USUARIO = ['babycareUsuario', 'babycareUser'];
 
 /** Lê o usuário logado do localStorage ou sessionStorage. */
@@ -309,7 +311,5 @@ window.BabycareCore = {
 };
 
 if (document.querySelector('#sidebar')) {
-  import('./sidebar.js')
-    .then(({ montarSidebar }) => montarSidebar())
-    .catch((erro) => console.error('[Sidebar]', erro));
+  montarSidebar();
 }
