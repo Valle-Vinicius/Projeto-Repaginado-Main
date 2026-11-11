@@ -22,7 +22,7 @@ body {
 
 body {
   color: var(--ink);
-  background: #ffffff url("../images/babycare-login-background.png") center center / cover no-repeat;
+  background: #ffffff url("../assets/images/babycare-login-background.png") center center / cover no-repeat;
   font-family: "DM Sans", Arial, sans-serif;
 }
 
