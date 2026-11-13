@@ -71,9 +71,6 @@ async function fetchAudit() {
   });
   const response = await fetch(`${AUDIT_API}?${params}`, {
     cache: 'no-store',
-    headers: {
-      'Cache-Control': 'no-cache',
-    },
     credentials: 'include',
   });
   const body = await response.json().catch(() => ({}));

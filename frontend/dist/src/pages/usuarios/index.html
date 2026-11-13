@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Usuários | Babycare</title>
-    <script type="module" crossorigin src="/assets/usuarios-LwfwvcMt.js"></script>
+    <title>Usuários | Babycare</title>
+    <script type="module" crossorigin src="/assets/usuarios-BpwsQXwJ.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
-    <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
-    <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
-    <link rel="stylesheet" crossorigin href="/assets/usuarios-BiSH837b.css">
+    <link rel="modulepreload" crossorigin href="/assets/core-DOBInO30.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-CHqu7NU4.js">
+    <link rel="stylesheet" crossorigin href="/assets/core-Dkxx47H-.css">
+    <link rel="stylesheet" crossorigin href="/assets/usuarios-BICs21gF.css">
+    <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard-BVIjRWH1.css">
   </head>
-  <body>
+  <body class="usuarios-page">
     <div id="pageLoader" class="page-loader" aria-live="polite" aria-label="Carregando página">
       <div class="page-loader-content">
         <span class="page-loader-mark" aria-hidden="true"></span>
@@ -55,8 +57,9 @@
               <option value="">Todos os status</option>
               <option value="true">Ativos</option>
               <option value="false">Inativos</option></select
-            ><button id="atualizar" class="secondary-button">Atualizar</button>
+            ><button id="atualizar" class="secondary-button" type="button">Atualizar</button>
             <button id="usuExportarCsv" type="button" class="export-button">Exportar CSV</button>
+            <button id="novoUsuario" class="primary-button" type="button">Novo usuário</button>
           </section>
           <section class="panel">
             <div class="panel-title">
@@ -90,8 +93,6 @@
         </div>
       </main>
     </div>
-
-    <div id="novoUsuario" style="position:fixed;bottom:24px;right:24px;z-index:1000"></div>
 
     <div id="modal" class="modal" hidden>
       <div class="modal-card">
@@ -136,7 +137,6 @@
               autocomplete="new-password" /></label
           ><label class="check"
             ><input id="ativo" type="checkbox" checked /> Usuário ativo</label
-          >
           >
           <p id="erro" class="form-error" hidden></p>
           <div class="modal-actions">

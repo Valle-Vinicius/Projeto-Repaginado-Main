@@ -11,11 +11,12 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/assets/formulario-produto-CyQ7M58B.js"></script>
+    <script type="module" crossorigin src="/assets/formulario-produto-NUKlAaXi.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
-    <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
-    <link rel="stylesheet" crossorigin href="/assets/formulario-produto-Bs9gqI31.css">
+    <link rel="modulepreload" crossorigin href="/assets/core-DOBInO30.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-CHqu7NU4.js">
+    <link rel="stylesheet" crossorigin href="/assets/core-Dkxx47H-.css">
+    <link rel="stylesheet" crossorigin href="/assets/formulario-produto-D8whKV1h.css">
     <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
   </head>
   <body>
@@ -73,7 +74,7 @@
                 autocomplete="off"
               />
             </label>
-            
+
             <div class="topbar-divider" aria-hidden="true"></div>
             <div class="topbar-user">
               <div class="avatar avatar-small" id="topbarAvatar">U</div>
@@ -87,16 +88,20 @@
 
         <div class="dashboard-content product-form-content">
           <section class="form-heading">
-            <div>
-              <p class="eyebrow">NOVO ITEM</p>
-              <h2>Cadastre um produto.</h2>
+            <div class="form-heading-copy">
+              <p class="eyebrow">CATÁLOGO · NOVO PRODUTO</p>
+              <h2>Um novo cuidado começa aqui.</h2>
               <p>
-                Informe os dados necessários para manter o catálogo organizado.
+                Preencha os detalhes do item para manter seu catálogo e sua
+                operação em dia.
               </p>
             </div>
-            <a class="secondary-action" href="./produtos.html"
-              >← Voltar para produtos</a
-            >
+            <a class="secondary-action" href="./produtos.html">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m15 18-6-6 6-6M9 12h11"></path>
+              </svg>
+              Voltar para produtos
+            </a>
           </section>
 
           <form id="productForm" class="product-form" novalidate>
@@ -149,10 +154,7 @@
                     maxlength="2000"
                     rows="4"
                     placeholder="Descreva o produto, suas características ou observações."
-                  ></textarea
-                  ><small class="field-counter"
-                    ><span id="descriptionCount">0</span>/2000</small
-                  >
+                  ></textarea>
                 </div>
               </div>
             </section>
@@ -206,7 +208,7 @@
               </div>
             </section>
 
-            <section class="form-card">
+            <section class="form-card validity-card">
               <div class="form-card-heading">
                 <span class="form-step">03</span>
                 <div>

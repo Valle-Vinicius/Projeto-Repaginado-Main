@@ -8,15 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/estoque-BgqTTeGg.js"></script>
+  <script type="module" crossorigin src="/assets/estoque-VI4ALWnq.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
-  <link rel="modulepreload" crossorigin href="/assets/api-91jwmUBU.js">
-  <link rel="modulepreload" crossorigin href="/assets/core-Dalaxmqi.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-BdpSGbyc.js">
-  <link rel="stylesheet" crossorigin href="/assets/estoque-2PQ7cims.css">
+  <link rel="modulepreload" crossorigin href="/assets/core-DOBInO30.js">
+  <link rel="modulepreload" crossorigin href="/assets/ui-CHqu7NU4.js">
+  <link rel="stylesheet" crossorigin href="/assets/core-Dkxx47H-.css">
+  <link rel="stylesheet" crossorigin href="/assets/estoque-BjHe5SQI.css">
   <link rel="stylesheet" crossorigin href="/assets/app-BxIDJDKa.css">
 </head>
-<body>
+<body class="estoque-page">
   <div id="pageLoader" class="page-loader" aria-live="polite" aria-label="Carregando página">
     <div class="page-loader-content">
       <span class="page-loader-mark" aria-hidden="true"></span>
@@ -147,7 +147,7 @@
           <div class="movimentacoes-table-wrap">
             <table class="movimentacoes-table">
               <thead>
-                <tr><th>DATA</th><th>PRODUTO</th><th>TIPO</th><th>QUANTIDADE</th><th>RESPONSÁVEL</th><th>MOTIVO</th></tr>
+                <tr><th>DATA</th><th>PRODUTO</th><th>TIPO</th><th>QUANTIDADE</th><th>RESPONSÁVEL</th><th>OBSERVAÇÃO</th></tr>
               </thead>
               <tbody id="movementsBody"></tbody>
             </table>
@@ -177,6 +177,14 @@
         <label class="modal-field" for="movementReason">Motivo <span>*</span>
           <select id="movementReason" required></select>
         </label>
+        <div id="shipmentFields" class="shipment-fields" hidden>
+          <label class="modal-field" for="movementRecipient">Destinatário <span>*</span>
+            <input id="movementRecipient" type="text" maxlength="150" required placeholder="Quem receberá o material" />
+          </label>
+          <label class="modal-field" for="movementDestination">Destino <span>*</span>
+            <input id="movementDestination" type="text" maxlength="150" required placeholder="Setor, unidade ou endereço" />
+          </label>
+        </div>
         <div id="lotFields" class="lot-fields">
           <label id="movementLotLabel" class="modal-field" for="movementLot">Lote <span>*</span>
             <input id="movementLot" type="text" maxlength="80" placeholder="Ex.: LOTE-2026-08" />
