@@ -785,6 +785,56 @@ function mostrarErroDashboard() {
   document.querySelector('.dashboard-content').prepend(erro);
 }
 
+function renderizarFalhaDashboard() {
+  const mensagem = 'Tente atualizar o painel em alguns instantes.';
+  if (elementos.movementChart) {
+    elementos.movementChart.dataset.chartState = 'error';
+  }
+  if (elementos.chartEmpty) {
+    elementos.chartEmpty.textContent = 'Não foi possível carregar as movimentações.';
+    elementos.chartEmpty.classList.add('visible');
+  }
+
+  [
+    [elementos.alertList, 'Alertas indisponíveis'],
+    [elementos.categoryList, 'Categorias indisponíveis'],
+    [elementos.criticalStockList, 'Estoque indisponível'],
+    [elementos.expiringProductList, 'Validades indisponíveis'],
+    [elementos.topProductsList, 'Ranking indisponível'],
+  ].forEach(([lista, titulo]) => {
+    if (!lista) {
+      return;
+    }
+    lista.dataset.state = 'ready';
+    lista.replaceChildren(criarEstadoVazio(titulo, mensagem));
+  });
+
+  [
+    elementos.alertCount,
+    elementos.categoryTotal,
+    elementos.criticalStockTotal,
+    elementos.expiringProductsTotal,
+    elementos.topProductsTotal,
+    elementos.expiryWithin7,
+    elementos.expiryWithin30,
+    elementos.expiryOver30,
+  ].forEach((indicador) => {
+    if (indicador) {
+      indicador.textContent = '—';
+    }
+  });
+
+  if (elementos.activityBody) {
+    const linha = document.createElement('tr');
+    const celula = document.createElement('td');
+    celula.colSpan = 4;
+    celula.className = 'table-empty';
+    celula.textContent = 'Não foi possível carregar as atividades.';
+    linha.appendChild(celula);
+    elementos.activityBody.replaceChildren(linha);
+  }
+}
+
 function mostrarToast(mensagem) {
   if (!elementos.dashboardToast) {
     return;
@@ -869,6 +919,9 @@ async function carregarDashboard({ silencioso = false } = {}) {
     console.error('[Dashboard]', erro);
     dashboardState.erro = erro;
     document.body.dataset.dashboardState = 'error';
+    if (!dashboardState.dados) {
+      renderizarFalhaDashboard();
+    }
     mostrarErroDashboard();
     if (!silencioso) {
       mostrarToast('Não foi possível atualizar a dashboard.');
