@@ -14,9 +14,14 @@ const PROJETO = path.resolve(__dirname, "..", "..");
 /** Lê o backend/.env e devolve um objeto simples (remove BOM). */
 function lerEnvBackend() {
   const caminhoLocal = path.join(PROJETO, "backend", ".env");
+  const caminhoExemplo = path.join(PROJETO, "backend", ".env.example");
   const caminho = fs.existsSync(caminhoLocal)
     ? caminhoLocal
-    : path.join(PROJETO, "backend", ".env.example");
+    : fs.existsSync(caminhoExemplo)
+      ? caminhoExemplo
+      : null;
+  if (!caminho) return {};
+
   const conteudo = fs.readFileSync(caminho, "utf8").replace(/^\uFEFF/, "");
   const dados = {};
   for (const linha of conteudo.split(/\r?\n/)) {
@@ -56,5 +61,9 @@ const config = Object.freeze({
     ADMINISTRADOR: "ADMINISTRADOR",
   },
 });
+
+if (!["localhost", "127.0.0.1", "::1"].includes(config.DB_HOST)) {
+  throw new Error("Os testes só podem se conectar a um banco PostgreSQL local.");
+}
 
 module.exports = { config, lerEnvBackend };

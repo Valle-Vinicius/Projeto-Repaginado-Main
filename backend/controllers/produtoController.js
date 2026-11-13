@@ -24,12 +24,14 @@ function responderErro(res, erro) {
       ? erro.codigo || 'VALIDATION_ERROR'
       : statusCode === 404
         ? erro.codigo || 'RECURSO_NAO_ENCONTRADO'
-        : statusCode === 503
-          ? 'BANCO_INDISPONIVEL'
-          : 'ERRO_PRODUTOS';
+        : statusCode === 409
+          ? erro.codigo || 'CONFLITO'
+          : statusCode === 503
+            ? 'BANCO_INDISPONIVEL'
+            : 'ERRO_PRODUTOS';
 
   const mensagem =
-    statusCode === 400 || statusCode === 404
+    statusCode === 400 || statusCode === 404 || statusCode === 409
       ? erro.message
       : statusCode === 503
         ? 'O banco de dados está temporariamente indisponível.'

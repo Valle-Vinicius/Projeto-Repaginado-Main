@@ -164,9 +164,15 @@ function preencherLocalizacoes() {
     el.localizacao.appendChild(new Option(localizacao.nome, localizacao.id))
   );
 }
+function dataAtualISO() {
+  const agora = new Date();
+  agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+  return agora.toISOString().slice(0, 10);
+}
 function atualizarValidade() {
   const produto = produtos.find((item) => String(item.id) === el.produto.value);
   const exige = Boolean(produto?.possuiValidade);
+  el.validade.min = dataAtualISO();
   el.validadeCampo.hidden = !exige;
   el.validade.required = exige;
   el.validade.disabled = !exige;
@@ -286,6 +292,9 @@ async function enviar(evento) {
   }
   if (produto.possuiValidade && !el.validade.value) {
     return mostrarErro('Informe a validade deste produto.');
+  }
+  if (el.validade.value && el.validade.value < dataAtualISO()) {
+    return mostrarErro('A data de validade não pode estar no passado.');
   }
   const quantidade = Number(el.quantidade.value);
   if (!Number.isFinite(quantidade) || quantidade <= 0) {

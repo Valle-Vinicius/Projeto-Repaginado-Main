@@ -7,6 +7,6 @@ const router = express.Router();
 const autorizarEstoque = permitirPerfis(...PERFIS_ESTOQUE);
 
 router.get('/', verificarToken, autorizarEstoque, estoqueController.listarRecebimentos);
-router.post('/', verificarToken, autorizarEstoque, estoqueController.registrarMovimentacao);
+router.post('/', verificarToken, autorizarEstoque, estoqueController.registrarRecebimento);
 
 module.exports = router;

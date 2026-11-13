@@ -17,17 +17,20 @@ const BASE_URL = `http://127.0.0.1:${config.PORT}`;
 
 function montarAmbienteFilho(extra = {}) {
   const env = lerEnvBackend();
+  const ambienteBase = { ...process.env };
+
   return {
-    ...process.env,
+    ...ambienteBase,
+    ...extra,
+    DATABASE_URL: "",
     PORT: String(config.PORT),
-    DB_HOST: env.DB_HOST || config.DB_HOST,
-    DB_PORT: env.DB_PORT || config.DB_PORT,
-    DB_USER: env.DB_USER || config.DB_USER,
-    DB_PASSWORD: env.DB_PASSWORD || config.DB_PASSWORD,
+    DB_HOST: config.DB_HOST,
+    DB_PORT: config.DB_PORT,
+    DB_USER: config.DB_USER,
+    DB_PASSWORD: config.DB_PASSWORD,
     DB_NAME: config.DB_NAME,
     JWT_SECRET: config.JWT_SECRET,
     JWT_EXPIRES_IN: env.JWT_EXPIRES_IN || "1h",
-    ...extra,
   };
 }
 
@@ -89,13 +92,17 @@ async function encerrarServidor() {
 }
 
 /** Requisição HTTP genérica com JSON. */
-async function requisitar(caminho, { metodo = "GET", token = null, corpo = null, headers = {} } = {}) {
+async function requisitar(
+  caminho,
+  { metodo = "GET", token = null, cookie = null, corpo = null, headers = {} } = {},
+) {
   const cabecalhos = {
     "Content-Type": "application/json",
     Accept: "application/json",
     ...headers,
   };
   if (token) cabecalhos.Authorization = `Bearer ${token}`;
+  if (cookie) cabecalhos.Cookie = cookie;
 
   const opcoes = { method: metodo, headers: cabecalhos };
   if (corpo !== null && corpo !== undefined) {
@@ -118,8 +125,16 @@ async function login(email, senha) {
     metodo: "POST",
     corpo: { email, senha },
   });
+  const setCookie = resultado.resposta.headers.get("set-cookie");
+  const cookie = setCookie?.split(";", 1)[0] || null;
+  const tokenDoCookie = cookie?.startsWith("babycareToken=")
+    ? cookie.slice("babycareToken=".length)
+    : null;
+
   return {
-    token: resultado.corpo.token || null,
+    token: resultado.corpo.token || tokenDoCookie,
+    cookie,
+    setCookie,
     usuario: resultado.corpo.usuario || null,
     status: resultado.status,
     corpo: resultado.corpo,
@@ -128,6 +143,7 @@ async function login(email, senha) {
 
 module.exports = {
   BASE_URL,
+  montarAmbienteFilho,
   iniciarServidor,
   encerrarServidor,
   requisitar,

@@ -21,11 +21,11 @@ afterAll(async () => {
   await encerrarServidor();
 });
 
-async function criarProdutoRecebimento(nomeExtra = "") {
+async function criarProdutoRecebimento(nomeExtra = "", possuiValidade = true) {
   const r = await criarProdutoViaApi(token, {
     codigo: `TESTE-REC-${sufixo()}`,
     nome: `Produto Recebimento ${nomeExtra}`,
-    possuiValidade: true,
+    possuiValidade,
   });
   return r.corpo.produto;
 }
@@ -41,7 +41,7 @@ async function registrarRecebimento(produtoId, sobrescritas = {}) {
       numeroLote: `LOTE-REC-${sufixo()}`,
       fornecedor: "Fornecedor Teste",
       documento: "NF-TESTE-001",
-      dataValidade: "2027-12-31",
+      dataValidade: "2099-12-31",
       motivo: "Recebimento de fornecedor",
       observacao: "Observação de teste",
       ...sobrescritas,
@@ -105,7 +105,72 @@ describe("Recebimento - entrada válida", () => {
     expect(r2.status).toBe(201);
 
     const lotes = await lotesDoProduto(produto.id);
+    expect(lotes.length).toBe(1);
+    expect(Number(lotes[0].quantidade_atual)).toBe(15);
+
+    const saldo = await saldoDoProduto(produto.id);
+    expect(saldo).toBe(15);
+  });
+
+  test("mesmo lote não permite alterar a validade registrada", async () => {
+    const produto = await criarProdutoRecebimento("ValidadeImutavel");
+    const numeroLote = `LOTE-REC-VALIDADE-${sufixo()}`;
+
+    const primeiraEntrada = await registrarRecebimento(produto.id, {
+      numeroLote,
+      quantidade: 10,
+      dataValidade: "2099-12-31",
+    });
+    const segundaEntrada = await registrarRecebimento(produto.id, {
+      numeroLote,
+      quantidade: 5,
+      dataValidade: "2098-12-31",
+    });
+
+    expect(primeiraEntrada.status).toBe(201);
+    expect(segundaEntrada.status).toBe(409);
+    expect(segundaEntrada.corpo.codigo).toBe("VALIDADE_LOTE_DIVERGENTE");
+    expect(await saldoDoProduto(produto.id)).toBe(10);
+  });
+
+  test("data de validade é gravada", async () => {
+    const produto = await criarProdutoRecebimento("Validade");
+    await registrarRecebimento(produto.id, { dataValidade: "2099-06-15" });
+    const lotes = await lotesDoProduto(produto.id);
+    const validade = lotes[0].data_validade;
+    expect(String(validade).slice(0, 10)).toBe("2099-06-15");
+  });
+});
+
 describe("Recebimento - validações e erros", () => {
+  test("produto com controle de validade exige data", async () => {
+    const produto = await criarProdutoRecebimento("ValidadeObrigatoria");
+    const r = await registrarRecebimento(produto.id, { dataValidade: null });
+
+    expect(r.status).toBe(400);
+    expect(r.corpo.codigo).toBe("DATA_VALIDADE_OBRIGATORIA");
+    expect(await saldoDoProduto(produto.id)).toBe(0);
+  });
+
+  test("rejeita data de validade no passado", async () => {
+    const produto = await criarProdutoRecebimento("ValidadePassada");
+    const r = await registrarRecebimento(produto.id, {
+      dataValidade: "2020-01-01",
+    });
+
+    expect(r.status).toBe(400);
+    expect(r.corpo.codigo).toBe("DATA_VALIDADE_VENCIDA");
+    expect(await saldoDoProduto(produto.id)).toBe(0);
+  });
+
+  test("produto sem controle de validade permite entrada sem data", async () => {
+    const produto = await criarProdutoRecebimento("SemValidade", false);
+    const r = await registrarRecebimento(produto.id, { dataValidade: null });
+
+    expect(r.status).toBe(201);
+    expect(await saldoDoProduto(produto.id)).toBe(10);
+  });
+
   test("quantidade zero -> 400", async () => {
     const produto = await criarProdutoRecebimento("QtdZero");
     const r = await registrarRecebimento(produto.id, { quantidade: 0 });
@@ -154,26 +219,24 @@ describe("Recebimento - validações e erros", () => {
     expect(r.status).toBe(400);
   });
 
+  test("rota de recebimento recusa tipo SAIDA", async () => {
+    const produto = await criarProdutoRecebimento("TipoSaida");
+    const r = await requisitar("/api/recebimentos", {
+      metodo: "POST",
+      token,
+      corpo: { tipo: "SAIDA", produtoId: produto.id, quantidade: 1 },
+    });
+
+    expect(r.status).toBe(400);
+    expect(r.corpo.codigo).toBe("TIPO_MOVIMENTACAO_INVALIDO");
+    expect(await saldoDoProduto(produto.id)).toBe(0);
+  });
+
   test("operação com erro não altera o saldo (atomicidade básica)", async () => {
     const produto = await criarProdutoRecebimento("Atomicidade");
     const antes = await saldoDoProduto(produto.id);
     await registrarRecebimento(produto.id, { quantidade: -1 });
     const depois = await saldoDoProduto(produto.id);
     expect(depois).toBe(antes);
-  });
-});
-    expect(lotes.length).toBe(1);
-    expect(Number(lotes[0].quantidade_atual)).toBe(15);
-
-    const saldo = await saldoDoProduto(produto.id);
-    expect(saldo).toBe(15);
-  });
-
-  test("data de validade é gravada", async () => {
-    const produto = await criarProdutoRecebimento("Validade");
-    await registrarRecebimento(produto.id, { dataValidade: "2028-06-15" });
-    const lotes = await lotesDoProduto(produto.id);
-    const validade = lotes[0].data_validade;
-    expect(String(validade).slice(0, 10)).toBe("2028-06-15");
   });
 });

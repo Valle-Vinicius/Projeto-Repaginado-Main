@@ -175,12 +175,15 @@
  * /produtos/{id}/desativar:
  *   patch:
  *     tags: [Produtos]
- *     summary: Alterna o status ativo/inativo de um produto.
+ *     summary: Desativa um produto sem saldo pendente.
+ *     description: A desativação é transacional e é recusada se houver quantidade positiva em lote ativo, inclusive vencido.
  *     responses:
  *       200:
- *         description: Status alterado.
+ *         description: Produto desativado.
  *       404:
  *         description: Produto não encontrado.
+ *       409:
+ *         description: Produto ainda possui saldo em lote ativo.
  */
 
 /**
@@ -199,20 +202,20 @@
  * /estoque/movimentacoes:
  *   post:
  *     tags: [Movimentações]
- *     summary: Registra entrada, saída ou ajuste de estoque (FIFO).
+ *     summary: Registra entrada ou saída de estoque (baixa FEFO).
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [tipo, produtoId, quantidade, motivo]
+ *             required: [tipo, produtoId, quantidade]
  *             properties:
- *               tipo: { type: string, enum: [ENTRADA, SAIDA, AJUSTE] }
+ *               tipo: { type: string, enum: [ENTRADA, SAIDA] }
  *               produtoId: { type: integer }
  *               quantidade: { type: number }
  *               numeroLote: { type: string }
- *               dataValidade: { type: string }
+ *               dataValidade: { type: string, format: date, description: Obrigatória para produtos com controle de validade; não pode estar no passado. }
  *               localizacaoId: { type: integer }
  *               fornecedor: { type: string }
  *               destinatario: { type: string }
@@ -225,8 +228,41 @@
  *         description: Movimentação registrada.
  *       400:
  *         description: Erro de validação.
+ *       409:
+ *         description: Número de lote já registrado com outra validade.
  *       422:
- *         description: Estoque insuficiente.
+ *         description: Estoque disponível insuficiente, lote vencido ou lote controlado sem validade.
+ */
+
+/**
+ * @swagger
+ * /estoque/ajuste:
+ *   post:
+ *     tags: [Movimentações]
+ *     summary: Ajusta o saldo atual de um produto.
+ *     description: Restrito a gerente e administrador. Exige justificativa; aumentos exigem número de lote e, para produtos com controle de validade, uma data futura ou atual.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [produtoId, quantidadeNova, observacao]
+ *             properties:
+ *               produtoId: { type: integer }
+ *               quantidadeNova: { type: number }
+ *               observacao: { type: string, maxLength: 255, description: Justificativa obrigatória }
+ *               numeroLote: { type: string, maxLength: 80 }
+ *               dataValidade: { type: string, format: date }
+ *     responses:
+ *       200:
+ *         description: Ajuste registrado.
+ *       400:
+ *         description: Erro de validação.
+ *       403:
+ *         description: Perfil sem permissão para ajustar estoque.
+ *       409:
+ *         description: Conflito com lote ou validade já registrados.
  */
 
 /**

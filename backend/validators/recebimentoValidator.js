@@ -11,6 +11,7 @@ const LIMITE_TEXTO = {
   fornecedor: 150,
   documento: 80,
   numeroLote: 80,
+  motivo: 80,
   observacao: 255,
 };
 
@@ -106,6 +107,7 @@ function validarEntrada(payload = {}) {
   return {
     produtoId: idObrigatorio(payload.produtoId, 'o produto'),
     quantidade: quantidadePositiva(payload.quantidade),
+    motivo: textoOpcional(payload.motivo, LIMITE_TEXTO.motivo, 'O motivo'),
     fornecedor: textoOpcional(payload.fornecedor, LIMITE_TEXTO.fornecedor, 'O fornecedor'),
     documento: textoOpcional(payload.documento, LIMITE_TEXTO.documento, 'O documento'),
     numeroLote,
@@ -117,5 +119,6 @@ function validarEntrada(payload = {}) {
 
 module.exports = {
   validarEntrada,
+  dataValidadeOpcional,
   erroValidacao,
 };

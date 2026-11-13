@@ -22,11 +22,14 @@ afterAll(async () => {
 });
 
 describe("Autenticação - login válido", () => {
-  test("operador consegue fazer login e recebe token + usuário", async () => {
+  test("operador recebe cookie HttpOnly + usuário, sem token no JSON", async () => {
     const resultado = await login(config.USUARIO_OPERADOR.email, config.USUARIO_OPERADOR.senha);
     expect(resultado.status).toBe(200);
     expect(resultado.corpo.sucesso).toBe(true);
     expect(resultado.token).toBeTruthy();
+    expect(resultado.cookie).toMatch(/^babycareToken=/);
+    expect(resultado.setCookie).toMatch(/httponly/i);
+    expect(resultado.corpo).not.toHaveProperty("token");
     expect(resultado.usuario.email).toBe(config.USUARIO_OPERADOR.email);
     expect(resultado.usuario.perfil).toBe("OPERADOR_ESTOQUE");
   });
@@ -129,8 +132,8 @@ describe("Autenticação - validação de payload", () => {
 });
 describe("Autenticação - JWT", () => {
   test("token válido acessa GET /api/perfil", async () => {
-    const { token } = await login(config.USUARIO_OPERADOR.email, config.USUARIO_OPERADOR.senha);
-    const resultado = await requisitar("/api/perfil", { token });
+    const { cookie } = await login(config.USUARIO_OPERADOR.email, config.USUARIO_OPERADOR.senha);
+    const resultado = await requisitar("/api/perfil", { cookie });
     expect(resultado.status).toBe(200);
     expect(resultado.corpo.sucesso).toBe(true);
     expect(resultado.corpo.usuario.email).toBe(config.USUARIO_OPERADOR.email);

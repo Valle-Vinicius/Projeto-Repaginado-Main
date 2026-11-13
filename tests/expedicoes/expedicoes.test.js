@@ -286,10 +286,9 @@ describe("Expedição - validação e erros", () => {
     expect(r.corpo.codigo).toBe("PRODUTO_NAO_ENCONTRADO");
   });
 
-  test("tipo ENTRADA na rota de expedição revela controller compartilhado", async () => {
-
-
+  test("rota de expedição recusa tipo ENTRADA sem alterar estoque", async () => {
     const produto = await criarProdutoComSaldo(10, "TipoEntrada");
+    const saldoAntes = await saldoDoProduto(produto.id);
 
     const r = await requisitar("/api/expedicoes", {
       metodo: "POST",
@@ -303,6 +302,8 @@ describe("Expedição - validação e erros", () => {
       },
     });
 
-    expect([201, 400, 422]).toContain(r.status);
+    expect(r.status).toBe(400);
+    expect(r.corpo.codigo).toBe("TIPO_MOVIMENTACAO_INVALIDO");
+    expect(await saldoDoProduto(produto.id)).toBe(saldoAntes);
   });
 });

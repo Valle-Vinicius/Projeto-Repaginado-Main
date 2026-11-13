@@ -55,6 +55,24 @@ async function registrarMovimentacao(req, res) {
   }
 }
 
+function registrarMovimentacaoDoTipo(tipoEsperado) {
+  return async function registrar(req, res) {
+    const tipoRecebido = String(req.body?.tipo || '')
+      .trim()
+      .toUpperCase();
+
+    if (tipoRecebido !== tipoEsperado) {
+      return res.status(400).json({
+        sucesso: false,
+        codigo: 'TIPO_MOVIMENTACAO_INVALIDO',
+        mensagem: `Esta rota aceita somente movimentações do tipo ${tipoEsperado}.`,
+      });
+    }
+
+    return registrarMovimentacao(req, res);
+  };
+}
+
 async function ajustarEstoque(req, res) {
   try {
     const dados = await estoqueService.ajustarEstoque(req.body || {}, req.usuario);
@@ -73,5 +91,7 @@ module.exports = {
   listarExpedicoes,
   listarRecebimentos,
   registrarMovimentacao,
+  registrarRecebimento: registrarMovimentacaoDoTipo('ENTRADA'),
+  registrarExpedicao: registrarMovimentacaoDoTipo('SAIDA'),
   ajustarEstoque,
 };

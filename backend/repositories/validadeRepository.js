@@ -1,7 +1,12 @@
 const { executarQuery } = require('../config/database');
 
 function filtrosSql(status, busca) {
-  const where = ['p.ativo = TRUE', 'l.ativo = TRUE', 'l.data_validade IS NOT NULL'];
+  const where = [
+    'p.ativo = TRUE',
+    'l.ativo = TRUE',
+    'l.quantidade_atual > 0',
+    'l.data_validade IS NOT NULL',
+  ];
   const valores = [];
 
   if (status === 'VENCIDOS') {
@@ -71,6 +76,7 @@ async function obterResumo() {
     FROM lotes l
     INNER JOIN produtos p ON p.id = l.produto_id
     WHERE p.ativo = TRUE AND l.ativo = TRUE AND l.data_validade IS NOT NULL
+      AND l.quantidade_atual > 0
   `);
 
   return {

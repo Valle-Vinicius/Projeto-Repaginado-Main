@@ -236,12 +236,11 @@ async function desativarProduto(id) {
     throw erroComStatus('Produto inválido.', 400, 'PRODUTO_INVALIDO');
   }
 
-  const existente = await produtoRepository.buscarProdutoPorId(produtoId);
-  if (!existente) {
+  const desativado = await produtoRepository.desativarProduto(produtoId);
+  if (!desativado) {
     throw erroComStatus('Produto não encontrado.', 404, 'PRODUTO_NAO_ENCONTRADO');
   }
 
-  await produtoRepository.desativarProduto(produtoId);
   return { sucesso: true, mensagem: 'Produto desativado com sucesso.' };
 }
 

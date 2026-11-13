@@ -1,4 +1,4 @@
-const { executarQuery } = require('../config/database');
+const { executarQuery, executarTransacao } = require('../config/database');
 
 async function buscarCategorias() {
   return executarQuery(`
@@ -63,7 +63,13 @@ async function buscarProdutos({ busca = '', categoriaId = null, pagina = 1, limi
       'ATIVO' AS statusProduto
     FROM produtos p
     LEFT JOIN categorias c ON c.id = p.categoria_id
-    LEFT JOIN lotes l ON l.produto_id = p.id
+    LEFT JOIN lotes l
+      ON l.produto_id = p.id
+     AND l.ativo = TRUE
+     AND (
+       l.data_validade >= CURRENT_DATE
+       OR (l.data_validade IS NULL AND p.possui_validade = FALSE)
+     )
     LEFT JOIN (
       SELECT produto_id, MAX(criado_em) AS ultimaMovimentacao
       FROM movimentacoes
@@ -151,7 +157,13 @@ async function buscarProdutoPorId(id) {
       'ATIVO' AS statusProduto
     FROM produtos p
     LEFT JOIN categorias c ON c.id = p.categoria_id
-    LEFT JOIN lotes l ON l.produto_id = p.id
+    LEFT JOIN lotes l
+      ON l.produto_id = p.id
+     AND l.ativo = TRUE
+     AND (
+       l.data_validade >= CURRENT_DATE
+       OR (l.data_validade IS NULL AND p.possui_validade = FALSE)
+     )
     WHERE p.id = ? AND p.ativo = TRUE
     GROUP BY p.id, p.codigo, p.nome, p.descricao, p.categoria_id, c.nome,
       p.estoque_minimo, p.unidade, p.possui_validade, p.criado_em, p.atualizado_em
@@ -196,9 +208,34 @@ async function atualizarProduto(id, campos) {
 }
 
 async function desativarProduto(id) {
-  await executarQuery('UPDATE produtos SET ativo = FALSE, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?', [
-    id,
-  ]);
+  return executarTransacao(async (conexao) => {
+    const [produtos] = await conexao.execute(
+      'SELECT id FROM produtos WHERE id = ? AND ativo = TRUE FOR UPDATE',
+      [id]
+    );
+    if (!produtos.length) {
+      return false;
+    }
+
+    const [lotes] = await conexao.execute(
+      'SELECT id FROM lotes WHERE produto_id = ? AND ativo = TRUE AND quantidade_atual > 0 LIMIT 1',
+      [id]
+    );
+    if (lotes.length) {
+      const erro = new Error(
+        'Não é possível desativar o produto enquanto houver saldo em lotes ativos. Ajuste ou descarte o estoque primeiro.'
+      );
+      erro.statusCode = 409;
+      erro.codigo = 'PRODUTO_COM_ESTOQUE';
+      throw erro;
+    }
+
+    await conexao.execute(
+      'UPDATE produtos SET ativo = FALSE, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?',
+      [id]
+    );
+    return true;
+  });
 }
 
 module.exports = {

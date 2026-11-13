@@ -8,7 +8,7 @@
 const { config } = require("../helpers/env");
 const { iniciarServidor, encerrarServidor, requisitar, login } = require("../helpers/server");
 const { criarProdutoViaApi, sufixo, limparPrefixo } = require("../helpers/fixtures");
-const { consultar } = require("../helpers/db");
+const { consultar, executar } = require("../helpers/db");
 
 let token;
 
@@ -117,8 +117,8 @@ describe("Produtos - listagem e filtros", () => {
     const resultado = await requisitar("/api/produtos", { token });
     expect(resultado.status).toBe(200);
     expect(resultado.corpo.sucesso).toBe(true);
-    expect(Array.isArray(resultado.corpo.produtos)).toBe(true);
-    const produto = resultado.corpo.produtos[0];
+    expect(Array.isArray(resultado.corpo.dados)).toBe(true);
+    const produto = resultado.corpo.dados[0];
     expect(produto).toHaveProperty("id");
     expect(produto).toHaveProperty("sku");
     expect(produto).toHaveProperty("estoque");
@@ -136,7 +136,7 @@ describe("Produtos - listagem e filtros", () => {
   test("filtro statusEstoque SEM_ESTOQUE retorna produtos com estoque 0", async () => {
     const resultado = await requisitar("/api/produtos?statusEstoque=SEM_ESTOQUE", { token });
     expect(resultado.status).toBe(200);
-    for (const produto of resultado.corpo.produtos) {
+    for (const produto of resultado.corpo.dados) {
       expect(String(produto.status)).toBe("SEM_ESTOQUE");
     }
   });
@@ -161,7 +161,7 @@ describe("Produtos - listagem e filtros", () => {
 
     const resultado = await requisitar("/api/produtos?busca=Fralda Babycare", { token });
     expect(resultado.status).toBe(200);
-    expect(resultado.corpo.produtos.length).toBeGreaterThan(0);
+    expect(resultado.corpo.dados.length).toBeGreaterThan(0);
   });
 
   test("produto recém-criado aparece no início da primeira página", async () => {
@@ -179,14 +179,73 @@ describe("Produtos - listagem e filtros", () => {
   });
 });
 
-describe("Produtos - cobertura ausente (registro de lacuna)", () => {
-  test("NÃO existe rota de edição/inativação/consulta por id de produto", async () => {
-    // As rotas reais são apenas GET /, GET /categorias e POST /.
-    // Este teste documenta a lacuna: não há endpoint para editar produto.
-    const patch = await requisitar("/api/produtos/1", { metodo: "PATCH", token, corpo: { nome: "X" } });
-    const del = await requisitar("/api/produtos/1", { metodo: "DELETE", token });
-    // O servidor responde 404 ROTA_NAO_ENCONTRADA para rotas inexistentes.
-    expect(patch.status).toBe(404);
+describe("Produtos - edição e inativação", () => {
+  test("bloqueia a desativação de produto que ainda possui saldo", async () => {
+    const codigo = `TESTE-PROD-SALDO-${sufixo()}`;
+    const criado = await criarProdutoViaApi(token, {
+      codigo,
+      nome: "Produto com saldo ativo",
+      categoriaId: await categoriaValida(),
+    });
+    expect(criado.status).toBe(201);
+    const produtoId = criado.corpo.produto.id;
+
+    try {
+      const entrada = await requisitar("/api/recebimentos", {
+        metodo: "POST",
+        token,
+        corpo: {
+          tipo: "ENTRADA",
+          produtoId,
+          quantidade: 30,
+          numeroLote: `LOTE-${sufixo()}`,
+        },
+      });
+      expect(entrada.status).toBe(201);
+
+      const desativar = await requisitar(`/api/produtos/${produtoId}/desativar`, {
+        metodo: "PATCH",
+        token,
+      });
+      expect(desativar.status).toBe(409);
+      expect(desativar.corpo.codigo).toBe("PRODUTO_COM_ESTOQUE");
+
+      const lista = await requisitar(`/api/produtos?busca=${codigo}`, { token });
+      expect(lista.corpo.dados.some((produto) => produto.id === produtoId)).toBe(true);
+    } finally {
+      await executar("DELETE FROM movimentacoes WHERE produto_id = ?", [produtoId]);
+      await executar("DELETE FROM lotes WHERE produto_id = ?", [produtoId]);
+      await executar("DELETE FROM produtos WHERE id = ?", [produtoId]);
+    }
+  });
+
+  test("PATCH atualiza produto e rota de desativação faz inativação lógica", async () => {
+    const criado = await criarProdutoViaApi(token, {
+      codigo: `TESTE-PROD-EDITAR-${sufixo()}`,
+      nome: "Produto antes da edição",
+      categoriaId: await categoriaValida(),
+    });
+    expect(criado.status).toBe(201);
+
+    const patch = await requisitar(`/api/produtos/${criado.corpo.produto.id}`, {
+      metodo: "PATCH",
+      token,
+      corpo: { nome: "Produto depois da edição" },
+    });
+    expect(patch.status).toBe(200);
+    expect(patch.corpo.produto.nome).toBe("Produto depois da edição");
+
+    const desativar = await requisitar(
+      `/api/produtos/${criado.corpo.produto.id}/desativar`,
+      { metodo: "PATCH", token },
+    );
+    expect(desativar.status).toBe(200);
+    expect(desativar.corpo.sucesso).toBe(true);
+
+    const del = await requisitar(`/api/produtos/${criado.corpo.produto.id}`, {
+      metodo: "DELETE",
+      token,
+    });
     expect(del.status).toBe(404);
   });
 });

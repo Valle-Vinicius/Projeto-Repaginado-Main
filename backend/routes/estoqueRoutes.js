@@ -5,6 +5,7 @@ const { PERFIS_ESTOQUE } = require('../services/estoqueService');
 
 const router = express.Router();
 const autorizarEstoque = permitirPerfis(...PERFIS_ESTOQUE);
+const autorizarAjuste = permitirPerfis('GERENTE', 'ADMINISTRADOR');
 
 router.get('/', verificarToken, autorizarEstoque, estoqueController.listarEstoque);
 router.post(
@@ -13,6 +14,6 @@ router.post(
   autorizarEstoque,
   estoqueController.registrarMovimentacao
 );
-router.post('/ajuste', verificarToken, autorizarEstoque, estoqueController.ajustarEstoque);
+router.post('/ajuste', verificarToken, autorizarAjuste, estoqueController.ajustarEstoque);
 
 module.exports = router;

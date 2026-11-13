@@ -129,7 +129,7 @@ async function requisitarAPI(caminho, opcoes = {}) {
 
 function definirMetricas() {
   const resumo = estoqueDados.resumo || {};
-  estoqueElementos.total.textContent = formatarNumero(resumo.totalEmEstoque ?? 0);
+  estoqueElementos.total.textContent = formatarNumero(resumo.estoqueTotal ?? 0);
   estoqueElementos.baixo.textContent = formatarNumero(resumo.estoqueBaixo ?? 0);
   estoqueElementos.semEstoque.textContent = formatarNumero(resumo.semEstoque ?? 0);
   estoqueElementos.movimentacoesHoje.textContent = formatarNumero(resumo.movimentacoesHoje ?? 0);
@@ -141,7 +141,7 @@ function estadoEstoque(produto) {
   if (estoque === 0) {
     return 'SEM_ESTOQUE';
   }
-  if (estoque < minimo) {
+  if (estoque <= minimo) {
     return 'BAIXO';
   }
   return 'NORMAL';
@@ -237,12 +237,12 @@ function criarLinhaMovimentacao(movimentacao) {
     tipo === 'ENTRADA' ? `+${quantidade}` : tipo === 'SAIDA' ? `−${quantidade}` : quantidade;
 
   linha.append(
-    criarCelula(formatarDataHora(movimentacao.criadoEm), 'movimentacao-data'),
+    criarCelula(formatarDataHora(movimentacao.data), 'movimentacao-data'),
     criarCelula(movimentacao.produto || 'Produto não identificado', 'movimentacao-produto'),
     tipoCell,
     quantidadeCell,
     criarCelula(movimentacao.responsavel || '—', 'movimentacao-responsavel'),
-    criarCelula(movimentacao.motivo || '—', 'movimentacao-motivo')
+    criarCelula(movimentacao.observacao || '—', 'movimentacao-motivo')
   );
 
   return linha;
@@ -398,7 +398,6 @@ async function registrarMovimentacao(evento) {
     produtoId: Number(produto.id),
     quantidade,
     numeroLote: estoqueElementos.lote.value.trim() || null,
-    fornecedor: entrada ? estoqueElementos.observacao.value.trim() || null : null,
     documento: null,
     dataValidade,
     localizacaoId,
@@ -423,7 +422,7 @@ async function registrarMovimentacao(evento) {
   } finally {
     estoqueElementos.enviar.disabled = false;
     estoqueElementos.enviar.textContent =
-      tipo === 'ENTRADA' ? 'Registrar entrada' : 'Registrar saída';
+      entrada ? 'Registrar entrada' : 'Registrar saída';
   }
 }
 

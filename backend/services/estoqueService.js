@@ -15,6 +15,14 @@ function idUsuario(usuario) {
   return Number(usuario?.id || usuario?.usuarioId || 0) || null;
 }
 
+function combinarMotivoEObservacao(motivo, observacao) {
+  const texto = [motivo, observacao].filter(Boolean).join(' — ') || null;
+  if (texto && texto.length > 255) {
+    throw erroValidacao('O motivo e a observação juntos ultrapassam 255 caracteres.');
+  }
+  return texto;
+}
+
 function normalizarProduto(produto) {
   const estoque = Number(produto.estoqueAtual ?? produto.estoque ?? 0);
   const estoqueMinimo = Number(produto.estoqueMinimo ?? 0);
@@ -98,6 +106,7 @@ async function registrarMovimentacao(dados, usuario) {
     const saida = expedicaoValidator.validarSaida(dados);
     return estoqueRepository.registrarSaida({
       ...saida,
+      observacao: combinarMotivoEObservacao(saida.motivo, saida.observacao),
       usuarioId,
       auditoriaRepository,
     });
@@ -107,6 +116,7 @@ async function registrarMovimentacao(dados, usuario) {
     const entrada = recebimentoValidator.validarEntrada(dados);
     return estoqueRepository.registrarEntrada({
       ...entrada,
+      observacao: combinarMotivoEObservacao(entrada.motivo, entrada.observacao),
       usuarioId,
       auditoriaRepository,
     });
@@ -126,11 +136,26 @@ async function ajustarEstoque(dados, usuario) {
     throw erroValidacao('Quantidade inválida.');
   }
 
+  const observacao = String(dados.observacao ?? '').trim();
+  if (!observacao) {
+    throw erroValidacao('Informe uma justificativa para o ajuste.', 'JUSTIFICATIVA_OBRIGATORIA');
+  }
+  if (observacao.length > 255) {
+    throw erroValidacao('A justificativa ultrapassa o limite de 255 caracteres.');
+  }
+
+  const numeroLote = String(dados.numeroLote ?? '').trim() || null;
+  if (numeroLote && numeroLote.length > 80) {
+    throw erroValidacao('O número do lote ultrapassa o limite de 80 caracteres.');
+  }
+
   return estoqueRepository.registrarAjuste({
     produtoId,
     quantidadeNova,
     usuarioId: idUsuario(usuario),
-    observacao: dados.observacao,
+    observacao,
+    numeroLote,
+    dataValidade: recebimentoValidator.dataValidadeOpcional(dados.dataValidade),
     auditoriaRepository,
   });
 }

@@ -132,6 +132,33 @@ describe("Autorização - gestão de usuários (gerente e administrador)", () =>
   });
 });
 
+describe("Autorização - ajuste de estoque (gerente e administrador)", () => {
+  it("operador não pode ajustar estoque -> 403", async () => {
+    const token = await tokenDe(config.USUARIO_OPERADOR);
+    const resultado = await requisitar("/api/estoque/ajuste", {
+      metodo: "POST",
+      token,
+      corpo: {},
+    });
+    expect(resultado.status).toBe(403);
+    expect(resultado.corpo.codigo).toBe("PERMISSAO_NEGADA");
+  });
+
+  it.each([
+    ["gerente", config.USUARIO_GERENTE],
+    ["administrador", config.USUARIO_ADMIN],
+  ])("%s pode alcançar a validação do ajuste", async (_perfil, usuario) => {
+    const token = await tokenDe(usuario);
+    const resultado = await requisitar("/api/estoque/ajuste", {
+      metodo: "POST",
+      token,
+      corpo: {},
+    });
+    expect(resultado.status).toBe(400);
+    expect(resultado.corpo.codigo).not.toBe("PERMISSAO_NEGADA");
+  });
+});
+
 describe("Autorização - sem token e token inválido", () => {
   it("GET /api/produtos sem token -> 401", async () => {
     const resultado = await requisitar("/api/produtos");
