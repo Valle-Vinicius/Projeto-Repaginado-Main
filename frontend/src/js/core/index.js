@@ -1,3 +1,4 @@
+import './vlibras.js';
 import { montarSidebar } from './sidebar.js';
 import { configurarTabelasResponsivas } from './responsive-tables.js';
 

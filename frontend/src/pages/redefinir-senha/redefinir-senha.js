@@ -1,3 +1,5 @@
+import '../../js/core/vlibras.js';
+
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
