@@ -67,13 +67,7 @@ async function buscarResumo() {
           ELSE 0
         END), 0) AS estoqueAtual
       FROM produtos p
-      LEFT JOIN lotes l
-        ON l.produto_id = p.id
-       AND l.ativo = TRUE
-       AND (
-         l.data_validade >= CURRENT_DATE
-         OR (l.data_validade IS NULL AND p.possui_validade = FALSE)
-       )
+      LEFT JOIN lotes l ON l.produto_id = p.id
       WHERE p.ativo = TRUE
       GROUP BY p.id, p.estoque_minimo
     ) posicao
@@ -184,13 +178,7 @@ async function buscarEstoqueBaixo() {
       END), 0) AS estoqueAtual,
       'ESTOQUE_BAIXO' AS status
     FROM produtos p
-    LEFT JOIN lotes l
-      ON l.produto_id = p.id
-     AND l.ativo = TRUE
-     AND (
-       l.data_validade >= CURRENT_DATE
-       OR (l.data_validade IS NULL AND p.possui_validade = FALSE)
-     )
+    LEFT JOIN lotes l ON l.produto_id = p.id
     WHERE p.ativo = TRUE
     GROUP BY p.id, p.codigo, p.nome, p.estoque_minimo
     HAVING COALESCE(SUM(CASE
@@ -219,10 +207,6 @@ async function buscarSemEstoque() {
     LEFT JOIN lotes l
       ON l.produto_id = p.id
      AND l.ativo = TRUE
-     AND (
-       l.data_validade >= CURRENT_DATE
-       OR (l.data_validade IS NULL AND p.possui_validade = FALSE)
-     )
     WHERE p.ativo = TRUE
     GROUP BY p.id, p.codigo, p.nome, p.estoque_minimo
     HAVING COALESCE(SUM(l.quantidade_atual), 0) = 0
@@ -246,7 +230,7 @@ async function buscarValidadesProximas(dias = 30) {
       p.nome,
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
-      TO_CHAR(l.data_validade, 'YYYY-MM-DD') AS dataValidade,
+      l.data_validade AS dataValidade,
       (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       CASE
         WHEN (l.data_validade - CURRENT_DATE) <= 7 THEN 'CRITICO'
@@ -276,7 +260,7 @@ async function buscarVencidos() {
       p.nome,
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
-      TO_CHAR(l.data_validade, 'YYYY-MM-DD') AS dataValidade,
+      l.data_validade AS dataValidade,
       (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       'VENCIDO' AS status
     FROM lotes l

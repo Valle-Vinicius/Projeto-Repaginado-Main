@@ -31,6 +31,8 @@ const el = {
   exitArea: document.querySelector('#reportExitArea'),
   entryLine: document.querySelector('#reportEntryLine'),
   exitLine: document.querySelector('#reportExitLine'),
+  entryPoints: document.querySelector('#reportEntryPoints'),
+  exitPoints: document.querySelector('#reportExitPoints'),
   labels: document.querySelector('#reportChartLabels'),
   chartEmpty: document.querySelector('#reportChartEmpty'),
   categoryList: document.querySelector('#reportCategoryList'),
@@ -136,56 +138,140 @@ function render() {
 }
 
 function renderChart() {
-  const serie = Array.isArray(dados.serie) ? dados.serie : [];
-  if (serie.length === 0) {
-    el.chart.hidden = true;
-    el.labels.replaceChildren();
-    el.labels.hidden = true;
-    el.chartEmpty.textContent = 'Não existem movimentações no período selecionado.';
-    el.chartEmpty.hidden = false;
-    return;
-  }
+  const serie = montarSerieGrafico(
+    Array.isArray(dados.serie) ? dados.serie : [],
+  );
   el.chart.hidden = false;
   el.labels.hidden = false;
-  el.chartEmpty.hidden = true;
+  const possuiMovimentacoes = serie.some(
+    (item) => item.entradas > 0 || item.saidas > 0,
+  );
+  el.chartEmpty.textContent =
+    'Não existem movimentações no período selecionado.';
+  el.chartEmpty.hidden = possuiMovimentacoes;
 
-  const labels = serie.map((s) => dataCurta(s.label || s.periodo || s.data || ''));
-  const entradas = serie.map((s) => Number(s.entradas || s.entrada || 0));
-  const saidas = serie.map((s) => Number(s.saidas || s.saida || 0));
+  const entradas = serie.map((item) => item.entradas);
+  const saidas = serie.map((item) => item.saidas);
 
   const maxValor = Math.max(...entradas, ...saidas, 1);
+  const posicaoX = (indice) =>
+    serie.length === 1 ? 360 : (indice / (serie.length - 1)) * 720;
+  const posicaoY = (valor) => 220 - (valor / maxValor) * 180;
 
   el.labels.replaceChildren();
-  labels.forEach((label, i) => {
+  const indicesRotulos = selecionarIndicesRotulos(serie.length);
+  indicesRotulos.forEach((indice) => {
     const div = document.createElement('div');
     div.className = 'report-label';
-    div.textContent = label;
+    div.textContent = dataCurta(serie[indice].data);
     el.labels.appendChild(div);
   });
+  el.labels.style.justifyContent =
+    indicesRotulos.length === 1 ? 'center' : 'space-between';
 
-  const entradasPath = entradas
-    .map((v, i) => {
-      const x = (i / (entradas.length - 1 || 1)) * 720;
-      const y = 220 - (v / maxValor) * 180;
-      return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
-    })
-    .join(' ');
+  const criarLinha = (valores) =>
+    valores
+      .map(
+        (valor, indice) =>
+          `${indice === 0 ? 'M' : 'L'}${posicaoX(indice)} ${posicaoY(valor)}`,
+      )
+      .join(' ');
+  const entradasPath = criarLinha(entradas);
   el.entryLine.setAttribute('d', entradasPath);
+  el.entryArea.setAttribute(
+    'd',
+    serie.length > 1
+      ? `M0 220 ${entradasPath} L720 220 Z`
+      : 'M0 220 L720 220 Z',
+  );
 
-  const entradasArea = `M0 220 ${entradasPath} L720 220 Z`;
-  el.entryArea.setAttribute('d', entradasArea);
-
-  const saidasPath = saidas
-    .map((v, i) => {
-      const x = (i / (saidas.length - 1 || 1)) * 720;
-      const y = 220 - (v / maxValor) * 180;
-      return `${i === 0 ? 'M' : 'L'}${x} ${y}`;
-    })
-    .join(' ');
+  const saidasPath = criarLinha(saidas);
   el.exitLine.setAttribute('d', saidasPath);
+  el.exitArea.setAttribute(
+    'd',
+    serie.length > 1 ? `M0 220 ${saidasPath} L720 220 Z` : 'M0 220 L720 220 Z',
+  );
+  renderPontosUnicos(el.entryPoints, entradas, posicaoX, posicaoY);
+  renderPontosUnicos(el.exitPoints, saidas, posicaoX, posicaoY);
+}
 
-  const saidasArea = `M0 220 ${saidasPath} L720 220 Z`;
-  el.exitArea.setAttribute('d', saidasArea);
+function montarSerieGrafico(serie) {
+  const porData = new Map();
+  serie.forEach((item) => {
+    const data = String(item.data || item.label || item.periodo || '').slice(
+      0,
+      10,
+    );
+    if (!/^\d{4}-\d{2}-\d{2}$/u.test(data)) {
+      return;
+    }
+    const valores = porData.get(data) || { data, entradas: 0, saidas: 0 };
+    valores.entradas += Number(item.entradas || item.entrada || 0);
+    valores.saidas += Number(item.saidas || item.saida || 0);
+    porData.set(data, valores);
+  });
+
+  const datas = new Set(diasDoPeriodo());
+  porData.forEach((_, data) => datas.add(data));
+  return [...datas]
+    .sort()
+    .map((data) => porData.get(data) || { data, entradas: 0, saidas: 0 });
+}
+
+function diasDoPeriodo() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const inicio = new Date(hoje);
+  if (el.period.value === '7d') {
+    inicio.setDate(inicio.getDate() - 6);
+  } else if (el.period.value === '30d') {
+    inicio.setDate(inicio.getDate() - 29);
+  } else if (el.period.value === 'mes') {
+    inicio.setDate(1);
+  }
+
+  const datas = [];
+  for (
+    const data = new Date(inicio);
+    data <= hoje;
+    data.setDate(data.getDate() + 1)
+  ) {
+    datas.push(
+      `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(
+        data.getDate(),
+      ).padStart(2, '0')}`,
+    );
+  }
+  return datas;
+}
+
+function selecionarIndicesRotulos(quantidade) {
+  if (quantidade <= 5) {
+    return Array.from({ length: quantidade }, (_, indice) => indice);
+  }
+  return [
+    ...new Set(
+      [0, 0.25, 0.5, 0.75, 1].map((fracao) =>
+        Math.round((quantidade - 1) * fracao),
+      ),
+    ),
+  ];
+}
+
+function renderPontosUnicos(container, valores, posicaoX, posicaoY) {
+  container.replaceChildren();
+  if (valores.length !== 1) {
+    return;
+  }
+  const ponto = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'circle',
+  );
+  ponto.setAttribute('cx', String(posicaoX(0)));
+  ponto.setAttribute('cy', String(posicaoY(valores[0])));
+  ponto.setAttribute('r', '4');
+  ponto.setAttribute('class', 'report-point');
+  container.appendChild(ponto);
 }
 
 function renderCategories() {
@@ -277,6 +363,8 @@ function renderFalha(mensagem) {
   el.chart.hidden = true;
   el.labels.replaceChildren();
   el.labels.hidden = true;
+  el.entryPoints.replaceChildren();
+  el.exitPoints.replaceChildren();
   el.chartEmpty.textContent = 'O gráfico ficará disponível quando o relatório carregar.';
   el.chartEmpty.hidden = false;
   el.categoryList.replaceChildren();

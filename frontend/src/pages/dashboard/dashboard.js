@@ -4,7 +4,6 @@ import {
   esconderCarregamento,
   mostrarCarregamento,
   formatarNumero,
-  formatarData,
   formatarDataHora,
 } from '../../js/core/ui.js';
 
@@ -508,7 +507,7 @@ function renderizarValidades(resumo, alertas) {
     const detalhe = document.createElement('span');
     nome.textContent = lote.nome;
     detalhe.textContent = vencido
-      ? `Vencido · lote ${lote.numeroLote} · ${formatarData(lote.dataValidade)}`
+      ? `Vencido · lote ${lote.numeroLote} · ${lote.dataValidade}`
       : `${formatarNumero(lote.diasParaVencer)} dia(s) · lote ${lote.numeroLote}`;
     texto.append(nome, detalhe);
 

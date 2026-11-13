@@ -99,6 +99,20 @@ CREATE TABLE IF NOT EXISTS movimentacoes (
   CONSTRAINT chk_movimentacao_quantidade CHECK (quantidade > 0 OR tipo = 'AJUSTE')
 );
 
+CREATE TABLE IF NOT EXISTS integracao_erp_eventos (
+  id SERIAL PRIMARY KEY,
+  evento_externo_id VARCHAR(120) NOT NULL UNIQUE
+    CHECK (CHAR_LENGTH(TRIM(evento_externo_id)) BETWEEN 1 AND 120),
+  payload_hash CHAR(64) NOT NULL,
+  status VARCHAR(16) NOT NULL CHECK (status IN ('PROCESSANDO', 'CONCLUIDO', 'FALHA')),
+  resposta JSONB,
+  erro_status INTEGER,
+  erro_codigo VARCHAR(80),
+  erro_mensagem VARCHAR(255),
+  criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
   id SERIAL PRIMARY KEY,
   usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -117,6 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_lotes_validade ON lotes(data_validade);
 CREATE INDEX IF NOT EXISTS idx_lotes_produto ON lotes(produto_id);
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_data_tipo ON movimentacoes(criado_em, tipo, status);
 CREATE INDEX IF NOT EXISTS idx_movimentacoes_produto ON movimentacoes(produto_id);
+CREATE INDEX IF NOT EXISTS idx_integracao_erp_status ON integracao_erp_eventos(status, criado_em);
 CREATE INDEX IF NOT EXISTS idx_reset_token ON password_reset_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_reset_usuario ON password_reset_tokens(usuario_id);
 

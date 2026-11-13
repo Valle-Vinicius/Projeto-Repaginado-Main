@@ -26,6 +26,13 @@ const options = {
           name: 'babycareToken',
           description: 'JWT de autenticação armazenado em cookie httpOnly.',
         },
+        ErpApiKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-ERP-API-Key',
+          description:
+            'Credencial servidor-servidor configurada em ERP_API_KEY.',
+        },
       },
       schemas: {
         Erro: {
@@ -54,7 +61,10 @@ const options = {
             id: { type: 'integer', example: 42 },
             codigo: { type: 'string', example: 'PROD-001' },
             nome: { type: 'string', example: 'Fralda tamanho M' },
-            descricao: { type: 'string', example: 'Fralda descartável tamanho médio' },
+            descricao: {
+              type: 'string',
+              example: 'Fralda descartável tamanho médio',
+            },
             sku: { type: 'string', example: 'SKU-12345' },
             categoriaId: { type: 'integer', example: 3 },
             categoria: { type: 'string', example: 'Higiene' },
@@ -63,7 +73,10 @@ const options = {
             estoqueMinimo: { type: 'number', example: 10 },
             statusProduto: { type: 'string', example: 'ATIVO' },
             possuiValidade: { type: 'boolean', example: true },
-            ultimaMovimentacao: { type: 'string', example: '2026-11-05T14:20:00Z' },
+            ultimaMovimentacao: {
+              type: 'string',
+              example: '2026-11-05T14:20:00Z',
+            },
           },
         },
         Categoria: {

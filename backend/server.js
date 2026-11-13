@@ -17,6 +17,7 @@ const validadeRoutes = require('./routes/validadeRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const perfilRoutes = require('./routes/perfilRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
+const integracaoErpRoutes = require('./routes/integracaoErpRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 const { verificarToken } = require('./middlewares/authMiddleware');
@@ -55,7 +56,7 @@ app.use(
     origin: ORIGENS_PERMITIDAS,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-ERP-API-Key', 'Idempotency-Key'],
   })
 );
 
@@ -100,7 +101,7 @@ if (IS_PRODUCAO) {
     } catch (erro) {
       res.clearCookie('babycareToken', {
         path: '/',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
       });
       return res.redirect(302, '/pages/login.html');
@@ -207,6 +208,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/usuario', usuarioRoutes);
 app.use('/api/perfil', perfilRoutes);
 app.use('/api/auth', passwordResetRoutes);
+app.use('/api/integracoes/erp/v1', integracaoErpRoutes);
 
 // Documentação da API (apenas autenticados)
 app.get('/api-docs', verificarToken, swaggerUi.serve, swaggerUi.setup(swaggerSpec));

@@ -172,6 +172,16 @@
 .report-area.exit-area {
   fill: #52bfae;
 }
+.report-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.entry-points .report-point {
+  fill: #2e5bd6;
+}
+.exit-points .report-point {
+  fill: #52bfae;
+}
 .report-chart-labels {
   position: absolute;
   left: 18px;
