@@ -11,11 +11,7 @@
   <link rel="stylesheet" href="../../css/dashboard.css?v=20260828" />
   <link rel="stylesheet" href="../../css/relatorios.css?v=20260828" />
 </head>
-<body class="dashboard-page reports-page">
-  <div id="pageLoader" class="page-loader" aria-hidden="true">
-    <div class="loader-spinner"></div>
-    <span>Carregando relatórios...</span>
-  </div>
+<body class="dashboard-page reports-page" data-report-state="loading">
   <div class="dashboard-shell">
     <aside id="sidebar" class="sidebar" aria-label="Navegação principal"></aside>
     <main class="dashboard-main">
@@ -69,6 +65,34 @@
           <label><span>Movimentação</span><select id="reportType"><option value="">Todas</option><option value="ENTRADA">Entradas</option><option value="SAIDA">Saídas</option></select></label>
           <label><span>Categoria</span><select id="reportCategory"><option value="">Todas as categorias</option></select></label>
           <label><span>Produto</span><select id="reportProduct"><option value="">Todos os produtos</option></select></label>
+        </section>
+        <section class="reports-skeleton" role="status" aria-label="Carregando dados do relatório">
+          <div class="report-skeleton-metrics" aria-hidden="true">
+            <div class="report-skeleton-card"><span class="ui-skeleton skeleton-line"></span><span class="ui-skeleton skeleton-value"></span><span class="ui-skeleton skeleton-line short"></span></div>
+            <div class="report-skeleton-card"><span class="ui-skeleton skeleton-line"></span><span class="ui-skeleton skeleton-value"></span><span class="ui-skeleton skeleton-line short"></span></div>
+            <div class="report-skeleton-card"><span class="ui-skeleton skeleton-line"></span><span class="ui-skeleton skeleton-value"></span><span class="ui-skeleton skeleton-line short"></span></div>
+            <div class="report-skeleton-card"><span class="ui-skeleton skeleton-line"></span><span class="ui-skeleton skeleton-value"></span><span class="ui-skeleton skeleton-line short"></span></div>
+          </div>
+          <div class="report-skeleton-grid">
+            <div class="report-skeleton-panel">
+              <div class="report-skeleton-panel-heading"><span class="ui-skeleton skeleton-line short"></span><span class="ui-skeleton skeleton-line"></span></div>
+              <div class="report-skeleton-chart" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div class="report-skeleton-panel">
+              <div class="report-skeleton-panel-heading"><span class="ui-skeleton skeleton-line short"></span><span class="ui-skeleton skeleton-line"></span></div>
+              <div class="report-skeleton-list" aria-hidden="true"><i class="ui-skeleton"></i><i class="ui-skeleton"></i><i class="ui-skeleton"></i></div>
+            </div>
+          </div>
+          <div class="report-skeleton-grid report-skeleton-grid-bottom">
+            <div class="report-skeleton-panel">
+              <div class="report-skeleton-panel-heading"><span class="ui-skeleton skeleton-line short"></span><span class="ui-skeleton skeleton-line"></span></div>
+              <div class="report-skeleton-list" aria-hidden="true"><i class="ui-skeleton"></i><i class="ui-skeleton"></i><i class="ui-skeleton"></i></div>
+            </div>
+            <div class="report-skeleton-panel">
+              <div class="report-skeleton-panel-heading"><span class="ui-skeleton skeleton-line short"></span><span class="ui-skeleton skeleton-line"></span></div>
+              <div class="report-skeleton-table" aria-hidden="true"><i class="ui-skeleton"></i><i class="ui-skeleton"></i><i class="ui-skeleton"></i></div>
+            </div>
+          </div>
         </section>
         <section class="reports-metrics">
           <article><span>Movimentações</span><strong id="reportMovements">—</strong><small>registros confirmados</small></article>

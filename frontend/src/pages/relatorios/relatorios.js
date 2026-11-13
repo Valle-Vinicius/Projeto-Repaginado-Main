@@ -4,8 +4,6 @@ import {
   carregarFiltros as carregarFiltrosCore,
 } from '../../js/core/index.js';
 import {
-  mostrarCarregamento,
-  esconderCarregamento,
   formatarNumero,
   formatarData,
   mostrarToast,
@@ -390,7 +388,7 @@ async function carregar() {
     if (filtrosPersistidos.tipo !== undefined) el.type.value = filtrosPersistidos.tipo;
   }
 
-  mostrarCarregamento('Gerando relatório...');
+  document.body.dataset.reportState = 'loading';
   el.error.hidden = true;
   try {
     dados = await api();
@@ -409,15 +407,16 @@ async function carregar() {
       }
     }
     render();
+    document.body.dataset.reportState = 'ready';
   } catch (x) {
     if ([401, 403].includes(x.status)) {
+      document.body.dataset.reportState = 'error';
       location.href = './login.html';
       return;
     }
     renderFalha(x.message || 'Não foi possível gerar o relatório.');
+    document.body.dataset.reportState = 'error';
     mostrarToast(x.message, 'error');
-  } finally {
-    esconderCarregamento();
   }
 }
 
@@ -515,7 +514,5 @@ function configurar() {
   conectarBuscaTopbar(el.period);
 }
 
-window.addEventListener('load', () => {
-  configurar();
-  carregar();
-});
+configurar();
+carregar();
