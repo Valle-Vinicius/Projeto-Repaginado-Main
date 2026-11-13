@@ -12,15 +12,15 @@
   "routes": [
     {
       "src": "/assets/(.*)",
-      "dest": "/frontend/dist/assets/$1"
+      "dest": "/assets/$1"
     },
     {
       "src": "/(login|dashboard|produtos|estoque|recebimentos|expedicoes|auditoria|relatorios|validade|usuarios|configuracoes|formulario-produto|redefinir-senha|erro404)(\\.html)?",
-      "dest": "/frontend/dist/src/pages/$1/index.html"
+      "dest": "/src/pages/$1/index.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/dist/src/pages/login/index.html"
+      "dest": "/src/pages/login/index.html"
     }
   ],
   "cleanUrls": true,
