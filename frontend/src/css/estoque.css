@@ -795,10 +795,17 @@ body.modal-open {
   font-size: 10px;
 }
 
-.lot-fields {
+.lot-fields,
+.shipment-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 13px;
+}
+
+.modal-field[hidden],
+.lot-fields[hidden],
+.shipment-fields[hidden] {
+  display: none;
 }
 
 #movementLocationField {
@@ -939,7 +946,8 @@ body.modal-open {
     width: 100%;
   }
 
-  .lot-fields {
+  .lot-fields,
+  .shipment-fields {
     grid-template-columns: 1fr;
   }
 

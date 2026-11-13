@@ -50,6 +50,10 @@ const estoqueElementos = {
   produto: document.querySelector('#movementProduct'),
   quantidade: document.querySelector('#movementQuantity'),
   motivo: document.querySelector('#movementReason'),
+  camposExpedicao: document.querySelector('#shipmentFields'),
+  destinatario: document.querySelector('#movementRecipient'),
+  destino: document.querySelector('#movementDestination'),
+  camposLote: document.querySelector('#lotFields'),
   lote: document.querySelector('#movementLot'),
   loteLabel: document.querySelector('#movementLotLabel'),
   validade: document.querySelector('#movementExpiration'),
@@ -330,13 +334,16 @@ function atualizarInformacaoProduto() {
 
   if (!produto) {
     estoqueElementos.estoqueDisponivel.hidden = true;
+    estoqueElementos.validadeCampo.hidden = true;
+    estoqueElementos.validade.required = false;
+    estoqueElementos.validade.disabled = true;
     return;
   }
 
   estoqueElementos.estoqueDisponivel.hidden = false;
   estoqueElementos.estoqueDisponivel.textContent = `Saldo disponível: ${formatarNumero(produto.estoqueAtual)} ${produto.unidade || 'unidade(s)'}`;
 
-  const exigeValidade = Boolean(produto.possuiValidade);
+  const exigeValidade = entrada && Boolean(produto.possuiValidade);
   estoqueElementos.validadeCampo.hidden = !exigeValidade;
   estoqueElementos.validade.required = exigeValidade;
   estoqueElementos.validade.disabled = !exigeValidade;
@@ -352,8 +359,16 @@ function abrirModal(tipo) {
   estoqueElementos.modalDescricao.textContent =
     tipo === 'ENTRADA'
       ? 'Registre a entrada no lote recebido para atualizar o saldo real.'
-      : 'Registre a saída do produto para atualizar o saldo real.';
+      : 'Informe o destinatário e o destino. A baixa seguirá FEFO, priorizando lotes válidos com vencimento mais próximo.';
   estoqueElementos.formulario.reset();
+  const entrada = tipo === 'ENTRADA';
+  estoqueElementos.camposLote.hidden = !entrada;
+  estoqueElementos.camposExpedicao.hidden = entrada;
+  estoqueElementos.destinatario.required = !entrada;
+  estoqueElementos.destino.required = !entrada;
+  estoqueElementos.validadeCampo.hidden = true;
+  estoqueElementos.validade.required = false;
+  estoqueElementos.validade.disabled = true;
   estoqueElementos.erro.hidden = true;
   estoqueElementos.estoqueDisponivel.hidden = true;
   estoqueElementos.modal.hidden = false;
@@ -389,18 +404,32 @@ async function registrarMovimentacao(evento) {
   }
 
   const entrada = estoqueElementos.tipo.value === 'ENTRADA';
+  const destinatario = estoqueElementos.destinatario.value.trim();
+  const destino = estoqueElementos.destino.value.trim();
+  if (!entrada && !destinatario) {
+    return mostrarErro('Informe o destinatário.');
+  }
+  if (!entrada && !destino) {
+    return mostrarErro('Informe o destino.');
+  }
+
   const possuiValidade = Boolean(produto.possuiValidade);
-  const dataValidade = possuiValidade ? estoqueElementos.validade.value || null : null;
-  const localizacaoId = Number(estoqueElementos.localizacao.value) || null;
+  const dataValidade =
+    entrada && possuiValidade ? estoqueElementos.validade.value || null : null;
+  const localizacaoId = entrada
+    ? Number(estoqueElementos.localizacao.value) || null
+    : null;
 
   const payload = {
     tipo: entrada ? 'ENTRADA' : 'SAIDA',
     produtoId: Number(produto.id),
     quantidade,
-    numeroLote: estoqueElementos.lote.value.trim() || null,
+    numeroLote: entrada ? estoqueElementos.lote.value.trim() || null : null,
     documento: null,
     dataValidade,
     localizacaoId,
+    destinatario: entrada ? null : destinatario,
+    destino: entrada ? null : destino,
     motivo: estoqueElementos.motivo.value,
     observacao: estoqueElementos.observacao.value.trim() || null,
   };

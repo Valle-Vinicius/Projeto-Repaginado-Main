@@ -173,6 +173,14 @@
         <label class="modal-field" for="movementReason">Motivo <span>*</span>
           <select id="movementReason" required></select>
         </label>
+        <div id="shipmentFields" class="shipment-fields" hidden>
+          <label class="modal-field" for="movementRecipient">Destinatário <span>*</span>
+            <input id="movementRecipient" type="text" maxlength="150" required placeholder="Quem receberá o material" />
+          </label>
+          <label class="modal-field" for="movementDestination">Destino <span>*</span>
+            <input id="movementDestination" type="text" maxlength="150" required placeholder="Setor, unidade ou endereço" />
+          </label>
+        </div>
         <div id="lotFields" class="lot-fields">
           <label id="movementLotLabel" class="modal-field" for="movementLot">Lote <span>*</span>
             <input id="movementLot" type="text" maxlength="80" placeholder="Ex.: LOTE-2026-08" />
