@@ -5,6 +5,8 @@ import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const FRONTEND_ROOT = path.resolve(__dirname, 'frontend');
+const FRONTEND_SRC = path.resolve(FRONTEND_ROOT, 'src');
 
 // Mapeamento de rotas MPA para arquivos HTML no desenvolvimento
 const PAGINAS_MPA = {
@@ -23,11 +25,15 @@ const PAGINAS_MPA = {
   'redefinir-senha': 'src/pages/redefinir-senha/index.html',
   erro404: 'src/pages/erro404/index.html',
 };
+const ENTRADAS_MPA = Object.fromEntries(
+  Object.entries(PAGINAS_MPA).map(([nome, arquivo]) => [
+    nome,
+    path.resolve(FRONTEND_ROOT, arquivo),
+  ])
+);
 
 // Middleware para servir páginas MPA e assets estáticos em desenvolvimento
 function mpaMiddleware() {
-  const frontendRoot = path.resolve(__dirname, 'frontend');
-  const srcRoot = path.resolve(frontendRoot, 'src');
   return {
     name: 'babycare-mpa',
     configureServer(server) {
@@ -41,7 +47,7 @@ function mpaMiddleware() {
         // Servir assets estáticos: /css/*, /assets/*
         const caminhoUrl = url.split('?')[0].split('#')[0];
         if (caminhoUrl.startsWith('/css/') || caminhoUrl.startsWith('/assets/')) {
-          const caminhoArquivo = path.resolve(srcRoot, caminhoUrl.slice(1));
+          const caminhoArquivo = path.resolve(FRONTEND_SRC, caminhoUrl.slice(1));
           if (fs.existsSync(caminhoArquivo)) {
             const ext = path.extname(caminhoArquivo).toLowerCase();
             const mimeTypes = {
@@ -74,13 +80,13 @@ function mpaMiddleware() {
 
         // Se a rota corresponde a uma página MPA conhecida
         if (PAGINAS_MPA[rota]) {
-          const arquivoModulo = path.resolve(srcRoot, 'pages', rota, `${rota}.js`);
+          const arquivoModulo = path.resolve(FRONTEND_SRC, 'pages', rota, `${rota}.js`);
           if (caminho === `/${rota}.js` && fs.existsSync(arquivoModulo)) {
             req.url = `/src/pages/${rota}/${rota}.js${url.slice(caminho.length)}`;
             return next();
           }
 
-          const arquivoHtml = path.resolve(frontendRoot, PAGINAS_MPA[rota]);
+          const arquivoHtml = path.resolve(FRONTEND_ROOT, PAGINAS_MPA[rota]);
           if (
             fs.existsSync(arquivoHtml) &&
             (caminho === `/${rota}` ||
@@ -109,35 +115,14 @@ function mpaMiddleware() {
 }
 
 export default defineConfig({
-  root: 'frontend',
+  root: FRONTEND_ROOT,
   base: '/',
 
   build: {
-    outDir: path.resolve(__dirname, 'frontend/dist'),
+    outDir: path.resolve(FRONTEND_ROOT, 'dist'),
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        login: path.resolve(__dirname, 'frontend/src/pages/login/index.html'),
-        dashboard: path.resolve(__dirname, 'frontend/src/pages/dashboard/index.html'),
-        produtos: path.resolve(__dirname, 'frontend/src/pages/produtos/index.html'),
-        estoque: path.resolve(__dirname, 'frontend/src/pages/estoque/index.html'),
-        recebimentos: path.resolve(__dirname, 'frontend/src/pages/recebimentos/index.html'),
-        expedicoes: path.resolve(__dirname, 'frontend/src/pages/expedicoes/index.html'),
-        auditoria: path.resolve(__dirname, 'frontend/src/pages/auditoria/index.html'),
-        relatorios: path.resolve(__dirname, 'frontend/src/pages/relatorios/index.html'),
-        validade: path.resolve(__dirname, 'frontend/src/pages/validade/index.html'),
-        usuarios: path.resolve(__dirname, 'frontend/src/pages/usuarios/index.html'),
-        configuracoes: path.resolve(__dirname, 'frontend/src/pages/configuracoes/index.html'),
-        'formulario-produto': path.resolve(
-          __dirname,
-          'frontend/src/pages/formulario-produto/index.html'
-        ),
-        'redefinir-senha': path.resolve(
-          __dirname,
-          'frontend/src/pages/redefinir-senha/index.html'
-        ),
-        erro404: path.resolve(__dirname, 'frontend/src/pages/erro404/index.html'),
-      },
+      input: ENTRADAS_MPA,
     },
   },
 
@@ -166,9 +151,9 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@core': path.resolve(__dirname, 'frontend/src/js/core'),
-      '@css': path.resolve(__dirname, 'frontend/src/css'),
-      '@assets': path.resolve(__dirname, 'frontend/src/assets'),
+      '@core': path.resolve(FRONTEND_SRC, 'js/core'),
+      '@css': path.resolve(FRONTEND_SRC, 'css'),
+      '@assets': path.resolve(FRONTEND_SRC, 'assets'),
     },
   },
 });
