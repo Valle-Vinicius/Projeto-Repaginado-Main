@@ -1,6 +1,6 @@
 import { API_URL } from '../../js/core/api.js';
 import { requisitar } from '../../js/core/index.js';
-import { mostrarToast } from '../../js/core/ui.js';
+import { atualizarUsuario, mostrarToast } from '../../js/core/ui.js';
 
 const $ = (seletor) => document.querySelector(seletor);
 
@@ -67,6 +67,7 @@ async function carregarConfiguracoes() {
   window.BabycareCore.tornarBreadcrumbClicavel();
   window.BabycareCore.adicionarBotaoVoltar('.config-toolbar', 'Voltar ao dashboard');
   window.BabycareCore.adicionarContadorCaracteres();
+  await atualizarUsuario();
   await carregarUsuario();
 
   $('#perfilForm')?.addEventListener('submit', async (evento) => {
@@ -95,9 +96,7 @@ async function carregarConfiguracoes() {
           : sessionStorage;
         armazenamento.setItem('babycareUsuario', JSON.stringify(usuario));
         // Atualiza o topbar/sidebar imediatamente
-        if (window.BabycareUI?.atualizarUsuario) {
-          await window.BabycareUI.atualizarUsuario();
-        }
+        await atualizarUsuario();
       }
 
       mensagem('#perfilMensagem', 'Dados atualizados com sucesso.');

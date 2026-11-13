@@ -1,6 +1,10 @@
 import { API_URL } from '../../js/core/api.js';
 import { esc, formatarData } from '../../js/core/index.js';
-import { mostrarCarregamento, esconderCarregamento, conectarBuscaTopbar } from '../../js/core/ui.js';
+import {
+  esconderCarregamento,
+  conectarBuscaTopbar,
+  atualizarUsuario,
+} from '../../js/core/ui.js';
 
 const VALIDADE_API_URL = `${API_URL}/validade`;
 
@@ -116,4 +120,10 @@ $('#validitySearch')?.addEventListener(
 $('#refreshValidity')?.addEventListener('click', carregar);
 conectarBuscaTopbar($('#validitySearch'));
 window.addEventListener('load', esconderCarregamento);
-carregar();
+
+async function inicializar() {
+  await atualizarUsuario();
+  await carregar();
+}
+
+inicializar();
