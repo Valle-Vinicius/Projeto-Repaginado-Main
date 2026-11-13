@@ -37,6 +37,19 @@ function selecionarElementos() {
     'stockSparkline',
     'stockEntrySparkline',
     'stockExitSparkline',
+    'movementChart',
+    'chartEntriesTotal',
+    'chartExitsTotal',
+    'chartYAxisMax',
+    'chartYAxisMid',
+    'entryArea',
+    'exitArea',
+    'entryLine',
+    'exitLine',
+    'chartLabels',
+    'chartEmpty',
+    'alertCount',
+    'alertList',
     'categoryList',
     'categoryTotal',
     'activityBody',
@@ -48,6 +61,8 @@ function selecionarElementos() {
     'expiryWithin30',
     'expiryOver30',
     'expiringProductList',
+    'topProductsTotal',
+    'topProductsList',
     'dashboardToast',
     'topbarAvatar',
     'topbarUserName',
@@ -250,6 +265,7 @@ function normalizarResposta(payload) {
     grafico: dados.grafico || dados.movimentacoesGrafico || dados.serieMovimentacoes || null,
     alertas: normalizarAlertas(dados.alertas),
     categorias: obterLista(dados.categorias || dados.produtosPorCategoria),
+    produtosMaisMovimentados: obterLista(dados.produtosMaisMovimentados),
     atividadesRecentes: obterLista(
       dados.atividadesRecentes || dados.atividades || dados.movimentacoesRecentes
     ),
@@ -269,7 +285,10 @@ function renderizarMiniGrafico(movimentacoes) {
     return;
   }
 
-  const maximo = Math.max(1, ...grafico.flatMap((item) => [Number(item.entradas) || 0, Number(item.saidas) || 0]));
+  const maximo = Math.max(
+    1,
+    ...grafico.flatMap((item) => [Number(item.entradas) || 0, Number(item.saidas) || 0])
+  );
   const pontos = (chave) =>
     grafico
       .map((item, indice) => {
@@ -283,6 +302,85 @@ function renderizarMiniGrafico(movimentacoes) {
   entradas.setAttribute('points', pontos('entradas'));
   saidas.setAttribute('points', pontos('saidas'));
   container.hidden = false;
+}
+
+function formatarDataGrafico(valor) {
+  const [ano, mes, dia] = String(valor || '')
+    .slice(0, 10)
+    .split('-');
+  return ano && mes && dia ? `${dia}/${mes}` : '';
+}
+
+function renderizarGrafico(movimentacoes, resumo) {
+  const container = elementos.movementChart;
+  if (!container) {
+    return;
+  }
+
+  const serie = obterLista(movimentacoes)
+    .map((item) => ({
+      data: item.data,
+      entradas: Math.max(0, Number(item.entradas) || 0),
+      saidas: Math.max(0, Number(item.saidas) || 0),
+    }))
+    .filter((item) => Number.isFinite(item.entradas) && Number.isFinite(item.saidas));
+  const maximo = Math.max(0, ...serie.flatMap((item) => [item.entradas, item.saidas]));
+  const temMovimentacao = maximo > 0;
+  const base = 200;
+  const topo = 8;
+  const escala = maximo || 1;
+  const pontos = (chave) =>
+    serie
+      .map((item, indice) => {
+        const x = serie.length === 1 ? 500 : (indice / (serie.length - 1)) * 1000;
+        const y = base - (item[chave] / escala) * (base - topo);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+  const area = (chave) => {
+    const linha = pontos(chave);
+    if (!linha) {
+      return '';
+    }
+    const coordenadas = linha.split(' ');
+    const primeiroX = coordenadas[0].split(',')[0];
+    const ultimoX = coordenadas[coordenadas.length - 1].split(',')[0];
+    return `M ${primeiroX} ${base} L ${coordenadas.join(' L ')} L ${ultimoX} ${base} Z`;
+  };
+
+  elementos.entryLine?.setAttribute('points', pontos('entradas'));
+  elementos.exitLine?.setAttribute('points', pontos('saidas'));
+  elementos.entryArea?.setAttribute('d', area('entradas'));
+  elementos.exitArea?.setAttribute('d', area('saidas'));
+  if (elementos.chartEntriesTotal) {
+    elementos.chartEntriesTotal.textContent = formatarQuantidade(resumo.entradasPeriodo);
+  }
+  if (elementos.chartExitsTotal) {
+    elementos.chartExitsTotal.textContent = formatarQuantidade(resumo.saidasPeriodo);
+  }
+  if (elementos.chartYAxisMax) {
+    elementos.chartYAxisMax.textContent = formatarQuantidade(maximo);
+  }
+  if (elementos.chartYAxisMid) {
+    elementos.chartYAxisMid.textContent = formatarQuantidade(maximo / 2);
+  }
+  if (elementos.chartEmpty) {
+    elementos.chartEmpty.classList.toggle('visible', !temMovimentacao);
+  }
+  if (elementos.chartLabels) {
+    elementos.chartLabels.replaceChildren();
+    const quantidadeRotulos = Math.min(5, serie.length);
+    for (let indice = 0; indice < quantidadeRotulos; indice += 1) {
+      const posicao =
+        quantidadeRotulos === 1
+          ? 0
+          : Math.round((indice / (quantidadeRotulos - 1)) * (serie.length - 1));
+      const rotulo = document.createElement('span');
+      rotulo.textContent = formatarDataGrafico(serie[posicao].data);
+      elementos.chartLabels.appendChild(rotulo);
+    }
+  }
+  container.dataset.chartState = temMovimentacao ? 'ready' : 'empty';
 }
 
 function atualizarIndicadores(resumo, grafico) {
@@ -308,8 +406,7 @@ function atualizarIndicadores(resumo, grafico) {
     elementos.movementPeriodLabel.textContent = periodo;
   }
   if (elementos.stockMovementDetail) {
-    elementos.stockMovementDetail.textContent =
-      `No período: ${formatarQuantidade(resumo.entradasPeriodo)} entradas · ${formatarQuantidade(resumo.saidasPeriodo)} saídas`;
+    elementos.stockMovementDetail.textContent = `No período: ${formatarQuantidade(resumo.entradasPeriodo)} entradas · ${formatarQuantidade(resumo.saidasPeriodo)} saídas`;
   }
   if (elementos.movementComparison) {
     const variacao = resumo.variacaoMovimentacoesPercentual;
@@ -317,8 +414,17 @@ function atualizarIndicadores(resumo, grafico) {
       variacao === null
         ? 'Sem histórico anterior para comparar'
         : `${variacao > 0 ? '+' : ''}${formatarNumero(variacao, 1)}% vs período anterior`;
+    elementos.movementComparison.dataset.trend =
+      variacao === null
+        ? 'neutral'
+        : variacao > 0
+          ? 'positive'
+          : variacao < 0
+            ? 'negative'
+            : 'neutral';
   }
   renderizarMiniGrafico(grafico);
+  renderizarGrafico(grafico, resumo);
 }
 
 function criarEstadoVazio(titulo, detalhe) {
@@ -371,7 +477,8 @@ function renderizarCategorias(categorias, totalProdutos) {
     cabecalho.className = 'category-row-header';
     const nome = document.createElement('span');
     const quantidade = document.createElement('strong');
-    const percentual = totalProdutosNumerico > 0 ? Math.round((valor / totalProdutosNumerico) * 100) : 0;
+    const percentual =
+      totalProdutosNumerico > 0 ? Math.round((valor / totalProdutosNumerico) * 100) : 0;
     nome.textContent = String(categoria.nome || categoria.categoria || 'Sem categoria');
     quantidade.textContent = `${formatarNumero(valor)} · ${percentual}%`;
     cabecalho.append(nome, quantidade);
@@ -436,13 +543,19 @@ function renderizarEstoqueCritico(alertas, resumo) {
   elementos.criticalStockTotal.textContent = formatarNumero(total);
   elementos.criticalStockList.replaceChildren();
   const produtos = [
-    ...alertas.semEstoque.map((produto) => ({ ...produto, status: 'SEM_ESTOQUE' })),
+    ...alertas.semEstoque.map((produto) => ({
+      ...produto,
+      status: 'SEM_ESTOQUE',
+    })),
     ...alertas.estoqueBaixo,
   ].slice(0, 6);
 
   if (produtos.length === 0) {
     elementos.criticalStockList.appendChild(
-      criarEstadoVazio('Nenhum produto crítico', 'Os produtos ativos estão acima do estoque mínimo.')
+      criarEstadoVazio(
+        'Nenhum produto crítico',
+        'Os produtos ativos estão acima do estoque mínimo.'
+      )
     );
     return;
   }
@@ -464,6 +577,142 @@ function renderizarEstoqueCritico(alertas, resumo) {
     status.textContent = semEstoque ? 'Sem estoque' : 'Baixo';
     linha.append(texto, status);
     elementos.criticalStockList.appendChild(linha);
+  });
+}
+
+function criarItemAlerta(tipo, icone, titulo, detalhe, destino) {
+  const item = document.createElement('a');
+  item.className = `alert-item ${tipo}`;
+  item.href = destino;
+
+  const iconeElemento = document.createElement('span');
+  iconeElemento.className = 'alert-item-icon';
+  iconeElemento.setAttribute('aria-hidden', 'true');
+  iconeElemento.textContent = icone;
+
+  const texto = document.createElement('span');
+  texto.className = 'alert-item-copy';
+  const tituloElemento = document.createElement('strong');
+  const detalheElemento = document.createElement('span');
+  tituloElemento.textContent = titulo;
+  detalheElemento.textContent = detalhe;
+  texto.append(tituloElemento, detalheElemento);
+  item.append(iconeElemento, texto);
+  return item;
+}
+
+function renderizarAlertas(dados) {
+  if (!elementos.alertList || !elementos.alertCount) {
+    return;
+  }
+
+  const { resumo, resumoValidades, alertas } = dados;
+  const itens = [];
+  if (resumo.semEstoque > 0) {
+    itens.push(
+      criarItemAlerta(
+        'danger',
+        '!',
+        'Produtos sem estoque',
+        `${formatarNumero(resumo.semEstoque)} produto(s) precisam de reposição.`,
+        './estoque.html'
+      )
+    );
+  }
+  if (resumo.estoqueBaixo > 0) {
+    itens.push(
+      criarItemAlerta(
+        'warning',
+        '!',
+        'Estoque abaixo do mínimo',
+        `${formatarNumero(resumo.estoqueBaixo)} produto(s) exigem atenção.`,
+        './estoque.html'
+      )
+    );
+  }
+  if (resumoValidades.vencidos > 0) {
+    itens.push(
+      criarItemAlerta(
+        'danger',
+        '!',
+        'Produtos com validade vencida',
+        `${formatarNumero(resumoValidades.vencidos)} produto(s) com lote vencido em estoque.`,
+        './validade.html'
+      )
+    );
+  }
+  if (resumoValidades.ate7Dias > 0) {
+    itens.push(
+      criarItemAlerta(
+        'attention',
+        '!',
+        'Validade nos próximos 7 dias',
+        `${formatarNumero(resumoValidades.ate7Dias)} produto(s) precisam ser verificados.`,
+        './validade.html'
+      )
+    );
+  }
+
+  elementos.alertCount.textContent = formatarNumero(itens.length);
+  elementos.alertList.dataset.state = 'ready';
+  elementos.alertList.replaceChildren();
+
+  if (itens.length === 0) {
+    elementos.alertList.appendChild(
+      criarEstadoVazio('Tudo em ordem', 'Não há alertas de estoque ou validade neste momento.')
+    );
+    return;
+  }
+
+  itens.forEach((item) => elementos.alertList.appendChild(item));
+}
+
+function renderizarProdutosMaisMovimentados(produtos) {
+  if (!elementos.topProductsList || !elementos.topProductsTotal) {
+    return;
+  }
+
+  elementos.topProductsTotal.textContent = formatarNumero(produtos.length);
+  elementos.topProductsList.dataset.state = 'ready';
+  elementos.topProductsList.replaceChildren();
+
+  if (produtos.length === 0) {
+    elementos.topProductsList.appendChild(
+      criarEstadoVazio(
+        'Sem movimentações no período',
+        'Os produtos aparecerão aqui após movimentações confirmadas.'
+      )
+    );
+    return;
+  }
+
+  const maiorVolume = Math.max(
+    ...produtos.map((produto) => Number(produto.totalMovimentado) || 0),
+    1
+  );
+  produtos.slice(0, 5).forEach((produto, indice) => {
+    const total = Math.max(0, Number(produto.totalMovimentado) || 0);
+    const linha = document.createElement('div');
+    linha.className = 'top-product-row';
+
+    const cabecalho = document.createElement('div');
+    cabecalho.className = 'top-product-header';
+    const nome = document.createElement('strong');
+    const quantidade = document.createElement('span');
+    nome.textContent = `${indice + 1}. ${produto.nome || 'Produto sem nome'}`;
+    quantidade.textContent = `${formatarQuantidade(total)} un.`;
+    cabecalho.append(nome, quantidade);
+
+    const trilho = document.createElement('div');
+    trilho.className = 'top-product-track';
+    const barra = document.createElement('span');
+    barra.style.width = `${Math.max((total / maiorVolume) * 100, total > 0 ? 3 : 0)}%`;
+    trilho.appendChild(barra);
+
+    const detalhe = document.createElement('small');
+    detalhe.textContent = `${formatarQuantidade(Number(produto.saidas) || 0)} saídas · ${formatarQuantidade(Number(produto.entradas) || 0)} entradas · ${formatarQuantidade(Number(produto.ajustes) || 0)} ajustes`;
+    linha.append(cabecalho, trilho, detalhe);
+    elementos.topProductsList.appendChild(linha);
   });
 }
 
@@ -491,7 +740,10 @@ function renderizarValidades(resumo, alertas) {
 
   if (lotes.length === 0) {
     elementos.expiringProductList.appendChild(
-      criarEstadoVazio('Nenhum lote vencido ou próximo', 'Não há lotes ativos com validade nos próximos 30 dias.')
+      criarEstadoVazio(
+        'Nenhum lote vencido ou próximo',
+        'Não há lotes ativos com validade nos próximos 30 dias.'
+      )
     );
     return;
   }
@@ -547,10 +799,12 @@ function mostrarToast(mensagem) {
 
 function atualizarInterface(dados) {
   atualizarIndicadores(dados.resumo, dados.grafico);
+  renderizarAlertas(dados);
   renderizarCategorias(dados.categorias, dados.resumo.totalProdutos);
   renderizarAtividades(dados.atividadesRecentes);
   renderizarEstoqueCritico(dados.alertas, dados.resumo);
   renderizarValidades(dados.resumoValidades, dados.alertas);
+  renderizarProdutosMaisMovimentados(dados.produtosMaisMovimentados);
 }
 
 async function requisitarDashboard() {

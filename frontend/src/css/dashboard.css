@@ -799,6 +799,16 @@ body[data-dashboard-state="error"] .page-loader {
   white-space: nowrap;
 }
 
+.metric-card small.metric-comparison[data-trend="positive"] {
+  color: #278b77;
+  font-weight: 700;
+}
+
+.metric-card small.metric-comparison[data-trend="negative"] {
+  color: #bd4d59;
+  font-weight: 700;
+}
+
 .metric-link {
   display: inline-flex;
   align-items: center;
@@ -978,6 +988,59 @@ body[data-dashboard-state="error"] .page-loader {
   white-space: nowrap;
 }
 
+.top-product-row {
+  display: grid;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.top-product-row:last-child {
+  border-bottom: 0;
+}
+
+.top-product-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.top-product-header strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-product-header > span {
+  flex: 0 0 auto;
+  color: var(--ink-light);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.top-product-track {
+  height: 5px;
+  overflow: hidden;
+  background: #eef1f6;
+  border-radius: 999px;
+}
+
+.top-product-track > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--baby-blue), #7e9bed);
+  border-radius: inherit;
+}
+
+.top-product-row small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
 .operational-row-critical .operational-status {
   color: #a63e47;
   background: var(--baby-red-soft);
@@ -1026,6 +1089,33 @@ body[data-dashboard-state="error"] .page-loader {
   gap: 13px;
   color: var(--muted);
   font-size: 10px;
+}
+
+.chart-summary {
+  display: flex;
+  gap: 24px;
+  margin-top: 18px;
+}
+
+.chart-summary > div {
+  display: grid;
+  gap: 4px;
+}
+
+.chart-summary span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.chart-summary strong {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.movement-panel .chart-container {
+  min-height: 232px;
+  margin-top: 10px;
 }
 
 .chart-legend span {

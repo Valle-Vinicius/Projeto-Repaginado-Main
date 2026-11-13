@@ -3,6 +3,7 @@ const dashboardRepository = require('../repositories/dashboardRepository');
 const PERIODOS_PERMITIDOS = Object.freeze(['hoje', '7d', '30d', 'mes']);
 const LIMITE_ALERTAS = 10;
 const LIMITE_ATIVIDADES = 8;
+const LIMITE_PRODUTOS_MOVIMENTADOS = 5;
 
 function erroDadoInvalido(mensagem) {
   const erro = new Error(mensagem);
@@ -182,6 +183,20 @@ function normalizarAtividade(atividade) {
   };
 }
 
+function normalizarProdutoMovimentado(produto) {
+  return {
+    id: inteiroPositivo(produto.id, 'produtoMovimentado.id'),
+    nome: String(produto.nome || 'Produto sem nome'),
+    totalMovimentado: numeroNaoNegativo(
+      produto.totalMovimentado,
+      'produtoMovimentado.totalMovimentado'
+    ),
+    entradas: numeroNaoNegativo(produto.entradas, 'produtoMovimentado.entradas'),
+    saidas: numeroNaoNegativo(produto.saidas, 'produtoMovimentado.saidas'),
+    ajustes: numeroNaoNegativo(produto.ajustes, 'produtoMovimentado.ajustes'),
+  };
+}
+
 async function obterDashboard({ periodo = '30d' } = {}) {
   validarPeriodo(periodo);
 
@@ -196,6 +211,7 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     movimentacoes,
     categorias,
     atividadesRecentes,
+    produtosMaisMovimentados,
   ] = await Promise.all([
     dashboardRepository.buscarResumo(),
     dashboardRepository.buscarResumoMovimentacoes(periodo),
@@ -207,6 +223,7 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     dashboardRepository.buscarMovimentacoes(periodo),
     dashboardRepository.buscarCategorias(5),
     dashboardRepository.buscarAtividadesRecentes(periodo, LIMITE_ATIVIDADES),
+    dashboardRepository.buscarProdutosMaisMovimentados(periodo, LIMITE_PRODUTOS_MOVIMENTADOS),
   ]);
 
   return {
@@ -228,6 +245,9 @@ async function obterDashboard({ periodo = '30d' } = {}) {
     atividadesRecentes: listaOuVazia(atividadesRecentes)
       .slice(0, LIMITE_ATIVIDADES)
       .map(normalizarAtividade),
+    produtosMaisMovimentados: listaOuVazia(produtosMaisMovimentados)
+      .slice(0, LIMITE_PRODUTOS_MOVIMENTADOS)
+      .map(normalizarProdutoMovimentado),
   };
 }
 

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Dashboard operacional da Babycare" />
     <title>Dashboard | Babycare</title>
-    <script type="module" crossorigin src="/assets/dashboard-x_dR97GX.js"></script>
+    <script type="module" crossorigin src="/assets/dashboard-Df69WfvF.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
     <link rel="modulepreload" crossorigin href="/assets/core-DlFgHFr_.js">
     <link rel="modulepreload" crossorigin href="/assets/ui-DmCuWzHK.js">
     <link rel="stylesheet" crossorigin href="/assets/core-Dkxx47H-.css">
-    <link rel="stylesheet" crossorigin href="/assets/dashboard-BVIjRWH1.css">
+    <link rel="stylesheet" crossorigin href="/assets/dashboard-DMbbUZj-.css">
   </head>
   <body data-dashboard-state="loading">
     <div id="pageLoader" class="page-loader" role="status" aria-live="polite">
@@ -175,9 +175,79 @@
                 <span class="metric-label">MOVIMENTAÇÕES</span>
                 <strong id="metricMovements" class="metric-value">—</strong>
                 <small id="movementPeriodLabel">no período selecionado</small>
-                <small id="movementComparison">Comparação indisponível</small>
+                <small id="movementComparison" class="metric-comparison">Comparação indisponível</small>
                 <a class="metric-link" href="./estoque.html">Ver movimentações <span aria-hidden="true">→</span></a>
               </div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid dashboard-grid-primary" aria-label="Movimentações e alertas">
+            <article class="panel movement-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="section-kicker">FLUXO DO ESTOQUE</span>
+                  <h3>Movimentações</h3>
+                </div>
+                <div class="chart-legend" aria-label="Legenda do gráfico">
+                  <span><i class="legend-dot entry"></i>Entradas</span>
+                  <span><i class="legend-dot exit"></i>Saídas</span>
+                </div>
+              </div>
+              <div class="chart-summary" aria-label="Totais do período">
+                <div><span>Entradas</span><strong id="chartEntriesTotal">—</strong></div>
+                <div><span>Saídas</span><strong id="chartExitsTotal">—</strong></div>
+              </div>
+              <div
+                id="movementChart"
+                class="chart-container"
+                data-chart-state="loading"
+                role="img"
+                aria-label="Gráfico de entradas e saídas no período"
+              >
+                <div class="chart-y-axis" aria-hidden="true">
+                  <span id="chartYAxisMax">—</span>
+                  <span id="chartYAxisMid">—</span>
+                  <span>0</span>
+                </div>
+                <div class="chart-visual">
+                  <div class="chart-grid-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+                  <svg class="line-chart" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="entryFill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#4f7bea" stop-opacity=".2"></stop>
+                        <stop offset="100%" stop-color="#4f7bea" stop-opacity="0"></stop>
+                      </linearGradient>
+                      <linearGradient id="exitFill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#53b8a6" stop-opacity=".18"></stop>
+                        <stop offset="100%" stop-color="#53b8a6" stop-opacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path id="entryArea" class="chart-area-fill entry-area"></path>
+                    <path id="exitArea" class="chart-area-fill exit-area"></path>
+                    <polyline id="entryLine" class="chart-line entry-line" points=""></polyline>
+                    <polyline id="exitLine" class="chart-line exit-line" points=""></polyline>
+                  </svg>
+                  <div id="chartLabels" class="chart-labels" aria-hidden="true"></div>
+                  <p id="chartEmpty" class="chart-empty">Ainda não há movimentações neste período.</p>
+                  <div class="chart-loading" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel alerts-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="section-kicker">AÇÃO NECESSÁRIA</span>
+                  <h3>Central de alertas</h3>
+                </div>
+                <span id="alertCount" class="panel-count">—</span>
+              </div>
+              <div id="alertList" class="alert-list" data-state="loading" aria-live="polite">
+                <div class="panel-skeleton"><span></span><span></span><span></span></div>
+              </div>
+              <a class="text-button panel-footer-link" href="./estoque.html">Ver pendências <span aria-hidden="true">→</span></a>
             </article>
           </section>
 
@@ -264,6 +334,20 @@
                 </div>
                 <div id="expiringProductList" class="operational-list compact-operational-list" aria-live="polite"></div>
                 <a class="text-button panel-footer-link" href="./validade.html">Ver validades <span aria-hidden="true">→</span></a>
+              </article>
+
+              <article class="panel operational-panel">
+                <div class="panel-header">
+                  <div>
+                    <span class="section-kicker">DESEMPENHO</span>
+                    <h3>Produtos mais movimentados</h3>
+                  </div>
+                  <span id="topProductsTotal" class="panel-count">—</span>
+                </div>
+                <div id="topProductsList" class="operational-list" aria-live="polite">
+                  <div class="panel-skeleton"><span></span><span></span><span></span></div>
+                </div>
+                <a class="text-button panel-footer-link" href="./relatorios.html">Ver relatórios <span aria-hidden="true">→</span></a>
               </article>
             </div>
           </section>

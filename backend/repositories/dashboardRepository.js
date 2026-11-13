@@ -340,6 +340,30 @@ async function buscarAtividadesRecentes(periodo, limite = 8) {
   );
 }
 
+async function buscarProdutosMaisMovimentados(periodo, limite = 5) {
+  const { inicio, fim } = obterIntervaloPeriodo(periodo);
+  return executarQuery(
+    `
+    SELECT
+      p.id,
+      p.nome,
+      COALESCE(SUM(ABS(m.quantidade)), 0) AS totalMovimentado,
+      COALESCE(SUM(CASE WHEN m.tipo = 'ENTRADA' THEN m.quantidade ELSE 0 END), 0) AS entradas,
+      COALESCE(SUM(CASE WHEN m.tipo = 'SAIDA' THEN m.quantidade ELSE 0 END), 0) AS saidas,
+      COALESCE(SUM(CASE WHEN m.tipo = 'AJUSTE' THEN ABS(m.quantidade) ELSE 0 END), 0) AS ajustes
+    FROM movimentacoes m
+    INNER JOIN produtos p ON p.id = m.produto_id
+    WHERE m.status = 'CONFIRMADA'
+      AND m.criado_em >= ?
+      AND m.criado_em < ?
+    GROUP BY p.id, p.nome
+    ORDER BY totalMovimentado DESC, p.nome ASC
+    LIMIT ?
+  `,
+    [inicio, fim, limite]
+  );
+}
+
 module.exports = {
   buscarResumo,
   buscarResumoMovimentacoes,
@@ -351,6 +375,7 @@ module.exports = {
   buscarMovimentacoes,
   buscarCategorias,
   buscarAtividadesRecentes,
+  buscarProdutosMaisMovimentados,
   obterIntervaloPeriodo,
   obterIntervaloAnterior,
 };

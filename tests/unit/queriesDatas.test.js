@@ -49,4 +49,17 @@ describe("Consultas de validade e datas", () => {
     await dashboardRepository.buscarResumoValidades();
     expect(executarQuery.mock.calls[0][0]).toContain("l.quantidade_atual > 0");
   });
+
+  test('os produtos mais movimentados consideram apenas movimentações confirmadas no período', async () => {
+    await dashboardRepository.buscarProdutosMaisMovimentados('7d', 5);
+    const [consulta, parametros] = executarQuery.mock.calls[0];
+
+    expect(consulta).toContain("m.status = 'CONFIRMADA'");
+    expect(consulta).toContain('COALESCE(SUM(ABS(m.quantidade)), 0) AS totalMovimentado');
+    expect(consulta).toContain("m.tipo = 'AJUSTE'");
+    expect(consulta).toContain('ORDER BY totalMovimentado DESC');
+    expect(consulta).toContain('LIMIT ?');
+    expect(parametros).toHaveLength(3);
+    expect(parametros[2]).toBe(5);
+  });
 });
