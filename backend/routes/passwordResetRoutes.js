@@ -1,7 +1,5 @@
 const express = require('express');
 const controller = require('../controllers/passwordResetController');
-const { verificarToken } = require('../middlewares/authMiddleware');
-
 const router = express.Router();
 
 // Esqueci senha (público)

@@ -1,4 +1,7 @@
-import { API_URL } from './api.js';
+import { API_URL, fetchAPI } from './api.js';
+import { formatarData } from './date-formatters.js';
+
+export { formatarData };
 
 const UI_API_URL = API_URL;
 
@@ -99,13 +102,6 @@ export function formatarNumero(valor, casas = 0) {
     maximumFractionDigits: casas,
   }).format(Number(valor || 0));
 }
-export function formatarData(valor) {
-  if (!valor) {
-    return '';
-  }
-  const data = String(valor).includes('T') ? new Date(valor) : new Date(`${valor}T00:00:00`);
-  return Number.isNaN(data.getTime()) ? '' : data.toLocaleDateString('pt-BR');
-}
 export function formatarDataHora(valor) {
   if (!valor) {
     return '';
@@ -178,7 +174,7 @@ export async function atualizarUsuario() {
   let u = lerUsuario();
 
   try {
-    const resposta = await fetch(`${UI_API_URL}/perfil`, {
+    const resposta = await fetchAPI(`${UI_API_URL}/perfil`, {
       credentials: 'include',
       cache: 'no-store',
     });

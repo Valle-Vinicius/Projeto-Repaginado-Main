@@ -1,4 +1,4 @@
-import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   salvarFiltros as salvarFiltrosCore,
   carregarFiltros as carregarFiltrosCore,
@@ -83,7 +83,7 @@ async function api() {
     categoriaId: el.category.value,
     produtoId: el.product.value,
   });
-  const r = await fetch(`${RELATORIOS_API_URL}?${params}`, {
+  const r = await fetchAPI(`${RELATORIOS_API_URL}?${params}`, {
     credentials: 'include',
     cache: 'no-store',
   });
@@ -348,7 +348,7 @@ function renderHistory() {
     const tipo = String(item.tipo || '').toUpperCase();
     const tipoClasse = tipo === 'ENTRADA' ? 'entrada' : tipo === 'SAIDA' ? 'saida' : '';
     const tipoTexto = tipo === 'ENTRADA' ? 'Entrada' : tipo === 'SAIDA' ? 'Saída' : tipo || '—';
-    tr.innerHTML = `<td>${dataCurta(item.criadoEm)}</td><td>${esc(item.produto)}</td><td><span class="report-type ${tipoClasse}">${esc(tipoTexto)}</span></td><td>${num(item.quantidade)}</td><td>${esc(item.responsavel)}</td>`;
+    tr.innerHTML = `<td>${formatarData(item.criadoEm)}</td><td>${esc(item.produto)}</td><td><span class="report-type ${tipoClasse}">${esc(tipoTexto)}</span></td><td>${num(item.quantidade)}</td><td>${esc(item.responsavel)}</td>`;
     el.historyBody.appendChild(tr);
   });
 }
@@ -409,7 +409,7 @@ async function carregar() {
     render();
     document.body.dataset.reportState = 'ready';
   } catch (x) {
-    if ([401, 403].includes(x.status)) {
+    if (x.status === 403) {
       document.body.dataset.reportState = 'error';
       location.href = './login.html';
       return;

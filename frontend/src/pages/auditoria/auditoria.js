@@ -1,4 +1,4 @@
-import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   lerUsuario,
   esc,
@@ -13,7 +13,6 @@ import {
   formatarNumero,
   formatarDataHora,
   mostrarToast,
-  conectarBuscaTopbar,
   fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
 
@@ -69,7 +68,7 @@ async function fetchAudit() {
     busca: auditEl.search.value.trim(),
     _atualizacao: Date.now(),
   });
-  const response = await fetch(`${AUDIT_API}?${params}`, {
+  const response = await fetchAPI(`${AUDIT_API}?${params}`, {
     cache: 'no-store',
     credentials: 'include',
   });
@@ -136,7 +135,7 @@ async function loadAudit() {
     renderActions(data.acoes);
     render(data);
   } catch (e) {
-    if ([401, 403].includes(e.status)) {
+    if (e.status === 403) {
       location.href = './login.html';
       return;
     }

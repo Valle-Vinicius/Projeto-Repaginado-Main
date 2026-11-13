@@ -1,8 +1,7 @@
 import '../../js/core/index.js';
-import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   esconderCarregamento,
-  mostrarCarregamento,
   formatarNumero,
   formatarDataHora,
 } from '../../js/core/ui.js';
@@ -606,7 +605,7 @@ function renderizarAlertas(dados) {
     return;
   }
 
-  const { resumo, resumoValidades, alertas } = dados;
+  const { resumo, resumoValidades } = dados;
   const itens = [];
   if (resumo.semEstoque > 0) {
     itens.push(
@@ -860,7 +859,7 @@ function atualizarInterface(dados) {
 async function requisitarDashboard() {
   const url = new URL(`${API_URL}/dashboard`, window.location.origin);
   url.searchParams.set('periodo', dashboardState.periodo);
-  const resposta = await fetch(url, {
+  const resposta = await fetchAPI(url, {
     method: 'GET',
     cache: 'no-store',
     headers: {
@@ -871,7 +870,7 @@ async function requisitarDashboard() {
   });
 
   const corpo = await resposta.json().catch(() => ({}));
-  if (resposta.status === 401 || resposta.status === 403) {
+  if (resposta.status === 403) {
     limparSessao();
     window.location.replace('./login.html');
     return null;

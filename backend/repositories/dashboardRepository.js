@@ -230,7 +230,7 @@ async function buscarValidadesProximas(dias = 30) {
       p.nome,
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
-      l.data_validade AS dataValidade,
+      TO_CHAR(l.data_validade, 'YYYY-MM-DD') AS dataValidade,
       (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       CASE
         WHEN (l.data_validade - CURRENT_DATE) <= 7 THEN 'CRITICO'
@@ -260,7 +260,7 @@ async function buscarVencidos() {
       p.nome,
       l.numero_lote AS numeroLote,
       l.quantidade_atual AS quantidadeAtual,
-      l.data_validade AS dataValidade,
+      TO_CHAR(l.data_validade, 'YYYY-MM-DD') AS dataValidade,
       (l.data_validade - CURRENT_DATE) AS diasParaVencer,
       'VENCIDO' AS status
     FROM lotes l

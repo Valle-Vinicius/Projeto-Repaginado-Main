@@ -1,4 +1,4 @@
-﻿import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   lerUsuario as lerUsuarioCore,
   esc as escCore,
@@ -64,7 +64,7 @@ function role(v) {
 }
 
 async function requisitar(url, opts = {}) {
-  const r = await fetch(url, {
+  const r = await fetchAPI(url, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ async function carregar() {
     const b = await requisitar(`${USUARIOS_API_URL}?${q}`);
     render(b.usuarios || []);
   } catch (e) {
-    if ([401, 403].includes(e.status)) {
+    if (e.status === 403) {
       location.href = './login.html';
       return;
     }
@@ -175,8 +175,7 @@ function fechar() {
 
 async function salvar(e) {
   e.preventDefault();
-  const perfilId = $('#perfil').value,
-    perfilNome = $('#perfil option:checked')?.dataset.nome;
+  const perfilNome = $('#perfil option:checked')?.dataset.nome;
   const body = {
     nome: $('#nome').value.trim(),
     email: $('#email').value.trim(),
@@ -259,7 +258,7 @@ window.addEventListener('load', async () => {
     await carregarOpcoes();
     await carregar();
   } catch (e) {
-    if ([401, 403].includes(e.status)) {
+    if (e.status === 403) {
       location.replace('./dashboard.html');
       return;
     }

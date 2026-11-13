@@ -1,4 +1,4 @@
-import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   adicionarContadorCaracteres,
   salvarFiltros as salvarFiltrosCore,
@@ -6,7 +6,6 @@ import {
 import {
   mostrarCarregamento,
   esconderCarregamento,
-  conectarBuscaTopbar,
   mostrarToast,
   fazerLogout as fazerLogoutCore,
 } from '../../js/core/ui.js';
@@ -32,11 +31,6 @@ function obterUsuarioDoFormulario() {
   } catch (erro) {
     return null;
   }
-}
-
-function limparSessaoLocal() {
-  localStorage.removeItem('babycareUsuario');
-  sessionStorage.removeItem('babycareUsuario');
 }
 
 function preencherUsuarioDoLayout() {
@@ -147,7 +141,7 @@ function validarFormularioProduto() {
 }
 
 async function requisitarAPI(caminho, opcoes = {}) {
-  const resposta = await fetch(`${PRODUTOS_API_URL}${caminho}`, {
+  const resposta = await fetchAPI(`${PRODUTOS_API_URL}${caminho}`, {
     ...opcoes,
     headers: {
       Accept: 'application/json',
@@ -158,12 +152,6 @@ async function requisitarAPI(caminho, opcoes = {}) {
   });
 
   const corpo = await resposta.json().catch(() => ({}));
-  if (resposta.status === 401) {
-    limparSessaoLocal();
-    window.location.replace('./login.html');
-    throw new Error('Sessão expirada. Faça login novamente.');
-  }
-
   if (!resposta.ok) {
     throw new Error(corpo.mensagem || 'Não foi possível concluir o cadastro.');
   }

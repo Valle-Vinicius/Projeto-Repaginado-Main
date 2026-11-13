@@ -1,5 +1,4 @@
 const estoqueService = require('../../backend/services/estoqueService');
-const produtoService = require('../../backend/services/produtoService');
 const repository = require('../../backend/repositories/integracaoErpRepository');
 const {
   verificarChaveERP,

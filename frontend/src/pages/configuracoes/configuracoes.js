@@ -1,6 +1,6 @@
 import { API_URL } from '../../js/core/api.js';
 import { requisitar } from '../../js/core/index.js';
-import { atualizarUsuario, mostrarToast } from '../../js/core/ui.js';
+import { atualizarUsuario } from '../../js/core/ui.js';
 
 const $ = (seletor) => document.querySelector(seletor);
 

@@ -1,4 +1,5 @@
 import logoUrl from '../../assets/images/babycare-logo.png';
+import { fetchAPI } from './api.js';
 
 export function montarSidebar() {
   const sidebar = document.querySelector('#sidebar');
@@ -164,7 +165,7 @@ async function atualizarBadgesSidebar(sidebar) {
   }
 
   try {
-    const resposta = await fetch('/api/dashboard?periodo=30d', {
+    const resposta = await fetchAPI('/api/dashboard?periodo=30d', {
       credentials: 'include',
       cache: 'no-store',
       headers: { Accept: 'application/json' },

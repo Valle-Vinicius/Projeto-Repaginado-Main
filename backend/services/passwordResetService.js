@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const { executarQuery } = require('../config/database');
 const bcrypt = require('bcryptjs');
-const usuarioRepository = require('../repositories/usuarioRepository');
 
 async function solicitarReset(email) {
   const usuarios = await executarQuery(

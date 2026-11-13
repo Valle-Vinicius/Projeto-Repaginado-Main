@@ -1,0 +1,50 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": ["eslint:recommended"],
+  "ignorePatterns": [
+    "node_modules/",
+    "backend/node_modules/",
+    "frontend/dist/",
+    "coverage/",
+    ".vite/"
+  ],
+  "overrides": [
+    {
+      "files": ["frontend/**/*.js", "vite.config.js"],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    },
+    {
+      "files": ["backend/services/integracaoErpService.js"],
+      "rules": {
+        "no-control-regex": "off"
+      }
+    },
+    {
+      "files": ["tests/**/*.js"],
+      "env": {
+        "browser": false,
+        "node": true,
+        "jest": true
+      }
+    }
+  ],
+  "rules": {
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "semi": ["error", "always"]
+  }
+}

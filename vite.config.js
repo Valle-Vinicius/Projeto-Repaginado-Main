@@ -136,10 +136,10 @@ export default defineConfig({
         secure: false,
         ws: false,
         configure: (proxy) => {
-          proxy.on('error', (err, req, res) => {
+          proxy.on('error', (err, _req, _res) => {
             console.log('[Vite Proxy] Erro:', err.message);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
             proxyReq.setHeader('credentials', 'include');
           });
         },

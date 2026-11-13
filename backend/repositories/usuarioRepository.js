@@ -1,4 +1,4 @@
-const { executarQuery, executarTransacao } = require('../config/database');
+const { executarQuery } = require('../config/database');
 
 async function listar({ busca = '', perfilId = '', ativo = '' } = {}) {
   const filtros = [];

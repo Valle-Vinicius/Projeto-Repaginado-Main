@@ -1,4 +1,4 @@
-﻿import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   salvarFiltros as salvarFiltrosCore,
   carregarFiltros as carregarFiltrosCore,
@@ -138,7 +138,7 @@ function data(valor) {
 }
 
 async function requisitar(url, opcoes = {}) {
-  const resposta = await fetch(url, {
+  const resposta = await fetchAPI(url, {
     ...opcoes,
     headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) },
     credentials: 'include',
@@ -265,7 +265,7 @@ async function carregar() {
     renderizarResumo();
     renderizarTabela();
   } catch (erro) {
-    if ([401, 403].includes(erro.status)) {
+    if (erro.status === 403) {
       window.location.href = './login.html';
       return;
     }

@@ -1,5 +1,5 @@
 import { API_URL } from '../../js/core/api.js';
-import { limparSessao } from '../../js/core/index.js';
+import { mostrarToast } from '../../js/core/ui.js';
 
 const loginForm = document.querySelector('#loginForm');
 const emailInput = document.querySelector('#email');
@@ -19,6 +19,30 @@ function mostrarMensagem(texto, tipo = '') {
 function alterarEstadoDoBotao(carregando) {
   loginButton.disabled = carregando;
   loginButton.classList.toggle('is-loading', carregando);
+}
+
+function obterDestinoPosLogin() {
+  const destinoSalvo = sessionStorage.getItem('babycare:returnAfterLogin');
+  sessionStorage.removeItem('babycare:returnAfterLogin');
+  sessionStorage.removeItem('babycare:sessionExpired');
+
+  if (!destinoSalvo) {
+    return './dashboard.html';
+  }
+
+  try {
+    const destino = new URL(destinoSalvo, window.location.origin);
+    const caminho = destino.pathname.replace(/\/+$/u, '').replace(/\.html$/u, '');
+    if (
+      destino.origin !== window.location.origin ||
+      ['/login', '/redefinir-senha'].includes(caminho)
+    ) {
+      return './dashboard.html';
+    }
+    return `${destino.pathname}${destino.search}${destino.hash}`;
+  } catch (erro) {
+    return './dashboard.html';
+  }
 }
 
 function validarFormulario() {
@@ -92,6 +116,7 @@ async function fazerLogin(event) {
 
     salvarSessao(resultado);
     mostrarMensagem('Login realizado. Redirecionando...', 'success');
+    const destino = obterDestinoPosLogin();
 
     document.body.classList.add('is-leaving');
     const tempoTransicao = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -99,7 +124,7 @@ async function fazerLogin(event) {
       : 720;
 
     window.setTimeout(() => {
-      window.location.assign('./dashboard.html');
+      window.location.assign(destino);
     }, tempoTransicao);
   } catch (erro) {
     const mensagem =
@@ -153,6 +178,12 @@ requestAccess.addEventListener('click', (event) => {
 });
 
 loginForm.addEventListener('submit', fazerLogin);
+
+if (sessionStorage.getItem('babycare:sessionExpired') === '1') {
+  sessionStorage.removeItem('babycare:sessionExpired');
+  mostrarMensagem('Sua sessão expirou. Entre novamente para continuar.', 'error');
+  mostrarToast('Sua sessão expirou. Faça login novamente.', 'error');
+}
 
 // Se já houver uma sessão no cookie HttpOnly, redireciona para o dashboard.
 window.addEventListener('load', async () => {

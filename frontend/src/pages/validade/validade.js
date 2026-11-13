@@ -1,4 +1,4 @@
-import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import { esc, formatarData } from '../../js/core/index.js';
 import {
   esconderCarregamento,
@@ -45,7 +45,7 @@ async function requisitar() {
     status: estado.status,
     busca: estado.busca,
   });
-  const resposta = await fetch(`${VALIDADE_API_URL}?${params}`, {
+  const resposta = await fetchAPI(`${VALIDADE_API_URL}?${params}`, {
     credentials: 'include',
     cache: 'no-store',
   });
@@ -92,9 +92,6 @@ async function carregar() {
     $('#validityEmpty').hidden = false;
     $('#validityEmpty').textContent = erro.message;
     document.body.dataset.validityState = 'error';
-    if (/token|sessão/i.test(erro.message)) {
-      window.location.href = './login.html';
-    }
   } finally {
     esconderCarregamento();
   }

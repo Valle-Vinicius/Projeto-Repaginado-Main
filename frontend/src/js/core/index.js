@@ -1,6 +1,10 @@
 import './vlibras.js';
+import { formatarData } from './date-formatters.js';
+import { fetchAPI } from './api.js';
 import { montarSidebar } from './sidebar.js';
 import { configurarTabelasResponsivas } from './responsive-tables.js';
+
+export { formatarData };
 
 const CHAVES_USUARIO = ['babycareUsuario', 'babycareUser'];
 
@@ -25,22 +29,6 @@ export function esc(valor) {
   const d = document.createElement('div');
   d.textContent = valor ?? '';
   return d.innerHTML.replace(/"/g, '&quot;');
-}
-
-/** Formata uma data no formato curto pt-BR (ex.: 01/01/2026). */
-export function formatarData(valor) {
-  if (!valor) {
-    return '—';
-  }
-  const texto = String(valor);
-  const d = new Date(texto.includes('T') ? texto : `${texto}T00:00:00`);
-  if (Number.isNaN(d.getTime())) {
-    return texto.slice(0, 10);
-  }
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-  }).format(d);
 }
 
 /** Formata data e hora pt-BR (ex.: 01/01/2026 14:30). */
@@ -88,7 +76,7 @@ export function limparSessao() {
 
 /** Requisição HTTP genérica com JSON e credenciais (cookie). */
 export async function requisitar(url, opcoes = {}) {
-  const resposta = await fetch(url, {
+  const resposta = await fetchAPI(url, {
     ...opcoes,
     headers: {
       'Content-Type': 'application/json',

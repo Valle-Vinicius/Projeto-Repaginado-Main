@@ -1,4 +1,4 @@
-﻿import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   lerUsuario,
   esc,
@@ -97,7 +97,7 @@ function date(v) {
 }
 
 async function api(url, options = {}) {
-  const r = await fetch(url, {
+  const r = await fetchAPI(url, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     credentials: 'include',
@@ -200,7 +200,7 @@ async function carregar() {
     resumo();
     render();
   } catch (x) {
-    if ([401, 403].includes(x.status)) {
+    if (x.status === 403) {
       location.href = './login.html';
       return;
     }

@@ -1,4 +1,4 @@
-﻿import { API_URL } from '../../js/core/api.js';
+import { API_URL, fetchAPI } from '../../js/core/api.js';
 import {
   salvarFiltros as salvarFiltrosCore,
   carregarFiltros as carregarFiltrosCore,
@@ -107,7 +107,7 @@ function configurarUsuario() {
 }
 
 async function requisitarAPI(caminho, opcoes = {}) {
-  const resposta = await fetch(`${ESTOQUE_API_URL}${caminho}`, {
+  const resposta = await fetchAPI(`${ESTOQUE_API_URL}${caminho}`, {
     ...opcoes,
     headers: {
       Accept: 'application/json',
@@ -118,12 +118,6 @@ async function requisitarAPI(caminho, opcoes = {}) {
   });
 
   const corpo = await resposta.json().catch(() => ({}));
-  if (resposta.status === 401) {
-    limparSessao();
-    window.location.replace('./login.html');
-    throw new Error('Sessão expirada. Faça login novamente.');
-  }
-
   if (!resposta.ok) {
     throw new Error(corpo.mensagem || 'Não foi possível consultar o estoque.');
   }
