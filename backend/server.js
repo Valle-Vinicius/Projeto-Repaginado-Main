@@ -100,7 +100,7 @@ if (IS_PRODUCAO) {
     } catch (erro) {
       res.clearCookie('babycareToken', {
         path: '/',
-        sameSite: 'strict',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         secure: process.env.NODE_ENV === 'production',
       });
       return res.redirect(302, '/pages/login.html');

@@ -1,5 +1,8 @@
 const authService = require('../services/authService');
 
+const COOKIE_SECURE = process.env.NODE_ENV === 'production';
+const COOKIE_SAME_SITE = COOKIE_SECURE ? 'none' : 'strict';
+
 function registrarErroInterno(contexto, erro) {
   console.error(`[Auth][${contexto}]`, {
     mensagem: erro.message,
@@ -68,8 +71,8 @@ async function login(req, res) {
 
     res.cookie('babycareToken', resultado.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: COOKIE_SECURE,
+      sameSite: COOKIE_SAME_SITE,
       expires: expiracao,
       path: '/',
     });
@@ -87,8 +90,8 @@ async function login(req, res) {
 async function logout(req, res) {
   res.clearCookie('babycareToken', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: COOKIE_SECURE,
+    sameSite: COOKIE_SAME_SITE,
     path: '/',
   });
 

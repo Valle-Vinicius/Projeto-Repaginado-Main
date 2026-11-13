@@ -1,4 +1,5 @@
 import logoUrl from '../../assets/images/babycare-logo.png';
+import { API_URL } from './api.js';
 
 export function montarSidebar() {
   const sidebar = document.querySelector('#sidebar');
@@ -138,7 +139,7 @@ export function montarSidebar() {
       return;
     }
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch {}
     ['babycareUsuario', 'babycareUser'].forEach((chave) => {
       localStorage.removeItem(chave);
@@ -164,7 +165,7 @@ async function atualizarBadgesSidebar(sidebar) {
   }
 
   try {
-    const resposta = await fetch('/api/dashboard?periodo=30d', {
+    const resposta = await fetch(`${API_URL}/dashboard?periodo=30d`, {
       credentials: 'include',
       cache: 'no-store',
       headers: { Accept: 'application/json' },
