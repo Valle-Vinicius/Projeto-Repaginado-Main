@@ -159,6 +159,21 @@ describe("Autorização - ajuste de estoque (gerente e administrador)", () => {
   });
 });
 
+describe("Autorização - inativação de produtos (somente administrador)", () => {
+  it.each([
+    ["operador", config.USUARIO_OPERADOR],
+    ["gerente", config.USUARIO_GERENTE],
+  ])("%s não pode inativar produtos -> 403", async (_perfil, usuario) => {
+    const token = await tokenDe(usuario);
+    const resultado = await requisitar("/api/produtos/999999/desativar", {
+      metodo: "PATCH",
+      token,
+    });
+    expect(resultado.status).toBe(403);
+    expect(resultado.corpo.codigo).toBe("PERMISSAO_NEGADA");
+  });
+});
+
 describe("Autorização - sem token e token inválido", () => {
   it("GET /api/produtos sem token -> 401", async () => {
     const resultado = await requisitar("/api/produtos");

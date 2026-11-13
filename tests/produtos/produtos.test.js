@@ -11,10 +11,12 @@ const { criarProdutoViaApi, sufixo, limparPrefixo } = require("../helpers/fixtur
 const { consultar, executar } = require("../helpers/db");
 
 let token;
+let tokenAdmin;
 
 beforeAll(async () => {
   await iniciarServidor();
   token = (await login(config.USUARIO_OPERADOR.email, config.USUARIO_OPERADOR.senha)).token;
+  tokenAdmin = (await login(config.USUARIO_ADMIN.email, config.USUARIO_ADMIN.senha)).token;
   await limparPrefixo("produtos", "codigo", "TESTE-PROD");
 });
 
@@ -205,7 +207,7 @@ describe("Produtos - edição e inativação", () => {
 
       const desativar = await requisitar(`/api/produtos/${produtoId}/desativar`, {
         metodo: "PATCH",
-        token,
+        token: tokenAdmin,
       });
       expect(desativar.status).toBe(409);
       expect(desativar.corpo.codigo).toBe("PRODUTO_COM_ESTOQUE");
@@ -226,26 +228,49 @@ describe("Produtos - edição e inativação", () => {
       categoriaId: await categoriaValida(),
     });
     expect(criado.status).toBe(201);
+    const produtoId = criado.corpo.produto.id;
 
-    const patch = await requisitar(`/api/produtos/${criado.corpo.produto.id}`, {
-      metodo: "PATCH",
-      token,
-      corpo: { nome: "Produto depois da edição" },
-    });
-    expect(patch.status).toBe(200);
-    expect(patch.corpo.produto.nome).toBe("Produto depois da edição");
+    try {
+      const patch = await requisitar(`/api/produtos/${produtoId}`, {
+        metodo: "PATCH",
+        token,
+        corpo: { nome: "Produto depois da edição" },
+      });
+      expect(patch.status).toBe(200);
+      expect(patch.corpo.produto.nome).toBe("Produto depois da edição");
 
-    const desativar = await requisitar(
-      `/api/produtos/${criado.corpo.produto.id}/desativar`,
-      { metodo: "PATCH", token },
-    );
-    expect(desativar.status).toBe(200);
-    expect(desativar.corpo.sucesso).toBe(true);
+      const desativar = await requisitar(
+        `/api/produtos/${produtoId}/desativar`,
+        { metodo: "PATCH", token: tokenAdmin },
+      );
+      expect(desativar.status).toBe(200);
+      expect(desativar.corpo.sucesso).toBe(true);
 
-    const del = await requisitar(`/api/produtos/${criado.corpo.produto.id}`, {
-      metodo: "DELETE",
-      token,
-    });
-    expect(del.status).toBe(404);
+      const auditorias = await consultar(
+        `SELECT usuario_id FROM auditorias
+          WHERE acao = ? AND entidade = ? AND entidade_id = ?
+          ORDER BY id DESC LIMIT 1`,
+        ["PRODUTO_INATIVADO", "PRODUTO", produtoId],
+      );
+      const admin = await consultar("SELECT id FROM usuarios WHERE email = ?", [
+        config.USUARIO_ADMIN.email,
+      ]);
+      expect(auditorias).toHaveLength(1);
+      expect(Number(auditorias[0].usuario_id)).toBe(Number(admin[0].id));
+
+      const del = await requisitar(`/api/produtos/${produtoId}`, {
+        metodo: "DELETE",
+        token: tokenAdmin,
+      });
+      expect(del.status).toBe(404);
+    } finally {
+      await executar(
+        "DELETE FROM auditorias WHERE acao = ? AND entidade = ? AND entidade_id = ?",
+        ["PRODUTO_INATIVADO", "PRODUTO", produtoId],
+      );
+      await executar("DELETE FROM movimentacoes WHERE produto_id = ?", [produtoId]);
+      await executar("DELETE FROM lotes WHERE produto_id = ?", [produtoId]);
+      await executar("DELETE FROM produtos WHERE id = ?", [produtoId]);
+    }
   });
 });

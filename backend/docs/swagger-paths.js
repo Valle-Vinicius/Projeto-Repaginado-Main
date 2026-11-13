@@ -175,11 +175,13 @@
  * /produtos/{id}/desativar:
  *   patch:
  *     tags: [Produtos]
- *     summary: Desativa um produto sem saldo pendente.
- *     description: A desativação é transacional e é recusada se houver quantidade positiva em lote ativo, inclusive vencido.
+ *     summary: Inativa um produto sem saldo pendente (somente administrador).
+ *     description: A inativação é transacional, preserva o histórico e gera auditoria. É recusada se houver quantidade positiva em lote ativo, inclusive vencido.
  *     responses:
  *       200:
- *         description: Produto desativado.
+ *         description: Produto inativado.
+ *       403:
+ *         description: Apenas administradores podem inativar produtos.
  *       404:
  *         description: Produto não encontrado.
  *       409:

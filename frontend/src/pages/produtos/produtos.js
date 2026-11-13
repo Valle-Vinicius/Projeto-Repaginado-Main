@@ -38,6 +38,7 @@ const productElements = {
 let produtos = [];
 let categorias = [];
 let paginaAtual = 1;
+let administrador = false;
 const LIMITE_POR_PAGINA = 20;
 
 const paginacaoElementos = {
@@ -64,6 +65,20 @@ function limparSessao() {
 
 function configurarUsuario() {
   const usuario = obterUsuario();
+  const perfilCodigo = String(
+    usuario?.perfilCodigo ||
+      usuario?.perfil ||
+      usuario?.cargoCodigo ||
+      usuario?.cargo ||
+      usuario?.role ||
+      ''
+  )
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase()
+    .replace(/[ -]+/g, '_');
+  administrador = perfilCodigo === 'ADMINISTRADOR';
   const nome = usuario?.nome || 'Usuário Babycare';
   const perfil = (usuario?.perfil || 'OPERADOR_ESTOQUE')
     .replaceAll('_', ' ')
@@ -195,7 +210,7 @@ function criarLinha(produto) {
   const minimo = document.createElement('small');
   const statusCell = document.createElement('td');
   const acoesCell = document.createElement('td');
-  const visualizar = document.createElement('button');
+  const acaoProduto = document.createElement('button');
 
   avatar.className = 'product-avatar';
   avatar.textContent = produto.nome.charAt(0).toUpperCase();
@@ -225,20 +240,39 @@ function criarLinha(produto) {
     criarCelula(formatarData(produto.atualizadoEm))
   );
 
-  visualizar.className = 'table-action';
-  visualizar.type = 'button';
-  visualizar.title = `Visualizar ${produto.nome}`;
-  visualizar.setAttribute('aria-label', `Visualizar ${produto.nome}`);
-  visualizar.textContent = '⋮';
-  visualizar.addEventListener('click', () => {
-    mostrarToast(
-      `Detalhes de ${produto.nome} serão desenvolvidos na próxima etapa.`
-    );
-  });
-  acoesCell.appendChild(visualizar);
+  if (administrador && produto.statusProduto === 'ATIVO') {
+    acaoProduto.className = 'table-action product-deactivate-action';
+    acaoProduto.type = 'button';
+    acaoProduto.title = `Inativar ${produto.nome}`;
+    acaoProduto.setAttribute('aria-label', `Inativar ${produto.nome}`);
+    acaoProduto.textContent = 'Inativar';
+    acaoProduto.addEventListener('click', () => inativarProduto(produto, acaoProduto));
+    acoesCell.appendChild(acaoProduto);
+  }
   linha.appendChild(acoesCell);
 
   return linha;
+}
+
+async function inativarProduto(produto, botao) {
+  const confirmar = window.confirm(
+    `Inativar "${produto.nome}"? O produto sairá do catálogo operacional, mas seu histórico será preservado.`
+  );
+  if (!confirmar) {
+    return;
+  }
+
+  botao.disabled = true;
+  try {
+    await requisitarAPI(`/${encodeURIComponent(produto.id)}/desativar`, {
+      method: 'PATCH',
+    });
+    mostrarToast('Produto inativado. O histórico foi preservado.');
+    await carregarProdutos();
+  } catch (erro) {
+    botao.disabled = false;
+    mostrarToast(erro.message || 'Não foi possível inativar o produto.', 'error');
+  }
 }
 
 function produtoPassaFiltros(produto) {

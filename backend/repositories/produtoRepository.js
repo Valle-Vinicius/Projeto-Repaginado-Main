@@ -1,4 +1,5 @@
 const { executarQuery, executarTransacao } = require('../config/database');
+const auditoriaRepository = require('./auditoriaRepository');
 
 async function buscarCategorias() {
   return executarQuery(`
@@ -207,10 +208,10 @@ async function atualizarProduto(id, campos) {
   return buscarProdutoPorId(id);
 }
 
-async function desativarProduto(id) {
+async function desativarProduto(id, usuarioId) {
   return executarTransacao(async (conexao) => {
     const [produtos] = await conexao.execute(
-      'SELECT id FROM produtos WHERE id = ? AND ativo = TRUE FOR UPDATE',
+      'SELECT id, codigo, nome FROM produtos WHERE id = ? AND ativo = TRUE FOR UPDATE',
       [id]
     );
     if (!produtos.length) {
@@ -230,10 +231,24 @@ async function desativarProduto(id) {
       throw erro;
     }
 
-    await conexao.execute(
-      'UPDATE produtos SET ativo = FALSE, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?',
+    const [atualizados] = await conexao.execute(
+      'UPDATE produtos SET ativo = FALSE, atualizado_em = CURRENT_TIMESTAMP WHERE id = ? AND ativo = TRUE RETURNING id',
       [id]
     );
+    if (!atualizados.length) {
+      return false;
+    }
+
+    await auditoriaRepository.registrarNaConexao(conexao, {
+      usuarioId,
+      acao: 'PRODUTO_INATIVADO',
+      entidade: 'PRODUTO',
+      entidadeId: id,
+      detalhes: {
+        codigo: produtos[0].codigo,
+        nome: produtos[0].nome,
+      },
+    });
     return true;
   });
 }

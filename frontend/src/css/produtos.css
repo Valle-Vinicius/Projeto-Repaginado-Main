@@ -634,6 +634,20 @@ body {
   transform: translateY(-1px);
 }
 
+.product-deactivate-action {
+  display: inline-flex;
+  width: auto;
+  padding: 0 9px;
+  color: var(--product-red);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.product-deactivate-action:hover {
+  color: #a91f2b;
+  background: #fdecee;
+}
+
 .products-empty {
   padding: 42px 20px;
   color: var(--product-muted);

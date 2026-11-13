@@ -13,7 +13,7 @@ router.patch('/:id', verificarToken, autorizarProdutos, produtoController.atuali
 router.patch(
   '/:id/desativar',
   verificarToken,
-  autorizarProdutos,
+  permitirPerfis('ADMINISTRADOR'),
   produtoController.desativarProduto
 );
 

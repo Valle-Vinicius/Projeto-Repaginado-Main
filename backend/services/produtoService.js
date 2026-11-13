@@ -230,7 +230,7 @@ async function atualizarProduto(id, payload) {
   return normalizarProduto(atualizado);
 }
 
-async function desativarProduto(id) {
+async function desativarProduto(id, usuarioId) {
   const produtoId = Number(id);
   if (!Number.isInteger(produtoId) || produtoId <= 0) {
     throw erroComStatus('Produto inválido.', 400, 'PRODUTO_INVALIDO');
@@ -241,7 +241,10 @@ async function desativarProduto(id) {
     throw erroComStatus('Produto não encontrado.', 404, 'PRODUTO_NAO_ENCONTRADO');
   }
 
-  await produtoRepository.desativarProduto(produtoId);
+  const desativado = await produtoRepository.desativarProduto(produtoId, usuarioId);
+  if (!desativado) {
+    throw erroComStatus('Produto não encontrado.', 404, 'PRODUTO_NAO_ENCONTRADO');
+  }
   return { sucesso: true, mensagem: 'Produto desativado com sucesso.' };
 }
 

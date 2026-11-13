@@ -106,7 +106,7 @@ async function atualizarProduto(req, res) {
 
 async function desativarProduto(req, res) {
   try {
-    return res.json(await produtoService.desativarProduto(req.params.id));
+    return res.json(await produtoService.desativarProduto(req.params.id, req.usuario.id));
   } catch (erro) {
     return responderErro(res, erro);
   }
