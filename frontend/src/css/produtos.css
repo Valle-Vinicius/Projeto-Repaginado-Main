@@ -803,3 +803,118 @@ body {
     transition: none;
   }
 }
+
+@media (min-width: 961px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .dashboard-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .dashboard-main {
+    display: flex;
+    height: 100dvh;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    flex: 0 0 auto;
+  }
+
+  .products-content {
+    display: grid;
+    min-height: 0;
+    flex: 1;
+    grid-template-rows: 132px 92px minmax(0, 1fr);
+    gap: 14px;
+    overflow: hidden;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .page-heading-row {
+    min-height: 0;
+  }
+
+  .product-metrics {
+    min-height: 0;
+    margin-top: 0;
+  }
+
+  .product-metric-card {
+    min-height: 0;
+  }
+
+  .products-panel {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    margin-top: 0;
+    overflow: hidden;
+    padding: 14px 16px 10px;
+  }
+
+  .products-toolbar {
+    flex: 0 0 auto;
+    padding-bottom: 12px;
+  }
+
+  .table-heading {
+    flex: 0 0 auto;
+    padding: 12px 1px 10px;
+  }
+
+  .product-table-wrap {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .product-pagination {
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 961px) and (max-height: 700px) {
+  .products-content {
+    grid-template-rows: 108px 82px minmax(0, 1fr);
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .page-heading-row {
+    padding: 18px 24px;
+  }
+
+  .product-metric-card {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .products-panel {
+    padding: 10px 14px 8px;
+  }
+
+  .products-toolbar {
+    padding-bottom: 9px;
+  }
+
+  .table-heading {
+    padding-top: 9px;
+    padding-bottom: 8px;
+  }
+
+  .product-pagination {
+    min-height: 42px;
+    padding-top: 6px;
+  }
+}
